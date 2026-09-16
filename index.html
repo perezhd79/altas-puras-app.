@@ -96,27 +96,57 @@
             </transition-group>
         </div>
 
-        <!-- PANTALLA DE LOGIN -->
+        <!-- PANTALLA DE LOGIN Y CAMBIO DE CONTRASEÑA -->
         <div v-if="!isLoggedIn" class="min-h-screen flex items-center justify-center bg-slate-800 px-4 absolute inset-0 z-[100]">
             <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-slate-200">
-                <div class="text-center mb-6">
-                    <div class="w-16 h-16 bg-slate-700 rounded-xl shadow-inner flex items-center justify-center mx-auto mb-4">
-                        <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
+                
+                <!-- Formulario de Login Normal -->
+                <div v-if="!requirePasswordChange">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-slate-700 rounded-xl shadow-inner flex items-center justify-center mx-auto mb-4">
+                            <i class="fa-solid fa-shield-halved text-2xl text-white"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800">Control de Acceso</h2>
+                        <p class="text-xs text-slate-500 mt-1">Dirección de Gestión Escolar</p>
                     </div>
-                    <h2 class="text-xl font-bold text-slate-800">Control de Acceso</h2>
-                    <p class="text-xs text-slate-500 mt-1">Dirección de Gestión Escolar</p>
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Usuario o Nombre</label>
+                            <input v-model="loginName" type="text" placeholder="Ej. admin o nombre" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Contraseña</label>
+                            <input v-model="loginDni" type="password" placeholder="Tu contraseña (DNI si es la 1ra vez)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="doLogin">
+                        </div>
+                        <button @click="doLogin" class="w-full py-3 mt-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Ingresar al Sistema</button>
+                    </div>
                 </div>
-                <div class="space-y-4 text-sm">
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Usuario o Nombre</label>
-                        <input v-model="loginName" type="text" placeholder="Ej. admin" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+
+                <!-- Formulario de Cambio de Contraseña Obligatorio -->
+                <div v-else>
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 bg-amber-100 rounded-xl shadow-inner flex items-center justify-center mx-auto mb-4 border border-amber-200">
+                            <i class="fa-solid fa-key text-2xl text-amber-600"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800">Crear Contraseña</h2>
+                        <p class="text-[11px] text-slate-500 mt-1">Por seguridad, siendo tu primer ingreso, debes crear una contraseña propia y segura.</p>
                     </div>
-                    <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Contraseña (DNI)</label>
-                        <input v-model="loginDni" type="password" placeholder="Ej. 1234" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="doLogin">
+                    <div class="space-y-4 text-sm">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Nueva Contraseña</label>
+                            <input v-model="newPassword" type="password" placeholder="Mínimo 4 caracteres" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Repetir Contraseña</label>
+                            <input v-model="confirmPassword" type="password" placeholder="Escríbela de nuevo" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="saveNewPassword">
+                        </div>
+                        <div class="flex gap-2 pt-2">
+                            <button @click="cancelPasswordChange" class="w-1/3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold shadow-sm transition">Cancelar</button>
+                            <button @click="saveNewPassword" class="w-2/3 py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Guardar e Ingresar</button>
+                        </div>
                     </div>
-                    <button @click="doLogin" class="w-full py-3 mt-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Ingresar al Sistema</button>
                 </div>
+
             </div>
         </div>
 
@@ -168,7 +198,7 @@
                             <button @click="openExportModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95 shrink-0">
                                 <i class="fa-solid fa-file-pdf text-slate-200 text-xs"></i> Exportar PDF
                             </button>
-                            <!-- Nuevos botones -->
+                            <!-- Accesos (Solo Admin) y Salir -->
                             <button v-if="isAdmin" @click="showColaboradoresModal = true" class="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center gap-1.5 shrink-0">
                                 <i class="fa-solid fa-user-shield"></i> Accesos
                             </button>
@@ -180,7 +210,7 @@
                 </div>
             </header>
 
-            <!-- CONTENEDOR PRINCIPAL EN DOS COLUMNAS (LAYOUT SPLIT) -->
+            <!-- CONTENEDOR PRINCIPAL EN DOS COLUMNAS -->
             <main class="flex-1 max-w-[98%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                     
@@ -431,10 +461,9 @@
                         </div>
                     </div>
 
-                    <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS, ESTADÍSTICAS Y GRÁFICOS (Ancho 4 o 5) -->
+                    <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS, ESTADÍSTICAS Y GRÁFICOS -->
                     <div class="xl:col-span-4 space-y-6 sticky top-20">
 
-                        <!-- Tarjetas de KPIs Principales en Columna -->
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -472,7 +501,6 @@
                             </div>
                         </div>
 
-                        <!-- Asistente IA Operativo -->
                         <div class="bg-slate-700 text-white p-4 rounded-2xl shadow-md border border-slate-600 space-y-2">
                             <div class="flex items-center gap-2">
                                 <i class="fa-solid fa-lightbulb text-amber-300 text-base"></i>
@@ -481,7 +509,6 @@
                             <p class="text-[11px] text-slate-300 leading-relaxed" v-html="aiInsightText"></p>
                         </div>
 
-                        <!-- Gráficos en la Columna Derecha -->
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                             <div>
                                 <h3 class="font-bold text-slate-800 text-xs mb-2">Embudo de Proceso de Altas</h3>
@@ -502,39 +529,51 @@
                 <p>Dirección de Gestión Escolar © 2026 — Departamento de Altas Puras (Director: Aguirre Juan Manuel)</p>
             </footer>
 
-            <!-- MODAL GESTION DE COLABORADORES -->
+            <!-- MODAL GESTION DE COLABORADORES (ADMIN PANEL) -->
             <div v-if="showColaboradoresModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showColaboradoresModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
                     <div class="bg-emerald-700 text-white p-4 px-6 flex items-center justify-between">
-                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-users-gear text-emerald-200"></i> Accesos para Colaboradores (Lectura)</h3>
+                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-users-gear text-emerald-200"></i> Accesos y Correos (Colaboradores)</h3>
                         <button @click="showColaboradoresModal = false" class="text-emerald-200 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
                     
                     <div class="p-6 space-y-4">
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                             <h4 class="text-xs font-bold text-slate-800 mb-3">Agregar Nuevo Colaborador</h4>
-                            <div class="flex gap-2 items-end">
-                                <div class="flex-1">
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre (Usuario)</label>
-                                    <input v-model="nuevoColaborador.nombre" type="text" placeholder="Ej. Juan Perez" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
+                            <div class="flex flex-col gap-3">
+                                <div class="flex gap-2">
+                                    <div class="flex-1">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre (Usuario)</label>
+                                        <input v-model="nuevoColaborador.nombre" type="text" placeholder="Ej. Juan Perez" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">DNI (Pass inicial)</label>
+                                        <input v-model="nuevoColaborador.dni" type="text" placeholder="Sin puntos" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
+                                    </div>
                                 </div>
-                                <div class="flex-1">
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">DNI (Contraseña)</label>
-                                    <input v-model="nuevoColaborador.dni" type="text" placeholder="Sin puntos" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-1">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Correo Electrónico (Opcional)</label>
+                                        <input v-model="nuevoColaborador.correo" type="email" placeholder="correo@ejemplo.com" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
+                                    </div>
+                                    <button @click="addColaborador" class="px-5 py-2 h-[34px] bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-plus"></i> Agregar</button>
                                 </div>
-                                <button @click="addColaborador" class="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition"><i class="fa-solid fa-plus"></i></button>
                             </div>
                         </div>
 
-                        <div class="space-y-2">
+                        <div class="space-y-2 mt-4">
                             <h4 class="text-xs font-bold text-slate-800 border-b pb-2">Colaboradores Activos ({{ colaboradores.length }})</h4>
-                            <div class="max-h-48 overflow-y-auto custom-scrollbar space-y-2">
+                            <div class="max-h-56 overflow-y-auto custom-scrollbar space-y-2">
                                 <div v-for="colab in colaboradores" :key="colab.id" class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
                                     <div>
                                         <p class="text-xs font-bold text-slate-800"><i class="fa-solid fa-user text-slate-400 mr-1"></i> {{ colab.nombre }}</p>
-                                        <p class="text-[10px] text-slate-500 font-mono mt-0.5">DNI/Pass: {{ colab.dni }}</p>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">DNI: {{ colab.dni }} <span v-if="colab.correo">| {{ colab.correo }}</span></p>
                                     </div>
-                                    <button @click="removeColaborador(colab.id)" class="text-rose-500 hover:text-rose-700 p-1 bg-rose-50 rounded"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    <div class="flex items-center gap-1">
+                                        <button @click="editColabEmail(colab.id)" title="Editar Correo" class="text-blue-500 hover:text-blue-700 p-1.5 bg-blue-50 hover:bg-blue-100 rounded transition"><i class="fa-solid fa-envelope text-xs"></i></button>
+                                        <button @click="resetColabPassword(colab.id)" title="Restaurar contraseña (volverá a ser su DNI)" class="text-amber-500 hover:text-amber-700 p-1.5 bg-amber-50 hover:bg-amber-100 rounded transition"><i class="fa-solid fa-key text-xs"></i></button>
+                                        <button @click="removeColaborador(colab.id)" title="Eliminar usuario permanentemente" class="text-rose-500 hover:text-rose-700 p-1.5 bg-rose-50 hover:bg-rose-100 rounded transition"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    </div>
                                 </div>
                                 <p v-if="colaboradores.length === 0" class="text-xs text-slate-400 text-center py-4">No hay colaboradores registrados.</p>
                             </div>
@@ -593,7 +632,7 @@
                 </div>
             </div>
 
-            <!-- MODAL: Nuevo / Editar Trámite con Campo URL de Legajo Digital -->
+            <!-- MODAL: Nuevo / Editar Trámite -->
             <div v-if="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 max-h-[90vh] flex flex-col">
                     <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between shrink-0">
@@ -605,8 +644,6 @@
                     </div>
 
                     <div class="p-6 space-y-4 text-xs overflow-y-auto custom-scrollbar flex-1 bg-slate-50">
-                        
-                        <!-- ZONA DE CARGA Y LECTURA CON IA ESTRICTA -->
                         <div class="bg-slate-600 text-white p-4 rounded-xl shadow-md space-y-2 relative overflow-hidden">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2 font-bold text-xs">
@@ -655,13 +692,11 @@
                                 </div>
                             </div>
                             
-                            <!-- NUEVO CAMPO AGREGADO: URL del Legajo Digitalizado -->
                             <div>
                                 <label class="block font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
                                     <i class="fa-solid fa-link text-blue-600"></i> URL del Legajo Digitalizado (Drive, Cloud o PDF)
                                 </label>
                                 <input v-model="form.urlDigital" type="url" placeholder="https://drive.google.com/... o enlace al legajo digital" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
-                                <p class="text-[10px] text-slate-500 mt-1">Ingresa el enlace web directo para visualizar el legajo digitalizado del agente desde la tabla.</p>
                             </div>
                         </div>
 
@@ -707,7 +742,7 @@
                 </div>
             </div>
 
-            <!-- MODAL CARGA EN LOTE CON IA ESTRICTA -->
+            <!-- MODAL CARGA EN LOTE -->
             <div v-if="showSmartUploadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showSmartUploadModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-slate-200 flex flex-col">
                     <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between">
@@ -718,7 +753,6 @@
                         <div class="border-2 border-dashed border-slate-300 hover:border-slate-500 bg-slate-50 rounded-xl p-6 text-center transition flex flex-col items-center justify-center gap-2">
                             <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-600"></i>
                             <p class="font-bold text-slate-800 text-sm">Sube varios PDFs o fotos de legajos</p>
-                            <p class="text-slate-500 text-[11px]">La Inteligencia Artificial extraerá los datos estrictos solicitados.</p>
                             <label class="mt-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg shadow cursor-pointer inline-flex items-center gap-2">
                                 <i class="fa-solid fa-folder-open"></i> Explorar Archivos
                                 <input type="file" multiple accept=".pdf,image/*" @change="handleBatchFileSelect" class="hidden">
@@ -821,44 +855,117 @@
                 };
                 const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id);
 
-                // --- LÓGICA DE AUTENTICACIÓN Y ROLES ---
-                const isLoggedIn = ref(false); // Controla si muestra el login o la app
-                const currentUserRole = ref('ADMIN'); // 'ADMIN' o 'COLABORADOR'
+                // --- SISTEMA DE AUTENTICACIÓN AVANZADO ---
+                const adminData = ref(JSON.parse(localStorage.getItem('altas_puras_admin')) || { username: 'admin', password: '1234' });
+                
+                const isLoggedIn = ref(false);
+                const currentUserRole = ref('ADMIN');
                 const currentUserName = ref('');
                 const isAdmin = computed(() => currentUserRole.value === 'ADMIN');
 
                 const loginName = ref('');
                 const loginDni = ref('');
+                
+                // Variables para Cambio de Contraseña
+                const requirePasswordChange = ref(false);
+                const pendingLoginUser = ref(null);
+                const newPassword = ref('');
+                const confirmPassword = ref('');
+
                 const showColaboradoresModal = ref(false);
                 const colaboradores = ref([]);
-                const nuevoColaborador = ref({ nombre: '', dni: '' });
+                const nuevoColaborador = ref({ nombre: '', dni: '', correo: '' });
 
-                // Cargar colaboradores guardados
+                // Cargar colaboradores y asegurar que todos tengan campo password y correo
                 const loadColaboradores = () => {
                     const local = localStorage.getItem('altas_puras_colabs');
-                    if (local) colaboradores.value = JSON.parse(local);
+                    if (local) {
+                        let parsed = JSON.parse(local);
+                        // Estructura de seguridad compatible
+                        parsed = parsed.map(c => ({
+                            ...c,
+                            password: c.password || c.dni, // Si no tiene pass, es el DNI
+                            correo: c.correo || ''
+                        }));
+                        colaboradores.value = parsed;
+                    }
+                };
+
+                const loginSuccess = (role, name) => {
+                    currentUserRole.value = role;
+                    currentUserName.value = name;
+                    isLoggedIn.value = true;
+                    loginName.value = '';
+                    loginDni.value = '';
+                    newPassword.value = '';
+                    confirmPassword.value = '';
+                    showToast(`Bienvenido ${name}`, 'success');
                 };
 
                 const doLogin = () => {
-                    // Credenciales de Administrador por defecto
-                    if (loginName.value === 'admin' && loginDni.value === '1234') { 
-                        currentUserRole.value = 'ADMIN';
-                        currentUserName.value = 'Administrador Principal';
-                        isLoggedIn.value = true;
-                        showToast('Acceso concedido como Administrador', 'success');
+                    const u = loginName.value.trim();
+                    const p = loginDni.value.trim();
+                    
+                    if (u === '') return;
+
+                    // 1. Chequeo Admin
+                    if (u === adminData.value.username && p === adminData.value.password) {
+                        if (p === '1234') { // Contraseña por defecto
+                            pendingLoginUser.value = { role: 'ADMIN' };
+                            requirePasswordChange.value = true;
+                            showToast('Por seguridad, crea una nueva contraseña.', 'warning');
+                            return;
+                        }
+                        loginSuccess('ADMIN', 'Administrador Principal');
                         return;
                     }
 
-                    // Buscar si es un colaborador
-                    const colab = colaboradores.value.find(c => c.nombre.toLowerCase() === loginName.value.toLowerCase().trim() && c.dni === loginDni.value.trim());
+                    // 2. Chequeo Colaborador
+                    const colab = colaboradores.value.find(c => c.nombre.toLowerCase() === u.toLowerCase() && c.password === p);
                     if (colab) {
-                        currentUserRole.value = 'COLABORADOR';
-                        currentUserName.value = colab.nombre;
-                        isLoggedIn.value = true;
-                        showToast(`Bienvenido ${colab.nombre} (Modo Lectura)`, 'info');
-                    } else {
-                        showToast('Usuario o contraseña incorrectos', 'error');
+                        if (colab.password === colab.dni) { // Contraseña por defecto
+                            pendingLoginUser.value = { role: 'COLABORADOR', id: colab.id };
+                            requirePasswordChange.value = true;
+                            showToast('Por seguridad, crea tu nueva contraseña.', 'warning');
+                            return;
+                        }
+                        loginSuccess('COLABORADOR', colab.nombre);
+                        return;
                     }
+
+                    showToast('Usuario o contraseña incorrectos', 'error');
+                };
+
+                const saveNewPassword = () => {
+                    if (!newPassword.value || newPassword.value.length < 4) {
+                        showToast('La contraseña debe tener al menos 4 caracteres', 'error');
+                        return;
+                    }
+                    if (newPassword.value !== confirmPassword.value) {
+                        showToast('Las contraseñas no coinciden', 'error');
+                        return;
+                    }
+
+                    if (pendingLoginUser.value.role === 'ADMIN') {
+                        adminData.value.password = newPassword.value;
+                        localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value));
+                        requirePasswordChange.value = false;
+                        loginSuccess('ADMIN', 'Administrador Principal');
+                    } else {
+                        const colab = colaboradores.value.find(c => c.id === pendingLoginUser.value.id);
+                        if (colab) {
+                            colab.password = newPassword.value;
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            requirePasswordChange.value = false;
+                            loginSuccess('COLABORADOR', colab.nombre);
+                        }
+                    }
+                };
+
+                const cancelPasswordChange = () => {
+                    requirePasswordChange.value = false;
+                    pendingLoginUser.value = null;
+                    loginDni.value = ''; // limpiar pass
                 };
 
                 const doLogout = () => {
@@ -867,21 +974,53 @@
                     loginDni.value = '';
                 };
 
+                // --- FUNCIONES DEL PANEL ADMIN ---
                 const addColaborador = () => {
                     if (!nuevoColaborador.value.nombre || !nuevoColaborador.value.dni) {
                         showToast('Complete nombre y DNI', 'warning');
                         return;
                     }
-                    colaboradores.value.push({ ...nuevoColaborador.value, id: Date.now() });
+                    colaboradores.value.push({ 
+                        id: Date.now(),
+                        nombre: nuevoColaborador.value.nombre, 
+                        dni: nuevoColaborador.value.dni,
+                        correo: nuevoColaborador.value.correo || '',
+                        password: nuevoColaborador.value.dni // La primera pass es el DNI
+                    });
                     localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                    nuevoColaborador.value = { nombre: '', dni: '' };
+                    nuevoColaborador.value = { nombre: '', dni: '', correo: '' };
                     showToast('Colaborador agregado', 'success');
                 };
 
                 const removeColaborador = (id) => {
-                    colaboradores.value = colaboradores.value.filter(c => c.id !== id);
-                    localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                    showToast('Colaborador eliminado', 'info');
+                    if(confirm("¿Estás seguro de eliminar permanentemente a este usuario?")) {
+                        colaboradores.value = colaboradores.value.filter(c => c.id !== id);
+                        localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                        showToast('Usuario eliminado', 'info');
+                    }
+                };
+
+                const resetColabPassword = (id) => {
+                    const colab = colaboradores.value.find(c => c.id === id);
+                    if (colab) {
+                        if(confirm(`¿Deseas restaurar la contraseña de ${colab.nombre}? (Volverá a ser su DNI)`)) {
+                            colab.password = colab.dni;
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            showToast('Contraseña restaurada. Se le pedirá cambiarla al ingresar.', 'success');
+                        }
+                    }
+                };
+
+                const editColabEmail = (id) => {
+                    const colab = colaboradores.value.find(c => c.id === id);
+                    if (colab) {
+                        const newEmail = prompt(`Editar correo de ${colab.nombre}:`, colab.correo);
+                        if (newEmail !== null) {
+                            colab.correo = newEmail.trim();
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            showToast('Correo guardado correctamente', 'success');
+                        }
+                    }
                 };
                 // ----------------------------------------
 
@@ -1514,7 +1653,9 @@
                     
                     // Variables expuestas de Autenticación
                     isLoggedIn, isAdmin, currentUserName, loginName, loginDni, doLogin, doLogout, 
-                    showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, removeColaborador
+                    requirePasswordChange, newPassword, confirmPassword, saveNewPassword, cancelPasswordChange,
+                    showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, 
+                    removeColaborador, resetColabPassword, editColabEmail
                 };
             }
         }).mount('#app');
