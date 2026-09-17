@@ -859,7 +859,7 @@
                 const showToast = (message, type = 'success') => {
                     const id = Date.now() + Math.random();
                     toasts.value.push({ id, message, type });
-                    setTimeout(() => removeToast(id), 3500);
+                    setTimeout(() => removeToast(id), type === 'error' ? 8000 : 3500); // Errores duran más en pantalla
                 };
                 const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id);
 
@@ -1058,17 +1058,25 @@
                     window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                 }
 
+                // --- MODIFICADO: DETECTOR DE ERRORES ---
                 const initCloudStorage = async () => {
-                    if (!window.cloudDB) return;
+                    if (!window.cloudDB) {
+                        showToast("Error: Firebase no se cargó en el navegador.", "error");
+                        return;
+                    }
+                    
                     const { appId, auth, db, collection, doc, setDoc, onSnapshot, signInAnonymously } = window.cloudDB;
 
                     let currentUser = null;
                     try {
                         const res = await signInAnonymously(auth);
                         currentUser = res.user;
-                    } catch (err) { console.error(err); }
+                    } catch (err) { 
+                        showToast("Bloqueo de Autenticación: " + err.message, "error");
+                        console.error(err); 
+                    }
 
-                    if (!currentUser) return;
+                    if (!currentUser) return; // Se detiene aquí si no pudimos entrar
 
                     const colRefExpedientes = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
                     const colRefUsuarios = collection(db, 'artifacts', appId, 'public', 'data', 'usuarios');
@@ -1097,8 +1105,12 @@
                                 username: 'admin',
                                 password: '1234',
                                 role: 'ADMIN'
+                            }).catch(err => {
+                                showToast("Bloqueo al crear Admin: " + err.message, "error");
                             });
                         }
+                    }, (error) => {
+                        showToast("Bloqueo en la Base de Datos (Usuarios): " + error.message, "error");
                     });
 
                     // Escuchar Expedientes
@@ -1113,8 +1125,10 @@
                         isCloudConnected.value = true;
                     }, (error) => {
                         isCloudConnected.value = false;
+                        showToast("Bloqueo en la Base de Datos (Expedientes): " + error.message, "error");
                     });
                 };
+                // ----------------------------------------
 
                 const isAiProcessing = ref(false);
                 const isBatchProcessing = ref(false);
