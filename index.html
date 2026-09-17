@@ -22,32 +22,23 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- CONFIGURACIÓN DE FIREBASE EN LA NUBE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Tu llave de conexión a Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBYwmfQeJboaMDB_ZBqe9UqxXHZEOzYKM8",
-            authDomain: "altas-puras.firebaseapp.com",
-            databaseURL: "https://altas-puras-default-rtdb.firebaseio.com",
-            projectId: "altas-puras",
-            storageBucket: "altas-puras.firebasestorage.app",
-            messagingSenderId: "1037137507630",
-            appId: "1:1037137507630:web:7b6137420c2660f75ab6bf"
-        };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'altas-puras-gestor';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        if (firebaseConfig) {
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
 
-        // Guardamos las herramientas de la base de datos para que Vue las use
-        window.cloudDB = {
-            appId: 'altas-puras-app', 
-            auth, db, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, signInAnonymously
-        };
+            window.cloudDB = {
+                appId, auth, db, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs, signInWithCustomToken, signInAnonymously
+            };
+        }
     </script>
 
     <script>
@@ -138,7 +129,7 @@
                             <i class="fa-solid fa-key text-2xl text-amber-600"></i>
                         </div>
                         <h2 class="text-xl font-bold text-slate-800">Crear Contraseña</h2>
-                        <p class="text-[11px] text-slate-500 mt-1">Por seguridad, debes crear una contraseña propia y segura.</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Por seguridad, siendo tu primer ingreso, debes crear una contraseña propia y segura.</p>
                     </div>
                     <div class="space-y-4 text-sm">
                         <div>
@@ -173,7 +164,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.2 Cloud Sync</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.1 Pro Split</span>
                                     
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -181,7 +172,7 @@
                                     </span>
                                     <span v-else class="bg-amber-800/80 text-amber-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-amber-600 flex items-center gap-1.5">
                                         <i class="fa-solid fa-spinner fa-spin text-[10px]"></i>
-                                        Conectando...
+                                        Almacenamiento Local
                                     </span>
                                 </div>
                                 <p class="text-xs text-slate-300 flex items-center gap-2 mt-0.5">
@@ -421,6 +412,7 @@
                                                 </template>
                                             </td>
 
+                                            <!-- Columna Legajo Digital (Enlace directo a URL) -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-blue-200 transition shadow-sm">
                                                     <i class="fa-solid fa-link text-xs"></i>
@@ -446,7 +438,7 @@
                                         <tr v-if="filteredRecords.length === 0">
                                             <td colspan="8" class="p-8 text-center text-slate-400">
                                                 <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
-                                                <p class="font-medium text-slate-500">No se encontraron expedientes en la tabla.</p>
+                                                <p class="font-medium text-slate-500">No se encontraron expedientes con los filtros seleccionados.</p>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -469,7 +461,7 @@
                         </div>
                     </div>
 
-                    <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS -->
+                    <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS, ESTADÍSTICAS Y GRÁFICOS -->
                     <div class="xl:col-span-4 space-y-6 sticky top-20">
 
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -541,7 +533,7 @@
             <div v-if="showColaboradoresModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showColaboradoresModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
                     <div class="bg-emerald-700 text-white p-4 px-6 flex items-center justify-between">
-                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-users-gear text-emerald-200"></i> Accesos y Correos (Sincronizado)</h3>
+                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-users-gear text-emerald-200"></i> Accesos y Correos (Colaboradores)</h3>
                         <button @click="showColaboradoresModal = false" class="text-emerald-200 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
                     
@@ -791,14 +783,14 @@
                 </div>
             </div>
 
-            <!-- MODAL COMPARTIR Y RESPALDO CON EL BOTON DE MIGRACION -->
+            <!-- MODAL COMPARTIR Y RESPALDO -->
             <div v-if="showShareModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showShareModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 flex flex-col">
                     <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between">
                         <h3 class="font-bold text-sm"><i class="fa-solid fa-users text-slate-300"></i> Trabajo Colaborativo y Respaldo</h3>
                         <button @click="showShareModal = false" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
-                    <div class="p-6 space-y-5 text-xs">
+                    <div class="p-6 space-y-4 text-xs">
                         <div>
                             <label class="block font-semibold text-slate-700 mb-1">Enlace de acceso a la planilla:</label>
                             <div class="flex items-center gap-2">
@@ -806,16 +798,13 @@
                                 <button @click="copyShareLink" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-semibold shrink-0 shadow"><i class="fa-solid fa-copy"></i> Copiar</button>
                             </div>
                         </div>
-
-                        <!-- LA HERRAMIENTA MÁGICA DE MIGRACIÓN -->
-                        <div class="pt-5 border-t border-slate-200">
-                            <span class="font-bold text-slate-800 block mb-2 text-sm"><i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i> Herramienta de Migración</span>
-                            <button @click="migrarDatosLocales" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md transition flex items-center justify-center gap-2 active:scale-95">
-                                <i class="fa-solid fa-cloud-arrow-up text-lg"></i> Migrar Expedientes Locales a la Nube
-                            </button>
-                            <p class="text-[10px] text-slate-500 mt-2 text-center leading-relaxed">Haz clic aquí para que el sistema busque los expedientes guardados en la memoria de esta computadora y los suba permanentemente a internet.</p>
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                            <span class="font-bold text-slate-800">Copia de Seguridad (.json):</span>
+                            <div class="flex items-center gap-2">
+                                <button @click="exportDatabaseJSON" class="px-3 py-1.5 bg-slate-800 text-white rounded-lg font-semibold"><i class="fa-solid fa-download"></i> Respaldar</button>
+                                <label class="cursor-pointer px-3 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded-lg font-semibold"><i class="fa-solid fa-upload"></i> Restaurar<input type="file" accept=".json" @change="importDatabaseJSON" class="hidden"></label>
+                            </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -849,7 +838,10 @@
 
         createApp({
             setup() {
-                const seedRecords = [];
+                const seedRecords = [
+                    { id: '1', nombre: 'Perez Dario', dni: '27715290', fd: '23568/26', legajo: 'L-1024', docFaltante: ['CERTIFICADO DE APTITUD PSICOFÍSICA', 'CONSTANCIA DE CUIL'], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '3794256936', fechaIngreso: '2026-06-10', urlDigital: 'https://drive.google.com/file/d/example1' },
+                    { id: '2', nombre: 'Gómez María Laura', dni: '32415890', fd: '24110/26', legajo: 'L-2105', docFaltante: [], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'SI', enviadoMinisterio: 'SI', celular: '3794123456', fechaIngreso: '2026-06-12', urlDigital: 'https://drive.google.com/file/d/example2' }
+                ];
 
                 const records = ref([...seedRecords]);
                 const isCloudConnected = ref(false);
@@ -859,12 +851,12 @@
                 const showToast = (message, type = 'success') => {
                     const id = Date.now() + Math.random();
                     toasts.value.push({ id, message, type });
-                    setTimeout(() => removeToast(id), type === 'error' ? 8000 : 3500); // Errores duran más en pantalla
+                    setTimeout(() => removeToast(id), 3500);
                 };
                 const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id);
 
-                // --- SISTEMA DE AUTENTICACIÓN SINCRONIZADO EN FIREBASE ---
-                const adminData = ref({ username: 'admin', password: '1234', role: 'ADMIN' });
+                // --- SISTEMA DE AUTENTICACIÓN AVANZADO ---
+                const adminData = ref(JSON.parse(localStorage.getItem('altas_puras_admin')) || { username: 'admin', password: '1234' });
                 
                 const isLoggedIn = ref(false);
                 const currentUserRole = ref('ADMIN');
@@ -884,6 +876,21 @@
                 const colaboradores = ref([]);
                 const nuevoColaborador = ref({ nombre: '', dni: '', correo: '' });
 
+                // Cargar colaboradores y asegurar que todos tengan campo password y correo
+                const loadColaboradores = () => {
+                    const local = localStorage.getItem('altas_puras_colabs');
+                    if (local) {
+                        let parsed = JSON.parse(local);
+                        // Estructura de seguridad compatible
+                        parsed = parsed.map(c => ({
+                            ...c,
+                            password: c.password || c.dni, // Si no tiene pass, es el DNI
+                            correo: c.correo || ''
+                        }));
+                        colaboradores.value = parsed;
+                    }
+                };
+
                 const loginSuccess = (role, name) => {
                     currentUserRole.value = role;
                     currentUserName.value = name;
@@ -898,11 +905,12 @@
                 const doLogin = () => {
                     const u = loginName.value.trim();
                     const p = loginDni.value.trim();
+                    
                     if (u === '') return;
 
                     // 1. Chequeo Admin
                     if (u === adminData.value.username && p === adminData.value.password) {
-                        if (p === '1234') { 
+                        if (p === '1234') { // Contraseña por defecto
                             pendingLoginUser.value = { role: 'ADMIN' };
                             requirePasswordChange.value = true;
                             showToast('Por seguridad, crea una nueva contraseña.', 'warning');
@@ -915,7 +923,7 @@
                     // 2. Chequeo Colaborador
                     const colab = colaboradores.value.find(c => c.nombre.toLowerCase() === u.toLowerCase() && c.password === p);
                     if (colab) {
-                        if (colab.password === colab.dni) { 
+                        if (colab.password === colab.dni) { // Contraseña por defecto
                             pendingLoginUser.value = { role: 'COLABORADOR', id: colab.id };
                             requirePasswordChange.value = true;
                             showToast('Por seguridad, crea tu nueva contraseña.', 'warning');
@@ -940,18 +948,14 @@
 
                     if (pendingLoginUser.value.role === 'ADMIN') {
                         adminData.value.password = newPassword.value;
-                        if (window.cloudDB) {
-                            window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'usuarios', 'admin_user'), adminData.value);
-                        }
+                        localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value));
                         requirePasswordChange.value = false;
                         loginSuccess('ADMIN', 'Administrador Principal');
                     } else {
                         const colab = colaboradores.value.find(c => c.id === pendingLoginUser.value.id);
                         if (colab) {
                             colab.password = newPassword.value;
-                            if (window.cloudDB) {
-                                window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'usuarios', String(colab.id)), colab);
-                            }
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                             requirePasswordChange.value = false;
                             loginSuccess('COLABORADOR', colab.nombre);
                         }
@@ -961,7 +965,7 @@
                 const cancelPasswordChange = () => {
                     requirePasswordChange.value = false;
                     pendingLoginUser.value = null;
-                    loginDni.value = '';
+                    loginDni.value = ''; // limpiar pass
                 };
 
                 const doLogout = () => {
@@ -970,34 +974,29 @@
                     loginDni.value = '';
                 };
 
-                // --- FUNCIONES DEL PANEL ADMIN GUARDANDO EN FIREBASE ---
+                // --- FUNCIONES DEL PANEL ADMIN ---
                 const addColaborador = () => {
                     if (!nuevoColaborador.value.nombre || !nuevoColaborador.value.dni) {
                         showToast('Complete nombre y DNI', 'warning');
                         return;
                     }
-                    const newId = 'colab_' + Date.now();
-                    const colabData = { 
-                        id: newId,
+                    colaboradores.value.push({ 
+                        id: Date.now(),
                         nombre: nuevoColaborador.value.nombre, 
                         dni: nuevoColaborador.value.dni,
                         correo: nuevoColaborador.value.correo || '',
-                        password: nuevoColaborador.value.dni
-                    };
-                    
-                    if (window.cloudDB) {
-                        window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'usuarios', newId), colabData);
-                    }
+                        password: nuevoColaborador.value.dni // La primera pass es el DNI
+                    });
+                    localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     nuevoColaborador.value = { nombre: '', dni: '', correo: '' };
                     showToast('Colaborador agregado', 'success');
                 };
 
                 const removeColaborador = (id) => {
                     if(confirm("¿Estás seguro de eliminar permanentemente a este usuario?")) {
-                        if (window.cloudDB) {
-                            window.cloudDB.deleteDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'usuarios', String(id)));
-                            showToast('Usuario eliminado', 'info');
-                        }
+                        colaboradores.value = colaboradores.value.filter(c => c.id !== id);
+                        localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                        showToast('Usuario eliminado', 'info');
                     }
                 };
 
@@ -1006,10 +1005,8 @@
                     if (colab) {
                         if(confirm(`¿Deseas restaurar la contraseña de ${colab.nombre}? (Volverá a ser su DNI)`)) {
                             colab.password = colab.dni;
-                            if (window.cloudDB) {
-                                window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'usuarios', String(id)), colab);
-                            }
-                            showToast('Contraseña restaurada.', 'success');
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            showToast('Contraseña restaurada. Se le pedirá cambiarla al ingresar.', 'success');
                         }
                     }
                 };
@@ -1020,36 +1017,9 @@
                         const newEmail = prompt(`Editar correo de ${colab.nombre}:`, colab.correo);
                         if (newEmail !== null) {
                             colab.correo = newEmail.trim();
-                            if (window.cloudDB) {
-                                window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'usuarios', String(id)), colab);
-                            }
-                            showToast('Correo guardado', 'success');
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            showToast('Correo guardado correctamente', 'success');
                         }
-                    }
-                };
-
-                // --- HERRAMIENTA MÁGICA DE MIGRACIÓN ---
-                const migrarDatosLocales = () => {
-                    try {
-                        const localData = localStorage.getItem('altas_puras_records_v71');
-                        if (localData && window.cloudDB) {
-                            const parsed = JSON.parse(localData);
-                            if (parsed.length === 0) {
-                                showToast('No hay expedientes locales para migrar.', 'warning');
-                                return;
-                            }
-                            let count = 0;
-                            parsed.forEach(rec => {
-                                window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'expedientes', String(rec.id)), rec);
-                                count++;
-                            });
-                            showToast(`¡Éxito! Se subieron ${count} expedientes a la nube.`, 'success');
-                            showShareModal.value = false;
-                        } else {
-                            showToast('No se encontraron expedientes guardados en esta computadora.', 'error');
-                        }
-                    } catch (e) {
-                        showToast('Error en la migración de datos.', 'error');
                     }
                 };
                 // ----------------------------------------
@@ -1058,77 +1028,95 @@
                     window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                 }
 
-                // --- MODIFICADO: DETECTOR DE ERRORES ---
-                const initCloudStorage = async () => {
-                    if (!window.cloudDB) {
-                        showToast("Error: Firebase no se cargó en el navegador.", "error");
-                        return;
+                const loadFromLocalStorage = () => {
+                    try {
+                        const localData = localStorage.getItem('altas_puras_records_v71');
+                        if (localData) records.value = JSON.parse(localData);
+                        else {
+                            records.value = JSON.parse(JSON.stringify(seedRecords));
+                            saveToLocalStorage(records.value);
+                        }
+                    } catch (e) {
+                        records.value = JSON.parse(JSON.stringify(seedRecords));
                     }
-                    
-                    const { appId, auth, db, collection, doc, setDoc, onSnapshot, signInAnonymously } = window.cloudDB;
+                };
+
+                const saveToLocalStorage = (data) => {
+                    try { localStorage.setItem('altas_puras_records_v71', JSON.stringify(data)); } catch (e) {}
+                };
+
+                const copyShareLink = () => {
+                    const tempInput = document.createElement('input');
+                    tempInput.value = window.location.href;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    try { document.execCommand('copy'); showToast("Enlace copiado con éxito.", "success"); } catch (err) {}
+                    document.body.removeChild(tempInput);
+                };
+
+                const exportDatabaseJSON = () => {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(records.value, null, 2));
+                    const dlAnchor = document.createElement('a');
+                    dlAnchor.setAttribute("href", dataStr);
+                    dlAnchor.setAttribute("download", `Respaldo_Altas_Puras_${new Date().toISOString().split('T')[0]}.json`);
+                    dlAnchor.click();
+                    showToast("Respaldo guardado.", "success");
+                };
+
+                const importDatabaseJSON = (event) => {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const imported = JSON.parse(e.target.result);
+                            if (Array.isArray(imported)) {
+                                records.value = imported;
+                                saveToLocalStorage(records.value);
+                                showToast(`¡Se restauraron ${imported.length} expedientes!`, "success");
+                            }
+                        } catch (err) { showToast("Error al leer archivo.", "error"); }
+                    };
+                    reader.readAsText(file);
+                };
+
+                const initCloudStorage = async () => {
+                    loadFromLocalStorage();
+                    if (!window.cloudDB) return;
+                    const { appId, auth, db, collection, doc, setDoc, onSnapshot, signInWithCustomToken, signInAnonymously } = window.cloudDB;
 
                     let currentUser = null;
                     try {
-                        const res = await signInAnonymously(auth);
-                        currentUser = res.user;
-                    } catch (err) { 
-                        showToast("Bloqueo de Autenticación: " + err.message, "error");
-                        console.error(err); 
-                    }
-
-                    if (!currentUser) return; // Se detiene aquí si no pudimos entrar
-
-                    const colRefExpedientes = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
-                    const colRefUsuarios = collection(db, 'artifacts', appId, 'public', 'data', 'usuarios');
-
-                    // Escuchar Usuarios
-                    onSnapshot(colRefUsuarios, (snapshot) => {
-                        let hasAdmin = false;
-                        const cloudUsers = [];
-                        
-                        if (!snapshot.empty) {
-                            snapshot.forEach((d) => {
-                                const data = d.data();
-                                if (d.id === 'admin_user') {
-                                    adminData.value = data;
-                                    hasAdmin = true;
-                                } else {
-                                    cloudUsers.push({ ...data, id: d.id });
-                                }
-                            });
-                            colaboradores.value = cloudUsers;
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            const res = await signInWithCustomToken(auth, __initial_auth_token);
+                            currentUser = res.user;
+                        } else {
+                            const res = await signInAnonymously(auth);
+                            currentUser = res.user;
                         }
-                        
-                        // Si no hay admin, creamos el por defecto
-                        if (!hasAdmin) {
-                            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'usuarios', 'admin_user'), {
-                                username: 'admin',
-                                password: '1234',
-                                role: 'ADMIN'
-                            }).catch(err => {
-                                showToast("Bloqueo al crear Admin: " + err.message, "error");
-                            });
-                        }
-                    }, (error) => {
-                        showToast("Bloqueo en la Base de Datos (Usuarios): " + error.message, "error");
-                    });
+                    } catch (err) {}
 
-                    // Escuchar Expedientes
-                    onSnapshot(colRefExpedientes, (snapshot) => {
-                        if (!snapshot.empty) {
+                    if (!currentUser) return;
+
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
+
+                    onSnapshot(colRef, (snapshot) => {
+                        if (snapshot.empty && records.value.length > 0) {
+                            records.value.forEach(rec => {
+                                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(rec.id)), rec).catch(() => {});
+                            });
+                        } else if (!snapshot.empty) {
                             const cloudItems = [];
                             snapshot.forEach((d) => { cloudItems.push({ ...d.data(), id: d.id }); });
                             cloudItems.sort((a, b) => new Date(b.fechaIngreso || 0) - new Date(a.fechaIngreso || 0));
                             records.value = cloudItems;
-                            nextTick(() => updateCharts());
+                            saveToLocalStorage(cloudItems);
                         }
                         isCloudConnected.value = true;
                     }, (error) => {
                         isCloudConnected.value = false;
-                        showToast("Bloqueo en la Base de Datos (Expedientes): " + error.message, "error");
                     });
                 };
-                // ----------------------------------------
 
                 const isAiProcessing = ref(false);
                 const isBatchProcessing = ref(false);
@@ -1265,12 +1253,10 @@
                 const commitStagedRecords = () => {
                     if (stagedRecords.value.length === 0) return;
                     stagedRecords.value.forEach(st => {
-                        const rec = { id: 'exp_' + Math.random(), ...st };
-                        if (window.cloudDB) {
-                            window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'expedientes', String(rec.id)), rec);
-                        }
+                        records.value.unshift({ id: 'exp_' + Math.random(), ...st });
                     });
-                    showToast("¡Legajos incorporados a la base de datos!", "success");
+                    saveToLocalStorage(records.value);
+                    showToast("¡Legajos incorporados a la planilla!", "success");
                     stagedRecords.value = [];
                     showSmartUploadModal.value = false;
                 };
@@ -1458,80 +1444,39 @@
                         id: String(form.value.id || ('exp_' + Date.now())),
                         docFaltante: [...formDocFaltanteArray.value]
                     };
-                    
-                    if (window.cloudDB) {
-                        window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'expedientes', recordData.id), recordData);
+                    if (isEditing.value) {
+                        const idx = records.value.findIndex(r => String(r.id) === String(recordData.id));
+                        if (idx !== -1) records.value[idx] = recordData;
+                    } else {
+                        records.value.unshift(recordData);
                     }
-                    
+                    saveToLocalStorage(records.value);
                     showModal.value = false;
-                    showToast("Guardado en la nube exitosamente", "success");
+                    showToast("Guardado exitosamente", "success");
+                    nextTick(() => updateCharts());
                 };
 
                 const confirmDelete = (item) => {
-                    if(confirm("¿Seguro que deseas eliminar este expediente?")) {
-                        if (window.cloudDB) {
-                            window.cloudDB.deleteDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'expedientes', String(item.id)));
-                        }
-                        showToast("Expediente eliminado", "info");
-                    }
+                    records.value = records.value.filter(r => String(r.id) !== String(item.id));
+                    saveToLocalStorage(records.value);
+                    showToast("Expediente eliminado", "info");
+                    nextTick(() => updateCharts());
                 };
 
                 const bulkSetDigitalizado = (val) => {
-                    records.value.forEach(r => {
-                        if (selectedRecordIds.value.includes(r.id)) {
-                            r.digitalizado = val;
-                            if (window.cloudDB) window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'expedientes', String(r.id)), r);
-                        }
-                    });
+                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, digitalizado: val } : r);
+                    saveToLocalStorage(records.value);
                     showToast("Actualización masiva completada", "success");
                     selectedRecordIds.value = [];
+                    nextTick(() => updateCharts());
                 };
 
                 const bulkSetMinisterio = (val) => {
-                    records.value.forEach(r => {
-                        if (selectedRecordIds.value.includes(r.id)) {
-                            r.enviadoMinisterio = val;
-                            if (window.cloudDB) window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'expedientes', String(r.id)), r);
-                        }
-                    });
+                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: val } : r);
+                    saveToLocalStorage(records.value);
                     showToast("Actualización masiva completada", "success");
                     selectedRecordIds.value = [];
-                };
-
-                const copyShareLink = () => {
-                    const tempInput = document.createElement('input');
-                    tempInput.value = window.location.href;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    try { document.execCommand('copy'); showToast("Enlace copiado con éxito.", "success"); } catch (err) {}
-                    document.body.removeChild(tempInput);
-                };
-
-                const exportDatabaseJSON = () => {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(records.value, null, 2));
-                    const dlAnchor = document.createElement('a');
-                    dlAnchor.setAttribute("href", dataStr);
-                    dlAnchor.setAttribute("download", `Respaldo_Altas_Puras_${new Date().toISOString().split('T')[0]}.json`);
-                    dlAnchor.click();
-                    showToast("Respaldo guardado.", "success");
-                };
-
-                const importDatabaseJSON = (event) => {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const imported = JSON.parse(e.target.result);
-                            if (Array.isArray(imported)) {
-                                imported.forEach(rec => {
-                                    if (window.cloudDB) window.cloudDB.setDoc(window.cloudDB.doc(window.cloudDB.db, 'artifacts', window.cloudDB.appId, 'public', 'data', 'expedientes', String(rec.id)), rec);
-                                });
-                                showToast(`¡Se están restaurando ${imported.length} expedientes a la nube!`, "success");
-                            }
-                        } catch (err) { showToast("Error al leer archivo.", "error"); }
-                    };
-                    reader.readAsText(file);
+                    nextTick(() => updateCharts());
                 };
 
                 const openExportModal = () => showExportModal.value = true;
@@ -1688,7 +1633,7 @@
                     }
                 };
 
-                onMounted(() => nextTick(() => { initCharts(); initCloudStorage(); }));
+                onMounted(() => nextTick(() => { initCharts(); initCloudStorage(); loadColaboradores(); }));
 
                 return {
                     records, isCloudConnected, currentShareUrl, toasts, removeToast,
@@ -1706,11 +1651,11 @@
                     openWhatsAppModal, openExportModal, pdfStats, handleBatchFileSelect, stagedRecords,
                     commitStagedRecords, isAiProcessing, isBatchProcessing, handleSingleFileAIUpload, openSmartUploadModal,
                     
-                    // Variables expuestas de Autenticación y Migración
+                    // Variables expuestas de Autenticación
                     isLoggedIn, isAdmin, currentUserName, loginName, loginDni, doLogin, doLogout, 
                     requirePasswordChange, newPassword, confirmPassword, saveNewPassword, cancelPasswordChange,
                     showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, 
-                    removeColaborador, resetColabPassword, editColabEmail, migrarDatosLocales
+                    removeColaborador, resetColabPassword, editColabEmail
                 };
             }
         }).mount('#app');
