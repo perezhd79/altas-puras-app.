@@ -1332,7 +1332,13 @@
                 const customWhatsAppMessage = ref('');
                 const openWhatsAppModal = (item) => {
                     activeWhatsAppRecord.value = item;
-                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, le informamos desde la Dirección de Gestión Escolar que su trámite (FD: ${item.fd || 's/d'}) se encuentra en curso.`;
+                    
+                    const documentosFaltantes = (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) 
+                        ? item.docFaltante.join(', ') 
+                        : '[Indicar documentación]';
+
+                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
+                    
                     showWhatsAppModal.value = true;
                 };
 
