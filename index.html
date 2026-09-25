@@ -975,6 +975,14 @@
                 };
 
                 // --- FUNCIONES DEL PANEL ADMIN ---
+                const saveColaboradores = () => {
+                    localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                    if (window.cloudDB && isCloudConnected.value) {
+                        const { db, doc, setDoc, appId } = window.cloudDB;
+                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios'), { list: colaboradores.value }).catch(()=>{});
+                    }
+                };
+
                 const addColaborador = () => {
                     if (!nuevoColaborador.value.nombre || !nuevoColaborador.value.dni) {
                         showToast('Complete nombre y DNI', 'warning');
@@ -985,9 +993,9 @@
                         nombre: nuevoColaborador.value.nombre, 
                         dni: nuevoColaborador.value.dni,
                         correo: nuevoColaborador.value.correo || '',
-                        password: nuevoColaborador.value.dni // La primera pass es el DNI
+                        password: nuevoColaborador.value.dni
                     });
-                    localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                    saveColaboradores();
                     nuevoColaborador.value = { nombre: '', dni: '', correo: '' };
                     showToast('Colaborador agregado', 'success');
                 };
@@ -995,7 +1003,7 @@
                 const removeColaborador = (id) => {
                     if(confirm("¿Estás seguro de eliminar permanentemente a este usuario?")) {
                         colaboradores.value = colaboradores.value.filter(c => c.id !== id);
-                        localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                        saveColaboradores();
                         showToast('Usuario eliminado', 'info');
                     }
                 };
@@ -1005,7 +1013,7 @@
                     if (colab) {
                         if(confirm(`¿Deseas restaurar la contraseña de ${colab.nombre}? (Volverá a ser su DNI)`)) {
                             colab.password = colab.dni;
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            saveColaboradores();
                             showToast('Contraseña restaurada. Se le pedirá cambiarla al ingresar.', 'success');
                         }
                     }
@@ -1017,7 +1025,7 @@
                         const newEmail = prompt(`Editar correo de ${colab.nombre}:`, colab.correo);
                         if (newEmail !== null) {
                             colab.correo = newEmail.trim();
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            saveColaboradores();
                             showToast('Correo guardado correctamente', 'success');
                         }
                     }
