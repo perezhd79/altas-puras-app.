@@ -955,7 +955,7 @@
                         const colab = colaboradores.value.find(c => c.id === pendingLoginUser.value.id);
                         if (colab) {
                             colab.password = newPassword.value;
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            saveColaboradores();
                             requirePasswordChange.value = false;
                             loginSuccess('COLABORADOR', colab.nombre);
                         }
