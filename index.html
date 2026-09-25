@@ -955,7 +955,7 @@
                         const colab = colaboradores.value.find(c => c.id === pendingLoginUser.value.id);
                         if (colab) {
                             colab.password = newPassword.value;
-                            saveColaboradores();
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                             requirePasswordChange.value = false;
                             loginSuccess('COLABORADOR', colab.nombre);
                         }
@@ -975,14 +975,6 @@
                 };
 
                 // --- FUNCIONES DEL PANEL ADMIN ---
-                const saveColaboradores = () => {
-                    localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                    if (window.cloudDB && isCloudConnected.value) {
-                        const { db, doc, setDoc, appId } = window.cloudDB;
-                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios'), { list: colaboradores.value }).catch(()=>{});
-                    }
-                };
-
                 const addColaborador = () => {
                     if (!nuevoColaborador.value.nombre || !nuevoColaborador.value.dni) {
                         showToast('Complete nombre y DNI', 'warning');
@@ -993,9 +985,9 @@
                         nombre: nuevoColaborador.value.nombre, 
                         dni: nuevoColaborador.value.dni,
                         correo: nuevoColaborador.value.correo || '',
-                        password: nuevoColaborador.value.dni
+                        password: nuevoColaborador.value.dni // La primera pass es el DNI
                     });
-                    saveColaboradores();
+                    localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     nuevoColaborador.value = { nombre: '', dni: '', correo: '' };
                     showToast('Colaborador agregado', 'success');
                 };
@@ -1003,7 +995,7 @@
                 const removeColaborador = (id) => {
                     if(confirm("¿Estás seguro de eliminar permanentemente a este usuario?")) {
                         colaboradores.value = colaboradores.value.filter(c => c.id !== id);
-                        saveColaboradores();
+                        localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                         showToast('Usuario eliminado', 'info');
                     }
                 };
@@ -1013,7 +1005,7 @@
                     if (colab) {
                         if(confirm(`¿Deseas restaurar la contraseña de ${colab.nombre}? (Volverá a ser su DNI)`)) {
                             colab.password = colab.dni;
-                            saveColaboradores();
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                             showToast('Contraseña restaurada. Se le pedirá cambiarla al ingresar.', 'success');
                         }
                     }
@@ -1025,7 +1017,7 @@
                         const newEmail = prompt(`Editar correo de ${colab.nombre}:`, colab.correo);
                         if (newEmail !== null) {
                             colab.correo = newEmail.trim();
-                            saveColaboradores();
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                             showToast('Correo guardado correctamente', 'success');
                         }
                     }
@@ -1088,17 +1080,44 @@
                     reader.readAsText(file);
                 };
 
-                // NUEVO: Sincronizar usuarios en tiempo real
-                    const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
-                    onSnapshot(usersDocRef, (snapshot) => {
-                        if (snapshot.exists()) {
-                            colaboradores.value = snapshot.data().list || [];
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                        } else if (colaboradores.value.length > 0) {
-                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+                const initCloudStorage = async () => {
+                    loadFromLocalStorage();
+                    if (!window.cloudDB) return;
+                    const { appId, auth, db, collection, doc, setDoc, onSnapshot, signInWithCustomToken, signInAnonymously } = window.cloudDB;
+
+                    let currentUser = null;
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            const res = await signInWithCustomToken(auth, __initial_auth_token);
+                            currentUser = res.user;
+                        } else {
+                            const res = await signInAnonymously(auth);
+                            currentUser = res.user;
                         }
+                    } catch (err) {}
+
+                    if (!currentUser) return;
+
+                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
+
+                    onSnapshot(colRef, (snapshot) => {
+                        if (snapshot.empty && records.value.length > 0) {
+                            records.value.forEach(rec => {
+                                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(rec.id)), rec).catch(() => {});
+                            });
+                        } else if (!snapshot.empty) {
+                            const cloudItems = [];
+                            snapshot.forEach((d) => { cloudItems.push({ ...d.data(), id: d.id }); });
+                            cloudItems.sort((a, b) => new Date(b.fechaIngreso || 0) - new Date(a.fechaIngreso || 0));
+                            records.value = cloudItems;
+                            saveToLocalStorage(cloudItems);
+                        }
+                        isCloudConnected.value = true;
+                    }, (error) => {
+                        isCloudConnected.value = false;
                     });
-                
+                };
+
                 const isAiProcessing = ref(false);
                 const isBatchProcessing = ref(false);
 
