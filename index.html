@@ -28,7 +28,15 @@
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'altas-puras-gestor';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const firebaseConfig = {
+  apiKey: "AIzaSyAnrofIMoCu2bmD1ipjJ07YPtgsXbay7tg",
+  authDomain: "altas-puras-proyect.firebaseapp.com",
+  projectId: "altas-puras-proyect",
+  storageBucket: "altas-puras-proyect.firebasestorage.app",
+  messagingSenderId: "384103149695",
+  appId: "1:384103149695:web:9a8a9e45b600c7641f8f4a",
+  measurementId: "G-CL23212DNM"
+};
 
         if (firebaseConfig) {
             const app = initializeApp(firebaseConfig);
