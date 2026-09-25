@@ -1120,6 +1120,16 @@
                             records.value = cloudItems;
                             saveToLocalStorage(cloudItems);
                         }
+                        // NUEVO: Sincronizar usuarios en tiempo real
+                    const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
+                    onSnapshot(usersDocRef, (snapshot) => {
+                        if (snapshot.exists()) {
+                            colaboradores.value = snapshot.data().list || [];
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                        } else if (colaboradores.value.length > 0) {
+                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+                        }
+                    });
                         isCloudConnected.value = true;
                     }, (error) => {
                         isCloudConnected.value = false;
