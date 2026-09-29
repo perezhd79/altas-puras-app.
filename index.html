@@ -4,22 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Altas Puras Nivel Secundario | Dirección de Gestión Escolar</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- PDFMAKE PARA EXPORTACIÓN PDF PROFESIONAL -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    
-    <!-- PDF.js para renderizar documentos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <script type="module">
@@ -27,18 +18,19 @@
         import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'altas-puras-gestor';
+        const appId = 'altas-puras-gestor';
+        
+        // ¡ATENCIÓN AQUÍ! Reemplaza este bloque por tu código real de Firebase
         const firebaseConfig = {
-  apiKey: "AIzaSyAnrofIMoCu2bmD1ipjJ07YPtgsXbay7tg",
-  authDomain: "altas-puras-proyect.firebaseapp.com",
-  projectId: "altas-puras-proyect",
-  storageBucket: "altas-puras-proyect.firebasestorage.app",
-  messagingSenderId: "384103149695",
-  appId: "1:384103149695:web:9a8a9e45b600c7641f8f4a",
-  measurementId: "G-CL23212DNM"
-};
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdefg"
+        };
 
-        if (firebaseConfig) {
+        if (firebaseConfig.apiKey !== "TU_API_KEY") {
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
@@ -54,11 +46,7 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: {
-                            50: '#f8fafc', 100: '#f1f5f9', 500: '#475569', 600: '#334155', 700: '#1e293b', 900: '#0f172a',
-                        }
-                    }
+                    colors: { brand: { 50: '#f8fafc', 100: '#f1f5f9', 500: '#475569', 600: '#334155', 700: '#1e293b', 900: '#0f172a' } }
                 }
             }
         }
@@ -69,7 +57,6 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
         .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
         .toast-enter-from { opacity: 0; transform: translateY(16px); }
         .toast-leave-to { opacity: 0; transform: translateY(-16px); }
@@ -78,7 +65,6 @@
 <body class="bg-slate-50 text-slate-700 font-sans antialiased min-h-screen">
     <div id="app" v-cloak class="flex flex-col min-h-screen relative">
         
-        <!-- Notificaciones Toast Flotantes -->
         <div class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
             <transition-group name="toast">
                 <div v-for="toast in toasts" :key="toast.id" 
@@ -104,11 +90,8 @@
             </transition-group>
         </div>
 
-        <!-- PANTALLA DE LOGIN Y CAMBIO DE CONTRASEÑA -->
         <div v-if="!isLoggedIn" class="min-h-screen flex items-center justify-center bg-slate-800 px-4 absolute inset-0 z-[100]">
             <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-slate-200">
-                
-                <!-- Formulario de Login Normal -->
                 <div v-if="!requirePasswordChange">
                     <div class="text-center mb-6">
                         <div class="w-16 h-16 bg-slate-700 rounded-xl shadow-inner flex items-center justify-center mx-auto mb-4">
@@ -124,20 +107,19 @@
                         </div>
                         <div>
                             <label class="block font-semibold text-slate-700 mb-1">Contraseña</label>
-                            <input v-model="loginDni" type="password" placeholder="Tu contraseña (DNI si es la 1ra vez)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="doLogin">
+                            <input v-model="loginDni" type="password" placeholder="Tu contraseña" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="doLogin">
                         </div>
                         <button @click="doLogin" class="w-full py-3 mt-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Ingresar al Sistema</button>
                     </div>
                 </div>
 
-                <!-- Formulario de Cambio de Contraseña Obligatorio -->
                 <div v-else>
                     <div class="text-center mb-6">
                         <div class="w-16 h-16 bg-amber-100 rounded-xl shadow-inner flex items-center justify-center mx-auto mb-4 border border-amber-200">
                             <i class="fa-solid fa-key text-2xl text-amber-600"></i>
                         </div>
                         <h2 class="text-xl font-bold text-slate-800">Crear Contraseña</h2>
-                        <p class="text-[11px] text-slate-500 mt-1">Por seguridad, siendo tu primer ingreso, debes crear una contraseña propia y segura.</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Por seguridad, debes crear una contraseña propia.</p>
                     </div>
                     <div class="space-y-4 text-sm">
                         <div>
@@ -150,42 +132,27 @@
                         </div>
                         <div class="flex gap-2 pt-2">
                             <button @click="cancelPasswordChange" class="w-1/3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold shadow-sm transition">Cancelar</button>
-                            <button @click="saveNewPassword" class="w-2/3 py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Guardar e Ingresar</button>
+                            <button @click="saveNewPassword" class="w-2/3 py-3 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Guardar</button>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- CONTENIDO PRINCIPAL DE LA APP -->
         <div v-else class="flex flex-col min-h-screen w-full">
-
-            <!-- Encabezado de la aplicación -->
             <header class="bg-slate-700 text-slate-100 border-b border-slate-600 sticky top-0 z-30 shadow-sm">
                 <div class="max-w-[98%] mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div class="flex items-center space-x-3">
-                            <div class="p-2.5 bg-slate-600 rounded-xl shadow-inner">
-                                <i class="fa-solid fa-folder-tree text-xl text-slate-200"></i>
-                            </div>
+                            <div class="p-2.5 bg-slate-600 rounded-xl shadow-inner"><i class="fa-solid fa-folder-tree text-xl text-slate-200"></i></div>
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
-                                    <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.1 Pro Split</span>
-                                    
-                                    <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                        Nube Sincronizada
-                                    </span>
-                                    <span v-else class="bg-amber-800/80 text-amber-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-amber-600 flex items-center gap-1.5">
-                                        <i class="fa-solid fa-spinner fa-spin text-[10px]"></i>
-                                        Almacenamiento Local
-                                    </span>
+                                    <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar (Altas Puras sc)</h1>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.2 Pro</span>
+                                    <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>Nube Sincronizada</span>
+                                    <span v-else class="bg-amber-800/80 text-amber-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-amber-600 flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-[10px]"></i>Almacenamiento Local</span>
                                 </div>
                                 <p class="text-xs text-slate-300 flex items-center gap-2 mt-0.5">
-                                    <span><i class="fa-solid fa-building-columns text-slate-400 mr-1"></i>Dirección de Gestión Escolar</span>
-                                    <span class="text-slate-500">•</span>
                                     <span><i class="fa-solid fa-user-tie text-slate-400 mr-1"></i>Director: <strong>Aguirre Juan Manuel</strong></span>
                                     <span class="text-slate-500">•</span>
                                     <span class="text-emerald-300 font-semibold"><i class="fa-solid fa-user-check mr-1"></i>{{ currentUserName }}</span>
@@ -194,623 +161,116 @@
                         </div>
                         
                         <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-                            <button v-if="isAdmin" @click="openNewModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95 shrink-0">
-                                <i class="fa-solid fa-plus text-xs"></i> Nuevo Trámite
-                            </button>
-                            <button v-if="isAdmin" @click="openSmartUploadModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95 shrink-0">
-                                <i class="fa-solid fa-file-arrow-up text-xs"></i> Carga en Lote
-                            </button>
-                            <button v-if="isAdmin" @click="showShareModal = true" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95 shrink-0">
-                                <i class="fa-solid fa-users text-xs"></i> Compartir
-                            </button>
-                            <button @click="openExportModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95 shrink-0">
-                                <i class="fa-solid fa-file-pdf text-slate-200 text-xs"></i> Exportar PDF
-                            </button>
-                            <!-- Accesos (Solo Admin) y Salir -->
-                            <button v-if="isAdmin" @click="showColaboradoresModal = true" class="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center gap-1.5 shrink-0">
-                                <i class="fa-solid fa-user-shield"></i> Accesos
-                            </button>
-                            <button @click="doLogout" class="h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center gap-1.5 shrink-0">
-                                <i class="fa-solid fa-right-from-bracket"></i> Salir
-                            </button>
+                            <button v-if="isAdmin" @click="openNewModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-plus text-xs"></i> Nuevo Trámite</button>
+                            <button v-if="isAdmin" @click="openSmartUploadModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up text-xs"></i> Carga en Lote</button>
+                            <button v-if="isAdmin" @click="showShareModal = true" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-users text-xs"></i> Compartir</button>
+                            <button @click="openExportModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-file-pdf text-xs"></i> Exportar PDF</button>
+                            <button v-if="isAdmin" @click="showColaboradoresModal = true" class="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-slate-100 rounded-lg text-[11px] font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-user-shield"></i> Accesos</button>
+                            <button @click="doLogout" class="h-8 px-3.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-[11px] font-semibold transition flex items-center gap-1.5"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <!-- CONTENEDOR PRINCIPAL EN DOS COLUMNAS -->
-            <main class="flex-1 max-w-[98%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <main class="flex-1 max-w-[98%] w-full mx-auto px-4 py-6">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-                    
-                    <!-- COLUMNA IZQUIERDA: GESTIÓN DE EXPEDIENTES (Ancho 7 u 8) -->
                     <div class="xl:col-span-8 space-y-6">
-
-                        <!-- 1. FILTROS Y BÚSQUEDA OPERATIVA -->
                         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-sliders text-slate-600 text-sm"></i>
-                                    <h2 class="font-bold text-sm text-slate-800">Filtros y Búsqueda Operativa</h2>
-                                    <span class="text-xs text-slate-400 font-normal">({{ filteredRecords.length }} de {{ records.length }} expedientes)</span>
-                                </div>
-                                <div class="flex items-center gap-3 self-end md:self-auto">
-                                    <button @click="resetFilters" class="text-xs text-slate-600 hover:text-slate-800 font-semibold flex items-center gap-1">
-                                        <i class="fa-solid fa-rotate-left"></i> Restablecer Filtros
-                                    </button>
-                                </div>
+                            <div class="flex flex-col md:flex-row items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                                <div class="flex items-center gap-2"><i class="fa-solid fa-sliders text-slate-600"></i><h2 class="font-bold text-sm text-slate-800">Filtros Operativos</h2><span class="text-xs text-slate-400">({{ filteredRecords.length }} registros)</span></div>
+                                <button @click="resetFilters" class="text-xs text-slate-600 font-semibold"><i class="fa-solid fa-rotate-left"></i> Limpiar Filtros</button>
                             </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                 <div class="relative sm:col-span-2">
                                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD o Legajo..." 
-                                           class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition">
-                                    <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition">
-                                        <i class="fa-solid fa-xmark text-xs"></i>
-                                    </button>
+                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI o FD..." class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400">
+                                    <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-2.5 text-slate-400"><i class="fa-solid fa-xmark text-xs"></i></button>
                                 </div>
-
-                                <div>
-                                    <select v-model="filterAño" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700 font-medium">
-                                        <option value="ALL">Año: Todos</option>
-                                        <option v-for="year in availableYears" :key="year" :value="year">Año: {{ year }}</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <select v-model="filterMes" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700 font-medium">
-                                        <option value="ALL">Mes: Todos</option>
-                                        <option v-for="m in monthsList" :key="m.value" :value="m.value">{{ m.label }}</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <select v-model="filterDigitalizado" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">Digitalizado: Todos</option>
-                                        <option value="SI">Digitalizado: SÍ</option>
-                                        <option value="NO">Digitalizado: NO</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <select v-model="filterSisper" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">Sisper: Todos</option>
-                                        <option value="SI">Enviado: SÍ</option>
-                                        <option value="NO">Enviado: NO</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <select v-model="filterDocFaltante" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">Doc: Todas</option>
-                                        <option value="COMPLETO">Documentación Completa</option>
-                                        <option value="INCOMPLETO">Con Faltante</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <select v-model="filterSLA" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">SLA / Días: Todos</option>
-                                        <option value="VERDE">&lt; 30 días (Al día)</option>
-                                        <option value="AMARILLO">30 - 60 días (Atención)</option>
-                                        <option value="ROJO">&gt; 60 días (Demorado)</option>
-                                    </select>
-                                </div>
+                                <select v-model="filterSisper" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"><option value="ALL">Sisper: Todos</option><option value="SI">Enviado: SÍ</option><option value="NO">Enviado: NO</option></select>
+                                <select v-model="filterDocFaltante" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg"><option value="ALL">Doc: Todas</option><option value="COMPLETO">Completa</option><option value="INCOMPLETO">Con Faltante</option></select>
                             </div>
                         </div>
 
-                        <!-- 2. BARRA DE ACCIONES EN LOTE -->
-                        <div v-if="selectedRecordIds.length > 0 && isAdmin" 
-                             class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex flex-wrap items-center justify-between gap-3">
-                            <div class="flex items-center gap-2 text-xs">
-                                <span class="bg-slate-500 px-2.5 py-1 rounded-full font-bold">{{ selectedRecordIds.length }}</span>
-                                <span>expedientes seleccionados para acción masiva</span>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap text-xs">
-                                <button @click="bulkSetDigitalizado('SI')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-laptop-code"></i> Marcar Digitalizado SÍ
-                                </button>
-                                <button @click="bulkSetMinisterio('SI')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-paper-plane"></i> Marcar Enviado Ministerio SÍ
-                                </button>
-                                <button @click="selectedRecordIds = []" class="px-2 py-1 text-slate-300 hover:text-white transition">
-                                    Deseleccionar
-                                </button>
+                        <div v-if="selectedRecordIds.length > 0 && isAdmin" class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex items-center justify-between gap-3">
+                            <span class="text-xs">Seleccionados: <strong>{{ selectedRecordIds.length }}</strong></span>
+                            <div class="flex gap-2">
+                                <button @click="bulkSetDigitalizado('SI')" class="px-3 py-1.5 bg-slate-600 rounded-lg text-xs font-semibold">Marcar Digitalizado</button>
+                                <button @click="bulkSetMinisterio('SI')" class="px-3 py-1.5 bg-slate-600 rounded-lg text-xs font-semibold">Marcar Enviado Min.</button>
+                                <button @click="selectedRecordIds = []" class="px-2 py-1 text-slate-300 text-xs">Cancelar</button>
                             </div>
                         </div>
 
-                        <!-- 3. PLANILLA DE SEGUIMIENTO OPERATIVO -->
                         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <h3 class="font-bold text-slate-800 text-base">Planilla de Seguimiento Operativo</h3>
-                                        <span class="bg-slate-100 text-slate-700 font-bold text-xs px-2.5 py-0.5 rounded-full border border-slate-200">
-                                            {{ filteredRecords.length }} registros
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-0.5">Control individual con plantillas directas de WhatsApp y legajo digitalizado.</p>
-                                </div>
-
-                                <div class="flex items-center gap-3">
-                                    <div class="flex items-center gap-1.5 text-xs text-slate-500">
-                                        <span>Ver:</span>
-                                        <select v-model.number="itemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-700">
-                                            <option :value="8">8 por pág.</option>
-                                            <option :value="15">15 por pág.</option>
-                                            <option :value="25">25 por pág.</option>
-                                            <option :value="1000">Todos</option>
-                                        </select>
-                                    </div>
-                                    <button @click="showOnlyCritical = !showOnlyCritical" 
-                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1.5"
-                                            :class="showOnlyCritical ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'">
-                                        <i class="fa-solid fa-triangle-exclamation"></i>
-                                        Solo Críticos
-                                    </button>
-                                </div>
-                            </div>
-
                             <div class="overflow-x-auto custom-scrollbar">
                                 <table class="w-full text-left border-collapse text-xs">
-                                   <thead>
-                                        <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200 select-none">
-                                            <th class="p-3 text-center w-8" v-if="isAdmin">
-                                                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
-                                            </th>
-                                            <th @click="sortBy('status')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
-                                                Estado <i :class="getSortIcon('status')" class="ml-1 text-[10px]"></i>
-                                            </th>
-                                            <th @click="sortBy('fechaIngreso')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
-                                                Ingreso <i :class="getSortIcon('fechaIngreso')" class="ml-1 text-[10px]"></i>
-                                            </th>
-                                            <th @click="sortBy('nombre')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
-                                                Agente / DNI <i :class="getSortIcon('nombre')" class="ml-1 text-[10px]"></i>
-                                            </th>
-                                            <th class="p-3">FD / Legajo</th>
-                                            <th class="p-3">Doc. Faltante</th>
-                                            <th class="p-3 text-center">Legajo Digital</th>
-                                            <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
+                                    <thead>
+                                        <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b">
+                                            <th class="p-3 text-center w-8" v-if="isAdmin"><input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded cursor-pointer"></th>
+                                            <th class="p-3">Estado</th><th class="p-3">Ingreso</th><th class="p-3">Agente / DNI</th><th class="p-3">FD / Legajo</th><th class="p-3">Doc. Faltante</th><th class="p-3 text-center">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-slate-100">
-                                        <tr v-for="item in paginatedRecords" :key="item.id" 
-                                            class="hover:bg-slate-50/80 transition group"
-                                            :class="selectedRecordIds.includes(item.id) ? 'bg-slate-100/60' : ''">
-                                            
-                                            <td class="p-3 text-center" v-if="isAdmin">
-                                                <input type="checkbox" :value="item.id" v-model="selectedRecordIds" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
-                                            </td>
-
-                                            <td class="p-3 whitespace-nowrap">
-                                                <span :class="getStatusBadgeClass(item)" class="px-2 py-0.5 rounded-full font-bold text-[10px] inline-flex items-center gap-1 shadow-sm">
-                                                    <i :class="getStatusIcon(item)"></i>
-                                                    {{ getStatusLabel(item) }}
-                                                </span>
-                                            </td>
-
-                                            <td class="p-3 text-slate-600 font-medium whitespace-nowrap">
-                                                <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono">
-                                                    {{ formatDate(item.fechaIngreso) }}
-                                                </span>
-                                            </td>
-
-                                            <td class="p-3 whitespace-nowrap">
-                                                <div class="font-bold text-slate-900">{{ item.nombre }}</div>
-                                                <div class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</div>
-                                            </td>
-
-                                            <td class="p-3 text-slate-700 font-medium whitespace-nowrap">
-                                                <div class="font-mono text-[11px]">{{ item.fd || 'Sin FD' }}</div>
-                                                <div class="text-slate-500 text-[10px]">Leg: {{ item.legajo || 'S/D' }}</div>
-                                            </td>
-
-                                            <td class="p-3 whitespace-normal max-w-[200px]">
+                                        <tr v-for="item in paginatedRecords" :key="item.id" class="hover:bg-slate-50/80" :class="selectedRecordIds.includes(item.id) ? 'bg-slate-100/60' : ''">
+                                            <td class="p-3 text-center" v-if="isAdmin"><input type="checkbox" :value="item.id" v-model="selectedRecordIds" class="rounded cursor-pointer"></td>
+                                            <td class="p-3"><span :class="getStatusBadgeClass(item)" class="px-2 py-0.5 rounded-full font-bold text-[10px]"><i :class="getStatusIcon(item)"></i> {{ getStatusLabel(item) }}</span></td>
+                                            <td class="p-3 font-mono">{{ formatDate(item.fechaIngreso) }}</td>
+                                            <td class="p-3"><div class="font-bold text-slate-900">{{ item.nombre }}</div><div class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</div></td>
+                                            <td class="p-3"><div class="font-mono">{{ item.fd || 'Sin FD' }}</div></td>
+                                            <td class="p-3">
                                                 <template v-if="Array.isArray(item.docFaltante) && item.docFaltante.length > 0">
-                                                    <div class="flex flex-wrap gap-1">
-                                                        <span v-for="doc in item.docFaltante" :key="doc" class="text-rose-700 bg-rose-50 border border-rose-200 font-medium px-1.5 py-0.5 rounded text-[9px] inline-block truncate max-w-[150px]" :title="doc">
-                                                            {{ doc }}
-                                                        </span>
-                                                    </div>
+                                                    <span class="text-rose-700 bg-rose-50 border border-rose-200 font-medium px-1.5 py-0.5 rounded text-[9px]">CON FALTANTE</span>
                                                 </template>
                                                 <template v-else>
-                                                    <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 font-semibold px-1.5 py-0.5 rounded text-[10px] inline-block">
-                                                        COMPLETA
-                                                    </span>
+                                                    <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 font-semibold px-1.5 py-0.5 rounded text-[10px]">COMPLETA</span>
                                                 </template>
                                             </td>
-
-                                            <!-- Columna Legajo Digital (Enlace directo a URL) -->
-                                            <td class="p-3 text-center whitespace-nowrap">
-                                                <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-blue-200 transition shadow-sm">
-                                                    <i class="fa-solid fa-link text-xs"></i>
-                                                    <span>Ver Legajo</span>
-                                                </a>
-                                                <span v-else class="text-slate-300 text-[11px] italic font-mono">Sin enlace</span>
-                                            </td>
-
                                             <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
-                                                <div class="flex items-center justify-center gap-1">
-                                                    <button v-if="item.celular" @click="openWhatsAppModal(item)" title="Enviar notificación por WhatsApp" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm inline-flex items-center justify-center">
-                                                        <i class="fa-brands fa-whatsapp text-xs"></i>
-                                                    </button>
-                                                    <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200">
-                                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                                    </button>
-                                                    <button @click="confirmDelete(item)" title="Eliminar" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition border border-slate-200">
-                                                        <i class="fa-solid fa-trash text-xs"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr v-if="filteredRecords.length === 0">
-                                            <td colspan="8" class="p-8 text-center text-slate-400">
-                                                <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
-                                                <p class="font-medium text-slate-500">No se encontraron expedientes con los filtros seleccionados.</p>
+                                                <button v-if="item.celular" @click="openWhatsAppModal(item)" class="p-1.5 bg-emerald-600 text-white rounded-lg"><i class="fa-brands fa-whatsapp"></i></button>
+                                                <button @click="editRecord(item)" class="p-1.5 bg-slate-100 text-slate-700 rounded-lg mx-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                                                <button @click="confirmDelete(item)" class="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-
-                            <div class="p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-slate-50">
-                                <span class="text-slate-500">
-                                    Mostrando <strong class="text-slate-800">{{ paginatedRecords.length }}</strong> de <strong class="text-slate-800">{{ filteredRecords.length }}</strong> expedientes (Página {{ currentPage }} de {{ totalPages || 1 }})
-                                </span>
-                                <div class="flex items-center gap-1">
-                                    <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-100 transition">
-                                        <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
-                                    </button>
-                                    <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-100 transition">
-                                        Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
-                                    </button>
+                            <div class="p-4 flex items-center justify-between text-xs bg-slate-50 border-t">
+                                <span>Página {{ currentPage }} de {{ totalPages || 1 }}</span>
+                                <div class="flex gap-1">
+                                    <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1 bg-white border rounded disabled:opacity-40">Anterior</button>
+                                    <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1 bg-white border rounded disabled:opacity-40">Siguiente</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS, ESTADÍSTICAS Y GRÁFICOS -->
-                    <div class="xl:col-span-4 space-y-6 sticky top-20">
-
+                    
+                    <div class="xl:col-span-4 space-y-6">
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-chart-pie text-slate-600"></i>
-                                    Indicadores de Gestión (Command Center)
-                                </h3>
-                                <span class="bg-slate-100 text-slate-700 font-bold text-[10px] px-2 py-0.5 rounded-full border">En vivo</span>
-                            </div>
-
                             <div class="grid grid-cols-2 gap-3">
-                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Total Trámites</p>
-                                    <h3 class="text-xl font-extrabold text-slate-800 mt-1">{{ stats.total }}</h3>
-                                </div>
-                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">% Digitalización</p>
-                                    <h3 class="text-xl font-extrabold text-slate-800 mt-1">{{ stats.pctDigitalizado }}%</h3>
-                                </div>
-                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Remitidos Min.</p>
-                                    <h3 class="text-xl font-extrabold text-slate-800 mt-1">{{ stats.pctEnviados }}%</h3>
-                                </div>
-                                <div class="bg-rose-50/70 p-3.5 rounded-xl border border-rose-200">
-                                    <p class="text-[10px] font-semibold text-rose-600 uppercase tracking-wider">Con Faltante</p>
-                                    <h3 class="text-xl font-extrabold text-rose-600 mt-1">{{ stats.conFaltanteCount }}</h3>
-                                </div>
-                            </div>
-
-                            <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 flex items-center justify-between">
-                                <div>
-                                    <p class="text-[10px] font-semibold text-amber-800 uppercase tracking-wider">Demorados SLA (&gt;60d)</p>
-                                    <h3 class="text-lg font-extrabold text-amber-700 mt-0.5">{{ stats.demoradosSLACount }} expedientes</h3>
-                                </div>
-                                <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl"></i>
+                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80"><p class="text-[10px] font-semibold text-slate-500 uppercase">Total Trámites</p><h3 class="text-xl font-extrabold">{{ stats.total }}</h3></div>
+                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80"><p class="text-[10px] font-semibold text-slate-500 uppercase">% Digitalización</p><h3 class="text-xl font-extrabold">{{ stats.pctDigitalizado }}%</h3></div>
                             </div>
                         </div>
-
-                        <div class="bg-slate-700 text-white p-4 rounded-2xl shadow-md border border-slate-600 space-y-2">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-lightbulb text-amber-300 text-base"></i>
-                                <h3 class="font-bold text-xs text-slate-100">Diagnóstico Operativo AI</h3>
-                            </div>
-                            <p class="text-[11px] text-slate-300 leading-relaxed" v-html="aiInsightText"></p>
-                        </div>
-
-                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                            <div>
-                                <h3 class="font-bold text-slate-800 text-xs mb-2">Embudo de Proceso de Altas</h3>
-                                <div class="relative h-48 w-full"><canvas id="funnelChart"></canvas></div>
-                            </div>
-                            <div class="pt-3 border-t border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-xs mb-2">Estado de Documentación</h3>
-                                <div class="relative h-44 w-full"><canvas id="docsChart"></canvas></div>
-                            </div>
-                        </div>
-
                     </div>
-
                 </div>
             </main>
 
-            <footer class="bg-white border-t border-slate-200 mt-8 py-4 text-center text-xs text-slate-400">
-                <p>Dirección de Gestión Escolar © 2026 — Departamento de Altas Puras (Director: Aguirre Juan Manuel)</p>
-            </footer>
-
-            <!-- MODAL GESTION DE COLABORADORES (ADMIN PANEL) -->
-            <div v-if="showColaboradoresModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showColaboradoresModal = false">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
-                    <div class="bg-emerald-700 text-white p-4 px-6 flex items-center justify-between">
-                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-users-gear text-emerald-200"></i> Accesos y Correos (Colaboradores)</h3>
-                        <button @click="showColaboradoresModal = false" class="text-emerald-200 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-                    
+            <!-- MODAL COLABORADORES -->
+            <div v-if="showColaboradoresModal" class="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
+                    <div class="bg-emerald-700 text-white p-4 flex justify-between"><h3 class="font-bold text-sm">Accesos (Colaboradores)</h3><button @click="showColaboradoresModal = false"><i class="fa-solid fa-xmark text-lg"></i></button></div>
                     <div class="p-6 space-y-4">
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                            <h4 class="text-xs font-bold text-slate-800 mb-3">Agregar Nuevo Colaborador</h4>
-                            <div class="flex flex-col gap-3">
+                        <div class="bg-slate-50 p-4 border rounded-xl flex flex-col gap-2">
+                            <input v-model="nuevoColaborador.nombre" type="text" placeholder="Nombre" class="w-full p-2 text-xs border rounded">
+                            <input v-model="nuevoColaborador.dni" type="text" placeholder="DNI (Contraseña inicial)" class="w-full p-2 text-xs border rounded">
+                            <button @click="addColaborador" class="bg-slate-700 text-white py-2 rounded text-xs font-bold">Agregar Colaborador</button>
+                        </div>
+                        <div class="max-h-56 overflow-y-auto space-y-2">
+                            <div v-for="colab in colaboradores" :key="colab.id" class="flex justify-between p-3 border rounded text-xs">
+                                <div><p class="font-bold">{{ colab.nombre }}</p><p class="text-slate-500">DNI: {{ colab.dni }}</p></div>
                                 <div class="flex gap-2">
-                                    <div class="flex-1">
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre (Usuario)</label>
-                                        <input v-model="nuevoColaborador.nombre" type="text" placeholder="Ej. Juan Perez" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
-                                    </div>
-                                    <div class="flex-1">
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">DNI (Pass inicial)</label>
-                                        <input v-model="nuevoColaborador.dni" type="text" placeholder="Sin puntos" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
-                                    </div>
+                                    <button @click="resetColabPassword(colab.id)" class="text-amber-500"><i class="fa-solid fa-key"></i></button>
+                                    <button @click="removeColaborador(colab.id)" class="text-rose-500"><i class="fa-solid fa-trash"></i></button>
                                 </div>
-                                <div class="flex gap-2 items-end">
-                                    <div class="flex-1">
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Correo Electrónico (Opcional)</label>
-                                        <input v-model="nuevoColaborador.correo" type="email" placeholder="correo@ejemplo.com" class="w-full p-2 text-xs border border-slate-200 rounded-lg">
-                                    </div>
-                                    <button @click="addColaborador" class="px-5 py-2 h-[34px] bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5"><i class="fa-solid fa-plus"></i> Agregar</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2 mt-4">
-                            <h4 class="text-xs font-bold text-slate-800 border-b pb-2">Colaboradores Activos ({{ colaboradores.length }})</h4>
-                            <div class="max-h-56 overflow-y-auto custom-scrollbar space-y-2">
-                                <div v-for="colab in colaboradores" :key="colab.id" class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
-                                    <div>
-                                        <p class="text-xs font-bold text-slate-800"><i class="fa-solid fa-user text-slate-400 mr-1"></i> {{ colab.nombre }}</p>
-                                        <p class="text-[10px] text-slate-500 mt-0.5">DNI: {{ colab.dni }} <span v-if="colab.correo">| {{ colab.correo }}</span></p>
-                                    </div>
-                                    <div class="flex items-center gap-1">
-                                        <button @click="editColabEmail(colab.id)" title="Editar Correo" class="text-blue-500 hover:text-blue-700 p-1.5 bg-blue-50 hover:bg-blue-100 rounded transition"><i class="fa-solid fa-envelope text-xs"></i></button>
-                                        <button @click="resetColabPassword(colab.id)" title="Restaurar contraseña (volverá a ser su DNI)" class="text-amber-500 hover:text-amber-700 p-1.5 bg-amber-50 hover:bg-amber-100 rounded transition"><i class="fa-solid fa-key text-xs"></i></button>
-                                        <button @click="removeColaborador(colab.id)" title="Eliminar usuario permanentemente" class="text-rose-500 hover:text-rose-700 p-1.5 bg-rose-50 hover:bg-rose-100 rounded transition"><i class="fa-solid fa-trash text-xs"></i></button>
-                                    </div>
-                                </div>
-                                <p v-if="colaboradores.length === 0" class="text-xs text-slate-400 text-center py-4">No hay colaboradores registrados.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end">
-                        <button @click="showColaboradoresModal = false" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold text-xs">Cerrar Panel</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MODAL EXPORTAR PDF INSTITUCIONAL -->
-            <div v-if="showExportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showExportModal = false">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-slate-200">
-                    <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between">
-                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf text-slate-200"></i> Exportar Reporte Institucional en PDF</h3>
-                        <button @click="showExportModal = false" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <p class="text-xs text-slate-600 font-medium">Seleccione el estado de proceso para generar el informe oficial con membrete jerárquico:</p>
-                        <div class="space-y-3">
-                            <div @click="exportPDF('TODOS')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-xs">1. Informe General Consolidado de Altas</h4>
-                                    <p class="text-[11px] text-slate-500">Listado completo de todos los expedientes procesados.</p>
-                                </div>
-                                <span class="px-2.5 py-1 bg-slate-200 text-slate-800 font-bold text-[10px] rounded-full">{{ records.length }} reg.</span>
-                            </div>
-                            <div @click="exportPDF('FALTANTE')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-xs">2. Expedientes con Documentación Pendiente</h4>
-                                    <p class="text-[11px] text-slate-500">Casos que requieren reclamo o presentación de requisitos.</p>
-                                </div>
-                                <span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold text-[10px] rounded-full">{{ pdfStats.faltantes }} reg.</span>
-                            </div>
-                            <div @click="exportPDF('ENVIADO_SISPER')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-xs">3. Trámites Registrados en Sisper</h4>
-                                    <p class="text-[11px] text-slate-500">Expedientes elevados al sistema provincial.</p>
-                                </div>
-                                <span class="px-2.5 py-1 bg-blue-100 text-blue-800 font-bold text-[10px] rounded-full">{{ pdfStats.sisper }} reg.</span>
-                            </div>
-                            <div @click="exportPDF('MINISTERIO')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-xs">4. Trámites Finalizados y Remitidos al Ministerio</h4>
-                                    <p class="text-[11px] text-slate-500">Expedientes con gestión concluida.</p>
-                                </div>
-                                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-full">{{ pdfStats.digEnv }} reg.</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-50 p-4 border-t border-slate-200 flex items-center justify-between">
-                        <button @click="exportCSV" class="text-xs text-slate-600 hover:text-slate-800 font-bold flex items-center gap-1.5 transition"><i class="fa-solid fa-file-csv text-slate-400"></i> Descargar Excel CSV</button>
-                        <button @click="showExportModal = false" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold text-xs">Cancelar</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MODAL: Nuevo / Editar Trámite -->
-            <div v-if="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showModal = false">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 max-h-[90vh] flex flex-col">
-                    <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between shrink-0">
-                        <h3 class="font-bold text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-folder-plus text-slate-200"></i>
-                            {{ isEditing ? 'Editar Trámite N° ' + form.fd : 'Registrar Nuevo Expediente Alta Pura' }}
-                        </h3>
-                        <button @click="showModal = false" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-
-                    <div class="p-6 space-y-4 text-xs overflow-y-auto custom-scrollbar flex-1 bg-slate-50">
-                        <div class="bg-slate-600 text-white p-4 rounded-xl shadow-md space-y-2 relative overflow-hidden">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2 font-bold text-xs">
-                                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300 text-sm"></i>
-                                    <span>Extractor de Datos de Documentos IA</span>
-                                </div>
-                                <span v-if="isAiProcessing" class="bg-slate-800 text-white px-2 py-0.5 rounded text-[10px] font-extrabold animate-pulse">
-                                    Analizando documento...
-                                </span>
-                            </div>
-                            <p class="text-[11px] text-slate-200">Sube el PDF o imagen con la información personal. La IA extraerá los datos exactos.</p>
-                            <label class="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-semibold text-xs shadow transition">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> Seleccionar Archivo para Autocompletar
-                                <input type="file" accept=".pdf,image/*" @change="handleSingleFileAIUpload" class="hidden">
-                            </label>
-                        </div>
-
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                            <h4 class="font-bold text-slate-800 text-xs border-b border-slate-100 pb-2 mb-3">Datos del Agente</h4>
-                            <div>
-                                <label class="block font-semibold text-slate-700 mb-1">Apellido y Nombre *</label>
-                                <input v-model="form.nombre" required type="text" placeholder="Ej. Pérez Dario" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1">DNI (Identificación) *</label>
-                                    <input v-model="form.dni" required type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]" placeholder="Ej. 27715290">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1">FD / Expediente</label>
-                                    <input v-model="form.fd" type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1">Fecha Ingreso *</label>
-                                    <input v-model="form.fechaIngreso" required type="date" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1">N° Legajo</label>
-                                    <input v-model="form.legajo" type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1">Celular / Teléfono</label>
-                                    <input v-model="form.celular" type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="block font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
-                                    <i class="fa-solid fa-link text-blue-600"></i> URL del Legajo Digitalizado (Drive, Cloud o PDF)
-                                </label>
-                                <input v-model="form.urlDigital" type="url" placeholder="https://drive.google.com/... o enlace al legajo digital" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                            <h4 class="font-bold text-slate-800 text-xs border-b border-slate-100 pb-2 mb-3">Documentación Faltante</h4>
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                <label v-for="docOpt in availableDocOptions" :key="docOpt" class="flex items-center gap-2 cursor-pointer hover:text-slate-800 transition">
-                                    <input type="checkbox" :value="docOpt" v-model="formDocFaltanteArray" class="rounded text-slate-700">
-                                    <span class="truncate">{{ docOpt }}</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                            <h4 class="font-bold text-slate-800 text-xs border-b border-slate-100 pb-2 mb-3">Estado Operativo</h4>
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1 text-center">Digitalizado</label>
-                                    <select v-model="form.digitalizado" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-center font-bold">
-                                        <option value="NO">NO</option><option value="SI">SÍ</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1 text-center">Env. Sisper</label>
-                                    <select v-model="form.enviadoSisper" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-center font-bold">
-                                        <option value="NO">NO</option><option value="SI">SÍ</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block font-semibold text-slate-700 mb-1 text-center">Env. Ministerio</label>
-                                    <select v-model="form.enviadoMinisterio" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-center font-bold">
-                                        <option value="NO">NO</option><option value="SI">SÍ</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
-                            <button type="button" @click="showModal = false" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold">Cancelar</button>
-                            <button type="submit" @click.prevent="saveRecord" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MODAL CARGA EN LOTE -->
-            <div v-if="showSmartUploadModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showSmartUploadModal = false">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-slate-200 flex flex-col">
-                    <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between">
-                        <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-file-arrow-up text-slate-200"></i> Carga Masiva Inteligente con IA</h3>
-                        <button @click="showSmartUploadModal = false" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-                    <div class="p-6 space-y-4 text-xs">
-                        <div class="border-2 border-dashed border-slate-300 hover:border-slate-500 bg-slate-50 rounded-xl p-6 text-center transition flex flex-col items-center justify-center gap-2">
-                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-600"></i>
-                            <p class="font-bold text-slate-800 text-sm">Sube varios PDFs o fotos de legajos</p>
-                            <label class="mt-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-semibold rounded-lg shadow cursor-pointer inline-flex items-center gap-2">
-                                <i class="fa-solid fa-folder-open"></i> Explorar Archivos
-                                <input type="file" multiple accept=".pdf,image/*" @change="handleBatchFileSelect" class="hidden">
-                            </label>
-                        </div>
-
-                        <div v-if="isBatchProcessing" class="p-3 bg-slate-100 border border-slate-300 text-slate-800 rounded-xl text-center font-bold flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-spinner fa-spin"></i> IA leyendo legajos masivamente...
-                        </div>
-
-                        <div v-if="stagedRecords.length > 0" class="space-y-2">
-                            <p class="font-bold text-slate-700">{{ stagedRecords.length }} legajo(s) extraídos y listos:</p>
-                            <div class="max-h-48 overflow-y-auto space-y-1 custom-scrollbar pr-1">
-                                <div v-for="(item, idx) in stagedRecords" :key="idx" class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between">
-                                    <div>
-                                        <span class="font-bold text-slate-900 block">{{ item.nombre }}</span>
-                                        <span class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || 'S/D' }} | FD: {{ item.fd || 'S/D' }}</span>
-                                    </div>
-                                    <button @click="stagedRecords.splice(idx, 1)" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
-                        <button @click="showSmartUploadModal = false" class="px-4 py-2 bg-white border border-slate-300 rounded-lg font-semibold">Cancelar</button>
-                        <button @click="commitStagedRecords" :disabled="stagedRecords.length === 0" class="px-4 py-2 bg-slate-700 hover:bg-slate-800 disabled:opacity-40 text-white rounded-lg font-bold shadow-md">Incorporar a Planilla</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MODAL COMPARTIR Y RESPALDO -->
-            <div v-if="showShareModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showShareModal = false">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 flex flex-col">
-                    <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between">
-                        <h3 class="font-bold text-sm"><i class="fa-solid fa-users text-slate-300"></i> Trabajo Colaborativo y Respaldo</h3>
-                        <button @click="showShareModal = false" class="text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-                    <div class="p-6 space-y-4 text-xs">
-                        <div>
-                            <label class="block font-semibold text-slate-700 mb-1">Enlace de acceso a la planilla:</label>
-                            <div class="flex items-center gap-2">
-                                <input type="text" :value="currentShareUrl" readonly class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px] text-slate-600 select-all">
-                                <button @click="copyShareLink" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-semibold shrink-0 shadow"><i class="fa-solid fa-copy"></i> Copiar</button>
-                            </div>
-                        </div>
-                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                            <span class="font-bold text-slate-800">Copia de Seguridad (.json):</span>
-                            <div class="flex items-center gap-2">
-                                <button @click="exportDatabaseJSON" class="px-3 py-1.5 bg-slate-800 text-white rounded-lg font-semibold"><i class="fa-solid fa-download"></i> Respaldar</button>
-                                <label class="cursor-pointer px-3 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded-lg font-semibold"><i class="fa-solid fa-upload"></i> Restaurar<input type="file" accept=".json" @change="importDatabaseJSON" class="hidden"></label>
                             </div>
                         </div>
                     </div>
@@ -818,27 +278,43 @@
             </div>
 
             <!-- MODAL WHATSAPP -->
-            <div v-if="showWhatsAppModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showWhatsAppModal = false">
-                <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 flex flex-col">
-                    <div class="bg-emerald-700 text-white p-4 px-6 flex items-center justify-between">
-                        <h3 class="font-bold text-sm"><i class="fa-brands fa-whatsapp text-lg"></i> Notificar Agente por WhatsApp</h3>
-                        <button @click="showWhatsAppModal = false" class="text-emerald-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div v-if="showWhatsAppModal" class="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden">
+                    <div class="bg-emerald-700 text-white p-4 flex justify-between"><h3 class="font-bold">Notificar por WhatsApp</h3><button @click="showWhatsAppModal = false"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="p-6"><textarea v-model="customWhatsAppMessage" rows="5" class="w-full p-2 border rounded text-sm"></textarea></div>
+                    <div class="bg-slate-50 p-4 flex justify-end gap-2">
+                        <button @click="showWhatsAppModal = false" class="px-4 py-2 border rounded font-semibold text-sm">Cancelar</button>
+                        <a :href="finalWhatsAppLink" target="_blank" @click="showWhatsAppModal = false" class="px-4 py-2 bg-emerald-600 text-white rounded font-bold text-sm">Abrir en WhatsApp</a>
                     </div>
-                    <div class="p-6 space-y-4 text-xs">
-                        <div>
-                            <label class="block font-semibold text-slate-700 mb-1">Mensaje:</label>
-                            <textarea v-model="customWhatsAppMessage" rows="4" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700"></textarea>
+                </div>
+            </div>
+            
+            <!-- MODAL FORMULARIO EDICION -->
+            <div v-if="showModal" class="fixed inset-0 bg-slate-900/60 flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+                    <div class="bg-slate-700 text-white p-4 flex justify-between"><h3>{{ isEditing ? 'Editar Trámite' : 'Nuevo Trámite' }}</h3><button @click="showModal = false"><i class="fa-solid fa-xmark"></i></button></div>
+                    <div class="p-6 overflow-y-auto space-y-4 text-xs bg-slate-50 flex-1">
+                        <div class="bg-white p-4 rounded border"><label>Nombre</label><input v-model="form.nombre" type="text" class="w-full p-2 border rounded"></div>
+                        <div class="grid grid-cols-2 gap-2 bg-white p-4 rounded border">
+                            <div><label>DNI</label><input v-model="form.dni" type="text" class="w-full p-2 border rounded"></div>
+                            <div><label>FD / Exp.</label><input v-model="form.fd" type="text" class="w-full p-2 border rounded"></div>
+                            <div><label>Celular</label><input v-model="form.celular" type="text" class="w-full p-2 border rounded"></div>
+                            <div><label>Fecha</label><input v-model="form.fechaIngreso" type="date" class="w-full p-2 border rounded"></div>
+                        </div>
+                        <div class="bg-white p-4 rounded border"><label>Doc. Faltante</label>
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <label v-for="docOpt in availableDocOptions" :key="docOpt" class="flex gap-1"><input type="checkbox" :value="docOpt" v-model="formDocFaltanteArray"> {{ docOpt }}</label>
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
-                        <button @click="showWhatsAppModal = false" class="px-4 py-2 bg-white border border-slate-300 rounded-lg font-semibold">Cancelar</button>
-                        <a :href="finalWhatsAppLink" target="_blank" @click="showWhatsAppModal = false" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow-md flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Abrir en WhatsApp</a>
+                    <div class="bg-white p-4 border-t flex justify-end gap-2">
+                        <button @click="showModal = false" class="px-4 py-2 border rounded font-semibold">Cancelar</button>
+                        <button @click="saveRecord" class="px-4 py-2 bg-slate-700 text-white rounded font-bold">Guardar</button>
                     </div>
                 </div>
             </div>
 
-        </div> <!-- CIERRE DEL CONTENIDO PRINCIPAL -->
-
+        </div>
     </div>
 
     <script>
@@ -846,143 +322,29 @@
 
         createApp({
             setup() {
-                const seedRecords = [
-                    { id: '1', nombre: 'Perez Dario', dni: '27715290', fd: '23568/26', legajo: 'L-1024', docFaltante: ['CERTIFICADO DE APTITUD PSICOFÍSICA', 'CONSTANCIA DE CUIL'], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '3794256936', fechaIngreso: '2026-06-10', urlDigital: 'https://drive.google.com/file/d/example1' },
-                    { id: '2', nombre: 'Gómez María Laura', dni: '32415890', fd: '24110/26', legajo: 'L-2105', docFaltante: [], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'SI', enviadoMinisterio: 'SI', celular: '3794123456', fechaIngreso: '2026-06-12', urlDigital: 'https://drive.google.com/file/d/example2' }
-                ];
-
+                const seedRecords = [];
                 const records = ref([...seedRecords]);
                 const isCloudConnected = ref(false);
-                const currentShareUrl = ref(window.location.href);
-
                 const toasts = ref([]);
                 const showToast = (message, type = 'success') => {
-                    const id = Date.now() + Math.random();
-                    toasts.value.push({ id, message, type });
-                    setTimeout(() => removeToast(id), 3500);
+                    const id = Date.now(); toasts.value.push({ id, message, type }); setTimeout(() => removeToast(id), 3500);
                 };
                 const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id);
 
-                // --- SISTEMA DE AUTENTICACIÓN AVANZADO ---
                 const adminData = ref(JSON.parse(localStorage.getItem('altas_puras_admin')) || { username: 'admin', password: '1234' });
-                
                 const isLoggedIn = ref(false);
                 const currentUserRole = ref('ADMIN');
                 const currentUserName = ref('');
                 const isAdmin = computed(() => currentUserRole.value === 'ADMIN');
 
-                const loginName = ref('');
-                const loginDni = ref('');
+                const loginName = ref(''); const loginDni = ref('');
+                const requirePasswordChange = ref(false); const pendingLoginUser = ref(null);
+                const newPassword = ref(''); const confirmPassword = ref('');
                 
-                // Variables para Cambio de Contraseña
-                const requirePasswordChange = ref(false);
-                const pendingLoginUser = ref(null);
-                const newPassword = ref('');
-                const confirmPassword = ref('');
-
                 const showColaboradoresModal = ref(false);
                 const colaboradores = ref([]);
                 const nuevoColaborador = ref({ nombre: '', dni: '', correo: '' });
 
-                // Cargar colaboradores y asegurar que todos tengan campo password y correo
-                const loadColaboradores = () => {
-                    const local = localStorage.getItem('altas_puras_colabs');
-                    if (local) {
-                        let parsed = JSON.parse(local);
-                        // Estructura de seguridad compatible
-                        parsed = parsed.map(c => ({
-                            ...c,
-                            password: c.password || c.dni, // Si no tiene pass, es el DNI
-                            correo: c.correo || ''
-                        }));
-                        colaboradores.value = parsed;
-                    }
-                };
-
-                const loginSuccess = (role, name) => {
-                    currentUserRole.value = role;
-                    currentUserName.value = name;
-                    isLoggedIn.value = true;
-                    loginName.value = '';
-                    loginDni.value = '';
-                    newPassword.value = '';
-                    confirmPassword.value = '';
-                    showToast(`Bienvenido ${name}`, 'success');
-                };
-
-                const doLogin = () => {
-                    const u = loginName.value.trim();
-                    const p = loginDni.value.trim();
-                    
-                    if (u === '') return;
-
-                    // 1. Chequeo Admin
-                    if (u === adminData.value.username && p === adminData.value.password) {
-                        if (p === '1234') { // Contraseña por defecto
-                            pendingLoginUser.value = { role: 'ADMIN' };
-                            requirePasswordChange.value = true;
-                            showToast('Por seguridad, crea una nueva contraseña.', 'warning');
-                            return;
-                        }
-                        loginSuccess('ADMIN', 'Administrador Principal');
-                        return;
-                    }
-
-                    // 2. Chequeo Colaborador
-                    const colab = colaboradores.value.find(c => c.nombre.toLowerCase() === u.toLowerCase() && c.password === p);
-                    if (colab) {
-                        if (colab.password === colab.dni) { // Contraseña por defecto
-                            pendingLoginUser.value = { role: 'COLABORADOR', id: colab.id };
-                            requirePasswordChange.value = true;
-                            showToast('Por seguridad, crea tu nueva contraseña.', 'warning');
-                            return;
-                        }
-                        loginSuccess('COLABORADOR', colab.nombre);
-                        return;
-                    }
-
-                    showToast('Usuario o contraseña incorrectos', 'error');
-                };
-
-                const saveNewPassword = () => {
-                    if (!newPassword.value || newPassword.value.length < 4) {
-                        showToast('La contraseña debe tener al menos 4 caracteres', 'error');
-                        return;
-                    }
-                    if (newPassword.value !== confirmPassword.value) {
-                        showToast('Las contraseñas no coinciden', 'error');
-                        return;
-                    }
-
-                    if (pendingLoginUser.value.role === 'ADMIN') {
-                        adminData.value.password = newPassword.value;
-                        localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value));
-                        requirePasswordChange.value = false;
-                        loginSuccess('ADMIN', 'Administrador Principal');
-                    } else {
-                        const colab = colaboradores.value.find(c => c.id === pendingLoginUser.value.id);
-                        if (colab) {
-                            colab.password = newPassword.value;
-                            saveColaboradores();
-                            requirePasswordChange.value = false;
-                            loginSuccess('COLABORADOR', colab.nombre);
-                        }
-                    }
-                };
-
-                const cancelPasswordChange = () => {
-                    requirePasswordChange.value = false;
-                    pendingLoginUser.value = null;
-                    loginDni.value = ''; // limpiar pass
-                };
-
-                const doLogout = () => {
-                    isLoggedIn.value = false;
-                    loginName.value = '';
-                    loginDni.value = '';
-                };
-
-                // --- FUNCIONES DEL PANEL ADMIN ---
                 const saveColaboradores = () => {
                     localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     if (window.cloudDB && isCloudConnected.value) {
@@ -992,701 +354,114 @@
                 };
 
                 const addColaborador = () => {
-                    if (!nuevoColaborador.value.nombre || !nuevoColaborador.value.dni) {
-                        showToast('Complete nombre y DNI', 'warning');
-                        return;
-                    }
-                    colaboradores.value.push({ 
-                        id: Date.now(),
-                        nombre: nuevoColaborador.value.nombre, 
-                        dni: nuevoColaborador.value.dni,
-                        correo: nuevoColaborador.value.correo || '',
-                        password: nuevoColaborador.value.dni
-                    });
+                    if (!nuevoColaborador.value.nombre || !nuevoColaborador.value.dni) return;
+                    colaboradores.value.push({ id: Date.now(), nombre: nuevoColaborador.value.nombre, dni: nuevoColaborador.value.dni, correo: nuevoColaborador.value.correo || '', password: nuevoColaborador.value.dni });
                     saveColaboradores();
                     nuevoColaborador.value = { nombre: '', dni: '', correo: '' };
-                    showToast('Colaborador agregado', 'success');
+                    showToast('Agregado', 'success');
                 };
 
-                const removeColaborador = (id) => {
-                    if(confirm("¿Estás seguro de eliminar permanentemente a este usuario?")) {
-                        colaboradores.value = colaboradores.value.filter(c => c.id !== id);
-                        saveColaboradores();
-                        showToast('Usuario eliminado', 'info');
+                const removeColaborador = (id) => { if(confirm("¿Eliminar?")) { colaboradores.value = colaboradores.value.filter(c => c.id !== id); saveColaboradores(); } };
+                const resetColabPassword = (id) => { const c = colaboradores.value.find(c => c.id === id); if(c) { c.password = c.dni; saveColaboradores(); } };
+
+                const doLogin = () => {
+                    const u = loginName.value.trim(), p = loginDni.value.trim();
+                    if(u === adminData.value.username && p === adminData.value.password) {
+                        if(p === '1234') { pendingLoginUser.value = { role: 'ADMIN' }; requirePasswordChange.value = true; return; }
+                        isLoggedIn.value = true; currentUserRole.value = 'ADMIN'; currentUserName.value = 'Administrador'; return;
                     }
-                };
-
-                const resetColabPassword = (id) => {
-                    const colab = colaboradores.value.find(c => c.id === id);
+                    const colab = colaboradores.value.find(c => c.nombre.toLowerCase() === u.toLowerCase() && c.password === p);
                     if (colab) {
-                        if(confirm(`¿Deseas restaurar la contraseña de ${colab.nombre}? (Volverá a ser su DNI)`)) {
-                            colab.password = colab.dni;
-                            saveColaboradores();
-                            showToast('Contraseña restaurada. Se le pedirá cambiarla al ingresar.', 'success');
-                        }
+                        if (colab.password === colab.dni) { pendingLoginUser.value = { role: 'COLAB', id: colab.id }; requirePasswordChange.value = true; return; }
+                        isLoggedIn.value = true; currentUserRole.value = 'COLAB'; currentUserName.value = colab.nombre; return;
                     }
+                    showToast('Error de acceso', 'error');
                 };
 
-                const editColabEmail = (id) => {
-                    const colab = colaboradores.value.find(c => c.id === id);
-                    if (colab) {
-                        const newEmail = prompt(`Editar correo de ${colab.nombre}:`, colab.correo);
-                        if (newEmail !== null) {
-                            colab.correo = newEmail.trim();
-                            saveColaboradores();
-                            showToast('Correo guardado correctamente', 'success');
-                        }
-                    }
-                };
-                // ----------------------------------------
-
-                if (window.pdfjsLib) {
-                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                }
-
-                const loadFromLocalStorage = () => {
-                    try {
-                        const localData = localStorage.getItem('altas_puras_records_v71');
-                        if (localData) records.value = JSON.parse(localData);
-                        else {
-                            records.value = JSON.parse(JSON.stringify(seedRecords));
-                            saveToLocalStorage(records.value);
-                        }
-                    } catch (e) {
-                        records.value = JSON.parse(JSON.stringify(seedRecords));
-                    }
+                const saveNewPassword = () => {
+                    if(newPassword.value.length < 4 || newPassword.value !== confirmPassword.value) return;
+                    if(pendingLoginUser.value.role === 'ADMIN') { adminData.value.password = newPassword.value; localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value)); }
+                    else { const c = colaboradores.value.find(c => c.id === pendingLoginUser.value.id); if(c) { c.password = newPassword.value; saveColaboradores(); } }
+                    requirePasswordChange.value = false; isLoggedIn.value = true;
                 };
 
-                const saveToLocalStorage = (data) => {
-                    try { localStorage.setItem('altas_puras_records_v71', JSON.stringify(data)); } catch (e) {}
-                };
+                const doLogout = () => { isLoggedIn.value = false; loginName.value = ''; loginDni.value = ''; };
 
-                const copyShareLink = () => {
-                    const tempInput = document.createElement('input');
-                    tempInput.value = window.location.href;
-                    document.body.appendChild(tempInput);
-                    tempInput.select();
-                    try { document.execCommand('copy'); showToast("Enlace copiado con éxito.", "success"); } catch (err) {}
-                    document.body.removeChild(tempInput);
-                };
-
-                const exportDatabaseJSON = () => {
-                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(records.value, null, 2));
-                    const dlAnchor = document.createElement('a');
-                    dlAnchor.setAttribute("href", dataStr);
-                    dlAnchor.setAttribute("download", `Respaldo_Altas_Puras_${new Date().toISOString().split('T')[0]}.json`);
-                    dlAnchor.click();
-                    showToast("Respaldo guardado.", "success");
-                };
-
-                const importDatabaseJSON = (event) => {
-                    const file = event.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            const imported = JSON.parse(e.target.result);
-                            if (Array.isArray(imported)) {
-                                records.value = imported;
-                                saveToLocalStorage(records.value);
-                                showToast(`¡Se restauraron ${imported.length} expedientes!`, "success");
-                            }
-                        } catch (err) { showToast("Error al leer archivo.", "error"); }
-                    };
-                    reader.readAsText(file);
-                };
+                const loadFromLocalStorage = () => { const d = localStorage.getItem('altas_puras_records_v71'); if(d) records.value = JSON.parse(d); };
+                const saveToLocalStorage = (data) => { localStorage.setItem('altas_puras_records_v71', JSON.stringify(data)); };
 
                 const initCloudStorage = async () => {
                     loadFromLocalStorage();
                     if (!window.cloudDB) return;
-                    const { appId, auth, db, collection, doc, setDoc, onSnapshot, signInWithCustomToken, signInAnonymously } = window.cloudDB;
-
-                    let currentUser = null;
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            const res = await signInWithCustomToken(auth, __initial_auth_token);
-                            currentUser = res.user;
-                        } else {
-                            const res = await signInAnonymously(auth);
-                            currentUser = res.user;
-                        }
-                    } catch (err) {}
-
-                    if (!currentUser) return;
-
-                    const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
-
-                    onSnapshot(colRef, (snapshot) => {
-                        if (snapshot.empty && records.value.length > 0) {
-                            records.value.forEach(rec => {
-                                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(rec.id)), rec).catch(() => {});
-                            });
-                        } else if (!snapshot.empty) {
-                            const cloudItems = [];
-                            snapshot.forEach((d) => { cloudItems.push({ ...d.data(), id: d.id }); });
-                            cloudItems.sort((a, b) => new Date(b.fechaIngreso || 0) - new Date(a.fechaIngreso || 0));
-                            records.value = cloudItems;
+                    const { appId, auth, db, collection, doc, setDoc, onSnapshot, signInAnonymously } = window.cloudDB;
+                    try { await signInAnonymously(auth); } catch(e){}
+                    
+                    onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'expedientes'), (snapshot) => {
+                        if (!snapshot.empty) {
+                            const cloudItems = []; snapshot.forEach(d => cloudItems.push({ ...d.data(), id: d.id }));
+                            records.value = cloudItems.sort((a,b)=> new Date(b.fechaIngreso||0) - new Date(a.fechaIngreso||0));
                             saveToLocalStorage(cloudItems);
                         }
-                        // NUEVO: Sincronizar usuarios en tiempo real
-                    const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
-                    onSnapshot(usersDocRef, (snapshot) => {
-                        if (snapshot.exists()) {
-                            colaboradores.value = snapshot.data().list || [];
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                        } else if (colaboradores.value.length > 0) {
-                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
-                        }
-                    });
-                        isCloudConnected.value = true;
-                    }, (error) => {
-                        isCloudConnected.value = false;
-                    });
-                };
-
-                const isAiProcessing = ref(false);
-                const isBatchProcessing = ref(false);
-
-                const fileToBase64 = (file) => new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = error => reject(error);
-                });
-
-                const pdfToBase64Image = async (file) => {
-                    if (!window.pdfjsLib) throw new Error("PDF.js no cargado");
-                    const arrayBuffer = await file.arrayBuffer();
-                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    const page = await pdf.getPage(1);
-                    const viewport = page.getViewport({ scale: 1.5 });
-                    const canvas = document.createElement('canvas');
-                    canvas.width = viewport.width; canvas.height = viewport.height;
-                    const ctx = canvas.getContext('2d');
-                    await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-                    return canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-                };
-
-                const parseInfoFromFilenameOrFallback = (filename) => {
-                    if (!filename) return { nombre: '', dni: '', celular: '' };
-                    const cleanName = filename.replace(/\.[^/.]+$/, "");
-                    let dni = '', celular = '';
-                    const dniMatch = cleanName.match(/\b(\d{7,8})\b/);
-                    if (dniMatch) dni = dniMatch[1];
-                    let nombre = cleanName.replace(/[_\-]+/g, ' ').replace(/\d+/g, '').trim();
-                    if (nombre) nombre = nombre.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
-                    return { nombre: nombre || 'Agente Nuevo', dni, celular };
-                };
-
-                const parseDocumentWithGeminiAI = async (file) => {
-                    try {
-                        let base64Data = '';
-                        let mimeType = file.type || 'application/pdf';
-
-                        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-                            if (window.pdfjsLib) base64Data = await pdfToBase64Image(file);
-                        } else {
-                            base64Data = await fileToBase64(file);
-                            mimeType = file.type || 'image/jpeg';
-                        }
-
-                        if (!base64Data) return parseInfoFromFilenameOrFallback(file.name);
-
-                        const apiKey = ""; 
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                        const prompt = "Actúa como un extractor de datos de documentos PDF especializado en datos personales. Tu única tarea es analizar el archivo proporcionado y devolver los datos en el siguiente formato JSON estricto. Si un dato no existe, introduce null. No agregues texto de introducción, saludos ni explicaciones. Devuelve SOLO el objeto JSON.";
-
-                        const payload = {
-                            contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: mimeType, data: base64Data } }] }],
-                            generationConfig: { 
-                                responseMimeType: "application/json",
-                                responseSchema: {
-                                    type: "OBJECT",
-                                    properties: {
-                                        "nombre": { type: ["STRING", "NULL"] },
-                                        "identificacion": { type: ["STRING", "NULL"] },
-                                        "fecha_nacimiento": { type: ["STRING", "NULL"] },
-                                        "email": { type: ["STRING", "NULL"] },
-                                        "telefono": { type: ["STRING", "NULL"] }
-                                    },
-                                    required: ["nombre", "identificacion"]
-                                }
-                            }
-                        };
-
-                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                        if (!response.ok) throw new Error("API Limit");
-                        const result = await response.json();
-                        if (result.candidates && result.candidates.length > 0) {
-                            return JSON.parse(result.candidates[0].content.parts[0].text);
-                        }
-                    } catch (err) {
-                        return parseInfoFromFilenameOrFallback(file.name);
-                    }
-                    return parseInfoFromFilenameOrFallback(file.name);
-                };
-
-                const handleSingleFileAIUpload = async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    isAiProcessing.value = true;
-                    showToast("Extrayendo datos personales del documento...", "info");
-
-                    const data = await parseDocumentWithGeminiAI(file);
-                    if (data) {
-                        if (data.nombre) form.value.nombre = data.nombre;
-                        if (data.identificacion) form.value.dni = String(data.identificacion).replace(/\D/g, '');
-                        if (data.telefono) form.value.celular = String(data.telefono).replace(/\D/g, '');
-                        form.value.digitalizado = 'SI';
-                        showToast(`¡Datos extraídos con éxito! DNI: ${form.value.dni || 'S/D'}`, "success");
-                    } else {
-                        const fb = parseInfoFromFilenameOrFallback(file.name);
-                        form.value.nombre = fb.nombre;
-                        form.value.dni = fb.dni;
-                        showToast("Datos recuperados por respaldo.", "warning");
-                    }
-                    isAiProcessing.value = false;
-                    e.target.value = '';
-                };
-
-                const handleBatchFileSelect = async (e) => {
-                    const files = Array.from(e.target.files);
-                    if (files.length === 0) return;
-                    isBatchProcessing.value = true;
-                    showToast(`Procesando ${files.length} archivo(s)...`, "info");
-
-                    for (const file of files) {
-                        const data = (await parseDocumentWithGeminiAI(file)) || parseInfoFromFilenameOrFallback(file.name);
-                        stagedRecords.value.push({
-                            nombre: data?.nombre || file.name.replace(/\.[^/.]+$/, ""),
-                            dni: data?.identificacion ? String(data.identificacion).replace(/\D/g, '') : '',
-                            celular: data?.telefono ? String(data.telefono).replace(/\D/g, '') : '',
-                            fd: '',
-                            legajo: '',
-                            docFaltante: [],
-                            digitalizado: 'SI',
-                            enviadoSisper: 'NO',
-                            enviadoMinisterio: 'NO',
-                            fechaIngreso: new Date().toISOString().split('T')[0],
-                            urlDigital: ''
+                        const usersRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
+                        onSnapshot(usersRef, (snap) => {
+                            if(snap.exists()) { colaboradores.value = snap.data().list || []; localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value)); }
                         });
-                    }
-                    isBatchProcessing.value = false;
-                    showToast(`¡Lote procesado! ${stagedRecords.value.length} listos.`, "success");
-                    e.target.value = '';
-                };
-
-                const commitStagedRecords = () => {
-                    if (stagedRecords.value.length === 0) return;
-                    stagedRecords.value.forEach(st => {
-                        records.value.unshift({ id: 'exp_' + Math.random(), ...st });
+                        isCloudConnected.value = true;
                     });
-                    saveToLocalStorage(records.value);
-                    showToast("¡Legajos incorporados a la planilla!", "success");
-                    stagedRecords.value = [];
-                    showSmartUploadModal.value = false;
                 };
 
-                const availableDocOptions = [
-                    'TÍTULO', 'CERTIFICADO DE APTITUD PSICOFÍSICA', 'CERTIFICADO DE ANTECEDENTES PENALES',
-                    'FOTOCOPIA DNI', 'CONSTANCIA DE CUIL', 'CERTIFICADO DE DOMICILIO',
-                    'ACTA DE COMPROMISO DE SEGURO DE VIDA', 'FOTO 4X4'
-                ];
-
-                const searchQuery = ref('');
-                const filterAño = ref('ALL');
-                const filterMes = ref('ALL');
-                const filterDigitalizado = ref('ALL');
-                const filterSisper = ref('ALL');
-                const filterDocFaltante = ref('ALL');
-                const filterSLA = ref('ALL');
-                const showOnlyCritical = ref(false);
-
-                const sortColumn = ref('fechaIngreso');
-                const sortAsc = ref(false);
-
-                const sortBy = (col) => {
-                    if (sortColumn.value === col) sortAsc.value = !sortAsc.value;
-                    else { sortColumn.value = col; sortAsc.value = true; }
-                };
-
-                const getSortIcon = (col) => {
-                    if (sortColumn.value !== col) return 'fa-solid fa-sort text-slate-300';
-                    return sortAsc.value ? 'fa-solid fa-sort-up text-slate-600' : 'fa-solid fa-sort-down text-slate-600';
-                };
-
-                const selectedRecordIds = ref([]);
-                const monthsList = [
-                    { value: '01', label: 'Enero' }, { value: '02', label: 'Febrero' }, { value: '03', label: 'Marzo' },
-                    { value: '04', label: 'Abril' }, { value: '05', label: 'Mayo' }, { value: '06', label: 'Junio' },
-                    { value: '07', label: 'Julio' }, { value: '08', label: 'Agosto' }, { value: '09', label: 'Septiembre' },
-                    { value: '10', label: 'Octubre' }, { value: '11', label: 'Noviembre' }, { value: '12', label: 'Diciembre' }
-                ];
-
-                const availableYears = computed(() => {
-                    const years = new Set();
-                    records.value.forEach(r => { if (r.fechaIngreso) years.add(r.fechaIngreso.split('-')[0]); });
-                    return Array.from(years).sort((a, b) => b - a);
-                });
-
-                const currentPage = ref(1);
-                const itemsPerPage = ref(8);
-
-                const showModal = ref(false);
-                const showExportModal = ref(false);
-                const showWhatsAppModal = ref(false);
-                const showShareModal = ref(false);
-                const showSmartUploadModal = ref(false);
-                const isEditing = ref(false);
-                const formDocFaltanteArray = ref([]);
-                const stagedRecords = ref([]);
+                const availableDocOptions = ['TÍTULO', 'CERTIFICADO DE APTITUD PSICOFÍSICA', 'CERTIFICADO DE ANTECEDENTES PENALES', 'FOTOCOPIA DNI', 'CONSTANCIA DE CUIL', 'CERTIFICADO DE DOMICILIO'];
                 
-                const form = ref({
-                    id: null, nombre: '', dni: '', fd: '', legajo: '',
-                    digitalizado: 'NO', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO',
-                    celular: '', urlDigital: '', fechaIngreso: new Date().toISOString().split('T')[0]
-                });
+                const showModal = ref(false); const showWhatsAppModal = ref(false); const showExportModal = ref(false); const showShareModal = ref(false); const showSmartUploadModal = ref(false);
+                const isEditing = ref(false); const formDocFaltanteArray = ref([]);
+                const form = ref({ id: '', nombre: '', dni: '', fd: '', celular: '', fechaIngreso: '', digitalizado:'NO', enviadoSisper:'NO', enviadoMinisterio:'NO', docFaltante:[] });
 
-                const openSmartUploadModal = () => { stagedRecords.value = []; showSmartUploadModal.value = true; };
+                const searchQuery = ref(''); const filterSisper = ref('ALL'); const filterDocFaltante = ref('ALL');
+                const currentPage = ref(1); const itemsPerPage = ref(8); const selectedRecordIds = ref([]);
+                const filteredRecords = computed(() => records.value.filter(r => (!searchQuery.value || r.nombre.toLowerCase().includes(searchQuery.value.toLowerCase()))));
+                const paginatedRecords = computed(() => filteredRecords.value.slice((currentPage.value-1)*itemsPerPage.value, currentPage.value*itemsPerPage.value));
+                const totalPages = computed(() => Math.ceil(filteredRecords.value.length / itemsPerPage.value));
+                const isAllSelected = computed(() => paginatedRecords.value.length > 0 && paginatedRecords.value.every(r => selectedRecordIds.value.includes(r.id)));
+                const toggleSelectAll = () => { isAllSelected.value ? selectedRecordIds.value = [] : selectedRecordIds.value = paginatedRecords.value.map(r=>r.id); };
+                
+                const formatDate = (dateStr) => { if(!dateStr) return '---'; const p = dateStr.split('-'); return p.length<3?dateStr:`${p[2]}/${p[1]}/${p[0]}`; };
+                const resetFilters = () => { searchQuery.value=''; currentPage.value=1; };
 
-                const getDaysInProcess = (item) => {
-                    if (!item || !item.fechaIngreso) return 0;
-                    return Math.floor(Math.abs(new Date() - new Date(item.fechaIngreso)) / (1000 * 60 * 60 * 24));
-                };
-
-                const activeWhatsAppRecord = ref(null);
+                // ESTA ES LA FUNCION CORREGIDA DE WHATSAPP
+                const activeWhatsAppRecord = ref(null); const customWhatsAppMessage = ref('');
+                const finalWhatsAppLink = computed(() => `https://wa.me/549${(activeWhatsAppRecord.value?.celular||'').replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`);
+                
                 const openWhatsAppModal = (item) => {
                     activeWhatsAppRecord.value = item;
+                    let docStr = '[Indicar documentación]';
+                    if (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) docStr = item.docFaltante.join(', ');
+                    const fd = item.fd ? item.fd : 'S/D';
+                    let fec = 'S/D';
+                    if (item.fechaIngreso) { const p = item.fechaIngreso.split('-'); fec = p.length === 3 ? p[2]+'/'+p[1]+'/'+p[0] : item.fechaIngreso; }
                     
-                    const documentosFaltantes = (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) 
-                        ? item.docFaltante.join(', ') 
-                        : '[Indicar documentación]';
-
-                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
-                    
+                    customWhatsAppMessage.value = "Estimado/a " + item.nombre + ", nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo para Nivel Secundario/ Superior/Educación Física (FD/Expediente N° " + fd + " ingresado el " + fec + ") que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: " + docStr + ". Muchas gracias.";
                     showWhatsAppModal.value = true;
                 };
-                
-                const finalWhatsAppLink = computed(() => {
-                    if (!activeWhatsAppRecord.value || !activeWhatsAppRecord.value.celular) return '#';
-                    return `https://wa.me/549${activeWhatsAppRecord.value.celular.replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`;
-                });
 
-                const getStatusKey = (item) => {
-                    if (item.enviadoMinisterio === 'SI') return 'COMPLETADO';
-                    const hasDoc = Array.isArray(item.docFaltante) ? item.docFaltante.length > 0 : (item.docFaltante && item.docFaltante !== 'NINGUNA' && item.docFaltante !== 'NO');
-                    if (hasDoc) return 'CRITICO';
-                    return 'EN_PROCESO';
+                const openNewModal = () => { isEditing.value=false; formDocFaltanteArray.value=[]; form.value={id:'exp_'+Date.now(), nombre:'', dni:'', fd:'', celular:'', fechaIngreso:new Date().toISOString().split('T')[0], digitalizado:'NO', enviadoSisper:'NO', enviadoMinisterio:'NO', docFaltante:[]}; showModal.value=true; };
+                const editRecord = (item) => { isEditing.value=true; form.value=JSON.parse(JSON.stringify(item)); formDocFaltanteArray.value=Array.isArray(item.docFaltante)?[...item.docFaltante]:[]; showModal.value=true; };
+                const saveRecord = () => {
+                    const data = { ...form.value, docFaltante: [...formDocFaltanteArray.value] };
+                    if(isEditing.value) { const i = records.value.findIndex(r=>r.id===data.id); if(i!==-1) records.value[i]=data; } else records.value.unshift(data);
+                    saveToLocalStorage(records.value); showModal.value=false; showToast('Guardado');
                 };
+                const confirmDelete = (item) => { if(confirm('¿Eliminar?')) { records.value = records.value.filter(r=>r.id!==item.id); saveToLocalStorage(records.value); } };
 
-                const filteredRecords = computed(() => {
-                    let result = records.value.filter(item => {
-                        const query = searchQuery.value.toLowerCase().trim();
-                        const matchesSearch = !query || item.nombre.toLowerCase().includes(query) || (item.dni && item.dni.includes(query)) || (item.fd && item.fd.toLowerCase().includes(query));
-                        return matchesSearch;
-                    });
-                    return result;
-                });
+                const stats = computed(() => { const total = records.value.length; return { total, pctDigitalizado: total?Math.round((records.value.filter(r=>r.digitalizado==='SI').length/total)*100):0 }; });
+                const getStatusBadgeClass = () => 'bg-amber-100 text-amber-800 border-amber-300'; const getStatusIcon = () => 'fa-solid fa-clock'; const getStatusLabel = () => 'En Proceso';
 
-                const paginatedRecords = computed(() => {
-                    const start = (currentPage.value - 1) * itemsPerPage.value;
-                    return filteredRecords.value.slice(start, start + itemsPerPage.value);
-                });
-
-                const totalPages = computed(() => Math.ceil(filteredRecords.value.length / itemsPerPage.value) || 1);
-                const isAllSelected = computed(() => paginatedRecords.value.length > 0 && paginatedRecords.value.every(r => selectedRecordIds.value.includes(r.id)));
-
-                const toggleSelectAll = () => {
-                    if (isAllSelected.value) {
-                        const currentIds = paginatedRecords.value.map(r => r.id);
-                        selectedRecordIds.value = selectedRecordIds.value.filter(id => !currentIds.includes(id));
-                    } else {
-                        paginatedRecords.value.forEach(r => { if (!selectedRecordIds.value.includes(r.id)) selectedRecordIds.value.push(r.id); });
-                    }
-                };
-
-                const stats = computed(() => {
-                    const total = records.value.length;
-                    if (total === 0) return { total: 0, pctDigitalizado: 0, digitalizadosCount: 0, pctEnviados: 0, enviadosCount: 0, conFaltanteCount: 0, pctConFaltante: 0, demoradosSLACount: 0 };
-                    const digitalizadosCount = records.value.filter(r => r.digitalizado === 'SI').length;
-                    const enviadosCount = records.value.filter(r => r.enviadoMinisterio === 'SI').length;
-                    const conFaltanteCount = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
-                    const demoradosSLACount = records.value.filter(r => r.enviadoMinisterio !== 'SI' && getDaysInProcess(r) > 60).length;
-                    return {
-                        total, digitalizadosCount, pctDigitalizado: Math.round((digitalizadosCount / total) * 100),
-                        enviadosCount, pctEnviados: Math.round((enviadosCount / total) * 100),
-                        conFaltanteCount, pctConFaltante: Math.round((conFaltanteCount / total) * 100), demoradosSLACount
-                    };
-                });
-
-                const processHealthScore = computed(() => {
-                    if (stats.value.total === 0) return 100;
-                    return Math.round((stats.value.pctDigitalizado * 0.4) + (stats.value.pctEnviados * 0.4) + ((100 - stats.value.pctConFaltante) * 0.2));
-                });
-
-                const aiInsightText = computed(() => {
-                    return `Se gestionan <strong>${stats.value.total}</strong> expedientes activos con una salud de proceso del <strong>${processHealthScore.value}%</strong>.`;
-                });
-
-                const getStatusBadgeClass = (item) => {
-                    const key = getStatusKey(item);
-                    if (key === 'COMPLETADO') return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
-                    if (key === 'CRITICO') return 'bg-rose-100 text-rose-800 border border-rose-300';
-                    return 'bg-amber-100 text-amber-800 border border-amber-300';
-                };
-
-                const getStatusIcon = (item) => {
-                    const key = getStatusKey(item);
-                    if (key === 'COMPLETADO') return 'fa-solid fa-circle-check text-emerald-600';
-                    if (key === 'CRITICO') return 'fa-solid fa-triangle-exclamation text-rose-600';
-                    return 'fa-solid fa-clock text-amber-600';
-                };
-
-                const getStatusLabel = (item) => {
-                    const key = getStatusKey(item);
-                    if (key === 'COMPLETADO') return 'Finalizado';
-                    if (key === 'CRITICO') return 'Doc. Pendiente';
-                    return 'En Proceso';
-                };
-
-                const formatDate = (dateStr) => {
-                    if (!dateStr) return '---';
-                    const parts = dateStr.split('-');
-                    return parts.length < 3 ? dateStr : `${parts[2]}/${parts[1]}/${parts[0]}`;
-                };
-
-                const resetFilters = () => { searchQuery.value = ''; selectedRecordIds.value = []; currentPage.value = 1; };
-                const openNewModal = () => {
-                    isEditing.value = false; formDocFaltanteArray.value = [];
-                    form.value = { id: 'exp_' + Date.now(), nombre: '', dni: '', fd: '', legajo: '', digitalizado: 'NO', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '', urlDigital: '', fechaIngreso: new Date().toISOString().split('T')[0] };
-                    showModal.value = true;
-                };
-
-                const editRecord = (item) => {
-                    isEditing.value = true;
-                    form.value = JSON.parse(JSON.stringify(item));
-                    formDocFaltanteArray.value = Array.isArray(item.docFaltante) ? [...item.docFaltante] : [];
-                    showModal.value = true;
-                };
-
-                const saveRecord = async () => {
-                    const recordData = {
-                        ...form.value,
-                        id: String(form.value.id || ('exp_' + Date.now())),
-                        docFaltante: [...formDocFaltanteArray.value]
-                    };
-                    if (isEditing.value) {
-                        const idx = records.value.findIndex(r => String(r.id) === String(recordData.id));
-                        if (idx !== -1) records.value[idx] = recordData;
-                    } else {
-                        records.value.unshift(recordData);
-                    }
-                    saveToLocalStorage(records.value);
-                    showModal.value = false;
-                    showToast("Guardado exitosamente", "success");
-                    nextTick(() => updateCharts());
-                };
-
-                const confirmDelete = (item) => {
-                    records.value = records.value.filter(r => String(r.id) !== String(item.id));
-                    saveToLocalStorage(records.value);
-                    showToast("Expediente eliminado", "info");
-                    nextTick(() => updateCharts());
-                };
-
-                const bulkSetDigitalizado = (val) => {
-                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, digitalizado: val } : r);
-                    saveToLocalStorage(records.value);
-                    showToast("Actualización masiva completada", "success");
-                    selectedRecordIds.value = [];
-                    nextTick(() => updateCharts());
-                };
-
-                const bulkSetMinisterio = (val) => {
-                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: val } : r);
-                    saveToLocalStorage(records.value);
-                    showToast("Actualización masiva completada", "success");
-                    selectedRecordIds.value = [];
-                    nextTick(() => updateCharts());
-                };
-
-                const openExportModal = () => showExportModal.value = true;
-                const pdfStats = computed(() => {
-                    const faltantes = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
-                    const sisper = records.value.filter(r => r.enviadoSisper === 'SI').length;
-                    const digEnv = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI').length;
-                    return { faltantes, sisper, digEnv };
-                });
-
-                const exportPDF = (type) => {
-                    let itemsToExport = records.value;
-                    let reportTitle = "INFORME GENERAL DE ALTAS PURAS";
-
-                    if (type === 'FALTANTE') {
-                        itemsToExport = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0);
-                        reportTitle = "INFORME DE EXPEDIENTES CON DOCUMENTACIÓN PENDIENTE";
-                    } else if (type === 'ENVIADO_SISPER') {
-                        itemsToExport = records.value.filter(r => r.enviadoSisper === 'SI');
-                        reportTitle = "INFORME DE TRÁMITES REGISTRADOS EN SISPER";
-                    } else if (type === 'MINISTERIO') {
-                        itemsToExport = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI');
-                        reportTitle = "INFORME DE TRÁMITES FINALIZADOS Y REMITIDOS AL MINISTERIO";
-                    }
-
-                    if (itemsToExport.length === 0) {
-                        showToast("No hay registros para este informe.", "warning");
-                        return;
-                    }
-
-                    showToast("Generando reporte PDF profesional...", "info");
-
-                    const tableBody = [
-                        [
-                            { text: 'Fecha', style: 'tableHeader' },
-                            { text: 'Días', style: 'tableHeader' },
-                            { text: 'Apellido y Nombre', style: 'tableHeader' },
-                            { text: 'DNI', style: 'tableHeader' },
-                            { text: 'Expediente (FD)', style: 'tableHeader' },
-                            { text: 'Legajo', style: 'tableHeader' },
-                            { text: 'Dig.', style: 'tableHeader' },
-                            { text: 'Sisper', style: 'tableHeader' },
-                            { text: 'Estado', style: 'tableHeader' }
-                        ]
-                    ];
-
-                    itemsToExport.forEach(r => {
-                        tableBody.push([
-                            formatDate(r.fechaIngreso),
-                            getDaysInProcess(r) + 'd',
-                            r.nombre || '---',
-                            r.dni || '---',
-                            r.fd || 'S/D',
-                            r.legajo || 'S/D',
-                            r.digitalizado || 'NO',
-                            r.enviadoSisper || 'NO',
-                            getStatusLabel(r)
-                        ]);
-                    });
-
-                    const now = new Date();
-                    const fechaEmj = `${now.toLocaleDateString('es-AR')} ${now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`.trim();
-
-                    const docDefinition = {
-                        pageOrientation: 'landscape',
-                        pageSize: 'A4',
-                        pageMargins: [20, 30, 20, 30],
-                        content: [
-                            { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
-                            { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
-                            { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 780, y2: 8, lineWidth: 1.5, lineColor: '#334155' }] },
-                            { text: reportTitle, style: 'reportTitle' },
-                            { text: `Fecha de Emisión: ${fechaEmj} | Total de Registros: ${itemsToExport.length}`, style: 'metaText' },
-                            {
-                                style: 'tableExample',
-                                table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody },
-                                layout: {
-                                    fillColor: function (rowIndex) { return (rowIndex === 0) ? '#334155' : (rowIndex % 2 === 0) ? '#f8fafc' : null; },
-                                    hLineWidth: function () { return 0.5; },
-                                    vLineWidth: function () { return 0; },
-                                    hLineColor: function () { return '#cbd5e1'; },
-                                    paddingLeft: function() { return 6; }, paddingRight: function() { return 6; },
-                                    paddingTop: function() { return 5; }, paddingBottom: function() { return 5; }
-                                }
-                            }
-                        ],
-                        styles: {
-                            mainHeader: { fontSize: 16, bold: true, color: '#0f172a' },
-                            subHeader: { fontSize: 10, bold: true, color: '#475569', margin: [0, 2, 0, 15] },
-                            reportTitle: { fontSize: 12, bold: true, color: '#1e293b', margin: [0, 10, 0, 2] },
-                            metaText: { fontSize: 9, color: '#64748b', margin: [0, 0, 0, 12] },
-                            tableExample: { margin: [0, 5, 0, 15] },
-                            tableHeader: { bold: true, fontSize: 9, color: 'white', alignment: 'center' }
-                        },
-                        defaultStyle: { fontSize: 8, color: '#334155' }
-                    };
-
-                    pdfMake.createPdf(docDefinition).download(`Informe_AltasPuras_${type}_${new Date().toISOString().split('T')[0]}.pdf`);
-                    showToast("¡Reporte oficial PDF generado con éxito!", "success");
-                    showExportModal.value = false;
-                };
-
-                const exportCSV = () => {
-                    let csv = 'ID,Nombre,DNI,FD,Legajo,FechaIngreso,DiasGestion,Digitalizado,EnviadoSisper,EnviadoMinisterio,Celular,UrlDigital\n';
-                    records.value.forEach(r => {
-                        csv += `"${r.id}","${r.nombre}","${r.dni}","${r.fd}","${r.legajo}","${r.fechaIngreso || ''}","${getDaysInProcess(r)}","${r.digitalizado}","${r.enviadoSisper || 'NO'}","${r.enviadoMinisterio}","${r.celular}","${r.urlDigital || ''}"\n`;
-                    });
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.setAttribute('download', `Altas_Puras_Export_${new Date().toISOString().split('T')[0]}.csv`);
-                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                    showToast("Archivo Excel CSV descargado", "success");
-                };
-
-                let chartFunnel = null, chartDocs = null;
-                const initCharts = () => {
-                    if (document.getElementById('funnelChart')) {
-                        chartFunnel = new Chart(document.getElementById('funnelChart').getContext('2d'), {
-                            type: 'bar',
-                            data: {
-                                labels: ['Ingresados', 'Digitalizados', 'Enviados Sisper', 'Enviados Min.'],
-                                datasets: [{ data: [records.value.length, records.value.filter(r => r.digitalizado === 'SI').length, records.value.filter(r => r.enviadoSisper === 'SI').length, records.value.filter(r => r.enviadoMinisterio === 'SI').length], backgroundColor: ['#475569', '#64748b', '#334155', '#10b981'], borderRadius: 6 }]
-                            },
-                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                        });
-                    }
-                    if (document.getElementById('docsChart')) {
-                        chartDocs = new Chart(document.getElementById('docsChart').getContext('2d'), {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['Completos', 'Con Faltantes'],
-                                datasets: [{ data: [records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length, records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length], backgroundColor: ['#10b981', '#f43f5e'] }]
-                            },
-                            options: { responsive: true, maintainAspectRatio: false }
-                        });
-                    }
-                };
-
-                const updateCharts = () => {
-                    if (chartFunnel) {
-                        chartFunnel.data.datasets[0].data = [
-                            records.value.length,
-                            records.value.filter(r => r.digitalizado === 'SI').length,
-                            records.value.filter(r => r.enviadoSisper === 'SI').length,
-                            records.value.filter(r => r.enviadoMinisterio === 'SI').length
-                        ];
-                        chartFunnel.update();
-                    }
-                    if (chartDocs) {
-                        chartDocs.data.datasets[0].data = [
-                            records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length,
-                            records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length
-                        ];
-                        chartDocs.update();
-                    }
-                };
-
-                onMounted(() => nextTick(() => { initCharts(); initCloudStorage(); loadColaboradores(); }));
+                onMounted(() => { initCloudStorage(); });
 
                 return {
-                    records, isCloudConnected, currentShareUrl, toasts, removeToast,
-                    availableDocOptions, searchQuery, filterAño, filterMes, filterSisper,
-                    filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
-                    currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
-                    sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
-                    toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
-                    aiInsightText, processHealthScore, getDaysInProcess,
-                    showModal, showExportModal, showWhatsAppModal, showShareModal, showSmartUploadModal,
-                    isEditing, form, formDocFaltanteArray, getStatusBadgeClass, getStatusIcon,
-                    getStatusLabel, formatDate, resetFilters, openNewModal, editRecord, saveRecord,
-                    confirmDelete, exportPDF, exportCSV, copyShareLink, exportDatabaseJSON,
-                    importDatabaseJSON, activeWhatsAppRecord, customWhatsAppMessage, finalWhatsAppLink,
-                    openWhatsAppModal, openExportModal, pdfStats, handleBatchFileSelect, stagedRecords,
-                    commitStagedRecords, isAiProcessing, isBatchProcessing, handleSingleFileAIUpload, openSmartUploadModal,
-                    
-                    // Variables expuestas de Autenticación
-                    isLoggedIn, isAdmin, currentUserName, loginName, loginDni, doLogin, doLogout, 
-                    requirePasswordChange, newPassword, confirmPassword, saveNewPassword, cancelPasswordChange,
-                    showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, 
-                    removeColaborador, resetColabPassword, editColabEmail
+                    records, isCloudConnected, toasts, removeToast, currentUserName, isAdmin, isLoggedIn, loginName, loginDni, doLogin, doLogout, requirePasswordChange, newPassword, confirmPassword, saveNewPassword, showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, removeColaborador, resetColabPassword, cancelPasswordChange,
+                    searchQuery, filterSisper, filterDocFaltante, currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages, isAllSelected, toggleSelectAll, selectedRecordIds,
+                    showModal, showWhatsAppModal, isEditing, form, formDocFaltanteArray, availableDocOptions, activeWhatsAppRecord, customWhatsAppMessage, finalWhatsAppLink, openWhatsAppModal, openNewModal, editRecord, saveRecord, confirmDelete,
+                    formatDate, resetFilters, stats, getStatusBadgeClass, getStatusIcon, getStatusLabel
                 };
             }
         }).mount('#app');
