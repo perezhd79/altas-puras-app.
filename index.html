@@ -1355,15 +1355,20 @@
                 };
 
                 const activeWhatsAppRecord = ref(null);
-                const customWhatsAppMessage = ref('');
                 const openWhatsAppModal = (item) => {
                     activeWhatsAppRecord.value = item;
                     
+                    // Preparamos los documentos faltantes
                     const documentosFaltantes = (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) 
                         ? item.docFaltante.join(', ') 
                         : '[Indicar documentación]';
 
-                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
+                    // Obtenemos el número de FD y la fecha con el formato correcto (DD/MM/YYYY)
+                    const numeroFd = item.fd || 'S/D';
+                    const fechaIngreso = formatDate(item.fechaIngreso);
+
+                    // Generamos el mensaje final
+                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo para Nivel Secundario/ Superior/Educación Física (FD/Expediente N° ${numeroFd} ingresado el ${fechaIngreso}) que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
                     
                     showWhatsAppModal.value = true;
                 };
