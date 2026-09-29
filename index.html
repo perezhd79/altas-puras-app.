@@ -1366,6 +1366,7 @@
                     
                     showWhatsAppModal.value = true;
                 };
+                
                 const finalWhatsAppLink = computed(() => {
                     if (!activeWhatsAppRecord.value || !activeWhatsAppRecord.value.celular) return '#';
                     return `https://wa.me/549${activeWhatsAppRecord.value.celular.replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`;
