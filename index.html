@@ -1358,24 +1358,11 @@
                 const openWhatsAppModal = (item) => {
                     activeWhatsAppRecord.value = item;
                     
-                    // 1. Preparamos los documentos faltantes
-                    let documentosFaltantes = '[Indicar documentación]';
-                    if (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) {
-                        documentosFaltantes = item.docFaltante.join(', ');
-                    }
+                    const documentosFaltantes = (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) 
+                        ? item.docFaltante.join(', ') 
+                        : '[Indicar documentación]';
 
-                    // 2. Extraemos el FD (si está vacío, muestra S/D)
-                    const numeroFd = item.fd ? item.fd : 'S/D';
-
-                    // 3. Extraemos y formateamos la fecha a DD/MM/AAAA de forma segura
-                    let fechaFormateada = 'S/D';
-                    if (item.fechaIngreso) {
-                        const partes = item.fechaIngreso.split('-');
-                        fechaFormateada = partes.length === 3 ? partes[2] + '/' + partes[1] + '/' + partes[0] : item.fechaIngreso;
-                    }
-
-                    // 4. Generamos el mensaje uniendo texto y variables de manera tradicional
-                    customWhatsAppMessage.value = "Estimado/a " + item.nombre + ", nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo para Nivel Secundario/ Superior/Educación Física (FD/Expediente N° " + numeroFd + " ingresado el " + fechaFormateada + ") que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: " + documentosFaltantes + ". Muchas gracias.";
+                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
                     
                     showWhatsAppModal.value = true;
                 };
