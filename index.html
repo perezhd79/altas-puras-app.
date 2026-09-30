@@ -821,6 +821,11 @@
 
         createApp({
             setup() {
+                // --- INICIO DE CONEXIÓN SUPABASE ---
+                const supabaseUrl = 'https://ugwhpxuttrvsblbojsls.supabase.co/rest/v1/';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnd2hweHV0dHJ2c2JsYm9qc2xzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NDQyODUsImV4cCI6MjEwNjMyMDI4NX0.Dsshjh3fPhS4VlLZxvdgk0jI4Fkgsw_HEAzfMv2uSjs';
+                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                // --- FIN DE CONEXIÓN SUPABASE ---
                 const seedRecords = [
                     { id: '1', nombre: 'Perez Dario', dni: '27715290', fd: '23568/26', legajo: 'L-1024', docFaltante: ['CERTIFICADO DE APTITUD PSICOFÍSICA', 'CONSTANCIA DE CUIL'], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '3794256936', fechaIngreso: '2026-06-10', urlDigital: 'https://drive.google.com/file/d/example1' },
                     { id: '2', nombre: 'Gómez María Laura', dni: '32415890', fd: '24110/26', legajo: 'L-2105', docFaltante: [], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'SI', enviadoMinisterio: 'SI', celular: '3794123456', fechaIngreso: '2026-06-12', urlDigital: 'https://drive.google.com/file/d/example2' }
