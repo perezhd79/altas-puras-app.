@@ -1381,10 +1381,70 @@
 
                 const filteredRecords = computed(() => {
                     let result = records.value.filter(item => {
+                        // 1. Búsqueda por texto general
                         const query = searchQuery.value.toLowerCase().trim();
-                        const matchesSearch = !query || item.nombre.toLowerCase().includes(query) || (item.dni && item.dni.includes(query)) || (item.fd && item.fd.toLowerCase().includes(query));
-                        return matchesSearch;
+                        const matchesSearch = !query || 
+                            item.nombre.toLowerCase().includes(query) || 
+                            (item.dni && item.dni.includes(query)) || 
+                            (item.fd && item.fd.toLowerCase().includes(query)) ||
+                            (item.legajo && item.legajo.toLowerCase().includes(query));
+                        
+                        if (!matchesSearch) return false;
+
+                        // 2. Filtro por Año
+                        if (filterAño.value !== 'ALL') {
+                            const year = item.fechaIngreso ? item.fechaIngreso.split('-')[0] : '';
+                            if (year !== filterAño.value) return false;
+                        }
+
+                        // 3. Filtro por Mes
+                        if (filterMes.value !== 'ALL') {
+                            const month = item.fechaIngreso ? item.fechaIngreso.split('-')[1] : '';
+                            if (month !== filterMes.value) return false;
+                        }
+
+                        // 4. Filtro Digitalizado
+                        if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
+
+                        // 5. Filtro Sisper
+                        if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
+
+                        // 6. Filtro Documentación Faltante
+                        if (filterDocFaltante.value !== 'ALL') {
+                            const hasMissingDocs = Array.isArray(item.docFaltante) && item.docFaltante.length > 0;
+                            if (filterDocFaltante.value === 'COMPLETO' && hasMissingDocs) return false;
+                            if (filterDocFaltante.value === 'INCOMPLETO' && !hasMissingDocs) return false;
+                        }
+
+                        // 7. Filtro SLA / Días de demora
+                        if (filterSLA.value !== 'ALL') {
+                            const days = getDaysInProcess(item);
+                            if (filterSLA.value === 'VERDE' && days >= 30) return false;
+                            if (filterSLA.value === 'AMARILLO' && (days < 30 || days > 60)) return false;
+                            if (filterSLA.value === 'ROJO' && days <= 60) return false;
+                        }
+
+                        // 8. Filtro Toggle "Solo Críticos"
+                        if (showOnlyCritical.value && getStatusKey(item) !== 'CRITICO') return false;
+
+                        return true;
                     });
+
+                    // Aplicar el ordenamiento de las columnas (sortColumn y sortAsc)
+                    result.sort((a, b) => {
+                        let valA = a[sortColumn.value] || '';
+                        let valB = b[sortColumn.value] || '';
+
+                        if (sortColumn.value === 'status') {
+                            valA = getStatusKey(a);
+                            valB = getStatusKey(b);
+                        }
+
+                        if (valA < valB) return sortAsc.value ? -1 : 1;
+                        if (valA > valB) return sortAsc.value ? 1 : -1;
+                        return 0;
+                    });
+
                     return result;
                 });
 
