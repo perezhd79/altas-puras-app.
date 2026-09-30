@@ -1520,15 +1520,25 @@
                         id: String(form.value.id || ('exp_' + Date.now())),
                         docFaltante: [...formDocFaltanteArray.value]
                     };
+
+                    // Guardar en la nube (Upsert)
+                    const { error } = await supabase.from('expedientes').upsert([recordData]);
+
+                    if (error) {
+                        showToast("Error al guardar en la nube: " + error.message, "error");
+                        return;
+                    }
+
+                    // Actualizar en pantalla
                     if (isEditing.value) {
                         const idx = records.value.findIndex(r => String(r.id) === String(recordData.id));
                         if (idx !== -1) records.value[idx] = recordData;
                     } else {
                         records.value.unshift(recordData);
                     }
-                    saveToLocalStorage(records.value);
+                    
                     showModal.value = false;
-                    showToast("Guardado exitosamente", "success");
+                    showToast("Guardado exitosamente en la nube", "success");
                     nextTick(() => updateCharts());
                 };
 
