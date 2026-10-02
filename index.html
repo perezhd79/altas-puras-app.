@@ -243,7 +243,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 <div class="relative sm:col-span-2">
                                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD o Legajo..." 
+                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD, Legajo o Celular..." 
                                            class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition">
                                     <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition">
                                         <i class="fa-solid fa-xmark text-xs"></i>
@@ -1445,13 +1445,14 @@
 
                 const filteredRecords = computed(() => {
                     let result = records.value.filter(item => {
-                        // 1. Búsqueda por texto general
+                        // 1. Búsqueda por texto general incluyendo CELULAR
                         const query = searchQuery.value.toLowerCase().trim();
                         const matchesSearch = !query || 
                             item.nombre.toLowerCase().includes(query) || 
                             (item.dni && item.dni.includes(query)) || 
                             (item.fd && item.fd.toLowerCase().includes(query)) ||
-                            (item.legajo && item.legajo.toLowerCase().includes(query));
+                            (item.legajo && item.legajo.toLowerCase().includes(query)) ||
+                            (item.celular && item.celular.includes(query)); // <-- CELULAR AÑADIDO AQUÍ
                         
                         if (!matchesSearch) return false;
 
