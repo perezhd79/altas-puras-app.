@@ -172,7 +172,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.2 Hábiles</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.1 Pro Split</span>
                                     
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -243,7 +243,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 <div class="relative sm:col-span-2">
                                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD, Legajo o Celular..." 
+                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD o Legajo..." 
                                            class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition">
                                     <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition">
                                         <i class="fa-solid fa-xmark text-xs"></i>
@@ -329,7 +329,7 @@
                                             {{ filteredRecords.length }} registros
                                         </span>
                                     </div>
-                                    <p class="text-xs text-slate-500 mt-0.5">SLA en <strong>Días Hábiles</strong>. Control individual con plantillas directas de WhatsApp.</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">Control individual con plantillas directas de WhatsApp y legajo digitalizado.</p>
                                 </div>
 
                                 <div class="flex items-center gap-3">
@@ -370,12 +370,6 @@
                                             <th class="p-3">FD / Legajo</th>
                                             <th class="p-3">Doc. Faltante</th>
                                             <th class="p-3 text-center">Legajo Digital</th>
-                                            
-                                            <!-- NUEVA COLUMNA CONTACTADO -->
-                                            <th class="p-3 text-center" title="Contacto por WhatsApp">
-                                                <i class="fa-brands fa-whatsapp text-emerald-600/70 text-lg"></i>
-                                            </th>
-                                            
                                             <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
                                         </tr>
                                     </thead>
@@ -396,7 +390,7 @@
                                             </td>
 
                                             <td class="p-3 text-slate-600 font-medium whitespace-nowrap">
-                                                <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono" :title="getDaysInProcess(item) + ' días hábiles en proceso'">
+                                                <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono">
                                                     {{ formatDate(item.fechaIngreso) }}
                                                 </span>
                                             </td>
@@ -426,18 +420,13 @@
                                                 </template>
                                             </td>
 
-                                            <!-- Columna Legajo Digital -->
+                                            <!-- Columna Legajo Digital (Enlace directo a URL) -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-blue-200 transition shadow-sm">
                                                     <i class="fa-solid fa-link text-xs"></i>
                                                     <span>Ver Legajo</span>
                                                 </a>
                                                 <span v-else class="text-slate-300 text-[11px] italic font-mono">Sin enlace</span>
-                                            </td>
-                                            
-                                            <!-- CHECKBOX DE CONTACTADO WA -->
-                                            <td class="p-3 text-center">
-                                                <input type="checkbox" v-model="item.contactadoWa" @change="saveDirect" title="¿Notificado?" class="rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer w-4 h-4 shadow-sm border-slate-300">
                                             </td>
 
                                             <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
@@ -455,7 +444,7 @@
                                             </td>
                                         </tr>
                                         <tr v-if="filteredRecords.length === 0">
-                                            <td colspan="9" class="p-8 text-center text-slate-400">
+                                            <td colspan="8" class="p-8 text-center text-slate-400">
                                                 <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
                                                 <p class="font-medium text-slate-500">No se encontraron expedientes con los filtros seleccionados.</p>
                                             </td>
@@ -873,7 +862,7 @@
                     </div>
                     <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
                         <button @click="showWhatsAppModal = false" class="px-4 py-2 bg-white border border-slate-300 rounded-lg font-semibold">Cancelar</button>
-                        <a :href="finalWhatsAppLink" target="_blank" @click="confirmarWhatsApp" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow-md flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Abrir en WhatsApp</a>
+                        <a :href="finalWhatsAppLink" target="_blank" @click="showWhatsAppModal = false" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow-md flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Abrir en WhatsApp</a>
                     </div>
                 </div>
             </div>
@@ -888,8 +877,8 @@
         createApp({
             setup() {
                 const seedRecords = [
-                    { id: '1', nombre: 'Perez Dario', dni: '27715290', fd: '23568/26', legajo: 'L-1024', docFaltante: ['CERTIFICADO DE APTITUD PSICOFÍSICA', 'CONSTANCIA DE CUIL'], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '3794256936', fechaIngreso: '2026-06-10', urlDigital: 'https://drive.google.com/file/d/example1', contactadoWa: false },
-                    { id: '2', nombre: 'Gómez María Laura', dni: '32415890', fd: '24110/26', legajo: 'L-2105', docFaltante: [], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'SI', enviadoMinisterio: 'SI', celular: '3794123456', fechaIngreso: '2026-06-12', urlDigital: 'https://drive.google.com/file/d/example2', contactadoWa: false }
+                    { id: '1', nombre: 'Perez Dario', dni: '27715290', fd: '23568/26', legajo: 'L-1024', docFaltante: ['CERTIFICADO DE APTITUD PSICOFÍSICA', 'CONSTANCIA DE CUIL'], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '3794256936', fechaIngreso: '2026-06-10', urlDigital: 'https://drive.google.com/file/d/example1' },
+                    { id: '2', nombre: 'Gómez María Laura', dni: '32415890', fd: '24110/26', legajo: 'L-2105', docFaltante: [], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'SI', enviadoMinisterio: 'SI', celular: '3794123456', fechaIngreso: '2026-06-12', urlDigital: 'https://drive.google.com/file/d/example2' }
                 ];
 
                 const records = ref([...seedRecords]);
@@ -1209,4 +1198,631 @@
                 };
 
                 const parseInfoFromFilenameOrFallback = (filename) => {
-                    if (!filename) return { nombre: '', dni
+                    if (!filename) return { nombre: '', dni: '', celular: '' };
+                    const cleanName = filename.replace(/\.[^/.]+$/, "");
+                    let dni = '', celular = '';
+                    const dniMatch = cleanName.match(/\b(\d{7,8})\b/);
+                    if (dniMatch) dni = dniMatch[1];
+                    let nombre = cleanName.replace(/[_\-]+/g, ' ').replace(/\d+/g, '').trim();
+                    if (nombre) nombre = nombre.toLowerCase().replace(/(^|\s)\S/g, l => l.toUpperCase());
+                    return { nombre: nombre || 'Agente Nuevo', dni, celular };
+                };
+
+                const parseDocumentWithGeminiAI = async (file) => {
+                    try {
+                        let base64Data = '';
+                        let mimeType = file.type || 'application/pdf';
+
+                        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                            if (window.pdfjsLib) base64Data = await pdfToBase64Image(file);
+                        } else {
+                            base64Data = await fileToBase64(file);
+                            mimeType = file.type || 'image/jpeg';
+                        }
+
+                        if (!base64Data) return parseInfoFromFilenameOrFallback(file.name);
+
+                        const apiKey = ""; 
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                        const prompt = "Actúa como un extractor de datos de documentos PDF especializado en datos personales. Tu única tarea es analizar el archivo proporcionado y devolver los datos en el siguiente formato JSON estricto. Si un dato no existe, introduce null. No agregues texto de introducción, saludos ni explicaciones. Devuelve SOLO el objeto JSON.";
+
+                        const payload = {
+                            contents: [{ role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: mimeType, data: base64Data } }] }],
+                            generationConfig: { 
+                                responseMimeType: "application/json",
+                                responseSchema: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        "nombre": { type: ["STRING", "NULL"] },
+                                        "identificacion": { type: ["STRING", "NULL"] },
+                                        "fecha_nacimiento": { type: ["STRING", "NULL"] },
+                                        "email": { type: ["STRING", "NULL"] },
+                                        "telefono": { type: ["STRING", "NULL"] }
+                                    },
+                                    required: ["nombre", "identificacion"]
+                                }
+                            }
+                        };
+
+                        const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                        if (!response.ok) throw new Error("API Limit");
+                        const result = await response.json();
+                        if (result.candidates && result.candidates.length > 0) {
+                            return JSON.parse(result.candidates[0].content.parts[0].text);
+                        }
+                    } catch (err) {
+                        return parseInfoFromFilenameOrFallback(file.name);
+                    }
+                    return parseInfoFromFilenameOrFallback(file.name);
+                };
+
+                const handleSingleFileAIUpload = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    isAiProcessing.value = true;
+                    showToast("Extrayendo datos personales del documento...", "info");
+
+                    const data = await parseDocumentWithGeminiAI(file);
+                    if (data) {
+                        if (data.nombre) form.value.nombre = data.nombre;
+                        if (data.identificacion) form.value.dni = String(data.identificacion).replace(/\D/g, '');
+                        if (data.telefono) form.value.celular = String(data.telefono).replace(/\D/g, '');
+                        form.value.digitalizado = 'SI';
+                        showToast(`¡Datos extraídos con éxito! DNI: ${form.value.dni || 'S/D'}`, "success");
+                    } else {
+                        const fb = parseInfoFromFilenameOrFallback(file.name);
+                        form.value.nombre = fb.nombre;
+                        form.value.dni = fb.dni;
+                        showToast("Datos recuperados por respaldo.", "warning");
+                    }
+                    isAiProcessing.value = false;
+                    e.target.value = '';
+                };
+
+                const handleBatchFileSelect = async (e) => {
+                    const files = Array.from(e.target.files);
+                    if (files.length === 0) return;
+                    isBatchProcessing.value = true;
+                    showToast(`Procesando ${files.length} archivo(s)...`, "info");
+
+                    for (const file of files) {
+                        const data = (await parseDocumentWithGeminiAI(file)) || parseInfoFromFilenameOrFallback(file.name);
+                        stagedRecords.value.push({
+                            nombre: data?.nombre || file.name.replace(/\.[^/.]+$/, ""),
+                            dni: data?.identificacion ? String(data.identificacion).replace(/\D/g, '') : '',
+                            celular: data?.telefono ? String(data.telefono).replace(/\D/g, '') : '',
+                            fd: '',
+                            legajo: '',
+                            docFaltante: [],
+                            digitalizado: 'SI',
+                            enviadoSisper: 'NO',
+                            enviadoMinisterio: 'NO',
+                            fechaIngreso: new Date().toISOString().split('T')[0],
+                            urlDigital: ''
+                        });
+                    }
+                    isBatchProcessing.value = false;
+                    showToast(`¡Lote procesado! ${stagedRecords.value.length} listos.`, "success");
+                    e.target.value = '';
+                };
+
+                const commitStagedRecords = () => {
+                    if (stagedRecords.value.length === 0) return;
+                    stagedRecords.value.forEach(st => {
+                        records.value.unshift({ id: 'exp_' + Math.random(), ...st });
+                    });
+                    saveToLocalStorage(records.value);
+                    showToast("¡Legajos incorporados a la planilla!", "success");
+                    stagedRecords.value = [];
+                    showSmartUploadModal.value = false;
+                };
+
+                const availableDocOptions = [
+                    'TÍTULO', 'CERTIFICADO DE APTITUD PSICOFÍSICA', 'CERTIFICADO DE ANTECEDENTES PENALES',
+                    'FOTOCOPIA DNI', 'CONSTANCIA DE CUIL', 'CERTIFICADO DE DOMICILIO',
+                    'ACTA DE COMPROMISO DE SEGURO DE VIDA', 'FOTO 4X4'
+                ];
+
+                const searchQuery = ref('');
+                const filterAño = ref('ALL');
+                const filterMes = ref('ALL');
+                const filterDigitalizado = ref('ALL');
+                const filterSisper = ref('ALL');
+                const filterDocFaltante = ref('ALL');
+                const filterSLA = ref('ALL');
+                const showOnlyCritical = ref(false);
+
+                const sortColumn = ref('fechaIngreso');
+                const sortAsc = ref(false);
+
+                const sortBy = (col) => {
+                    if (sortColumn.value === col) sortAsc.value = !sortAsc.value;
+                    else { sortColumn.value = col; sortAsc.value = true; }
+                };
+
+                const getSortIcon = (col) => {
+                    if (sortColumn.value !== col) return 'fa-solid fa-sort text-slate-300';
+                    return sortAsc.value ? 'fa-solid fa-sort-up text-slate-600' : 'fa-solid fa-sort-down text-slate-600';
+                };
+
+                const selectedRecordIds = ref([]);
+                const monthsList = [
+                    { value: '01', label: 'Enero' }, { value: '02', label: 'Febrero' }, { value: '03', label: 'Marzo' },
+                    { value: '04', label: 'Abril' }, { value: '05', label: 'Mayo' }, { value: '06', label: 'Junio' },
+                    { value: '07', label: 'Julio' }, { value: '08', label: 'Agosto' }, { value: '09', label: 'Septiembre' },
+                    { value: '10', label: 'Octubre' }, { value: '11', label: 'Noviembre' }, { value: '12', label: 'Diciembre' }
+                ];
+
+                const availableYears = computed(() => {
+                    const years = new Set();
+                    records.value.forEach(r => { if (r.fechaIngreso) years.add(r.fechaIngreso.split('-')[0]); });
+                    return Array.from(years).sort((a, b) => b - a);
+                });
+
+                const currentPage = ref(1);
+                const itemsPerPage = ref(8);
+
+                const showModal = ref(false);
+                const showExportModal = ref(false);
+                const showWhatsAppModal = ref(false);
+                const showShareModal = ref(false);
+                const showSmartUploadModal = ref(false);
+                
+                const isEditing = ref(false);
+                const formDocFaltanteArray = ref([]);
+                const stagedRecords = ref([]);
+                
+                // --- NUEVA LÓGICA DE HISTORIAL DE CONTACTO ---
+                const nuevaNotaFecha = ref(new Date().toISOString().split('T')[0]);
+                const nuevaNotaMensaje = ref('');
+
+                const agregarNota = () => {
+                    if (!nuevaNotaMensaje.value.trim()) {
+                        showToast("Escribe un mensaje para guardar en el historial", "warning");
+                        return;
+                    }
+                    if (!form.value.historialContacto) {
+                        form.value.historialContacto = [];
+                    }
+                    form.value.historialContacto.unshift({
+                        fecha: nuevaNotaFecha.value,
+                        mensaje: nuevaNotaMensaje.value.trim()
+                    });
+                    nuevaNotaMensaje.value = '';
+                    nuevaNotaFecha.value = new Date().toISOString().split('T')[0];
+                };
+
+                const eliminarNota = (idx) => {
+                    if (confirm("¿Eliminar este registro de contacto?")) {
+                        form.value.historialContacto.splice(idx, 1);
+                    }
+                };
+                // ---------------------------------------------
+                
+                const form = ref({
+                    id: null, nombre: '', dni: '', fd: '', legajo: '',
+                    digitalizado: 'NO', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO',
+                    celular: '', urlDigital: '', fechaIngreso: new Date().toISOString().split('T')[0],
+                    historialContacto: []
+                });
+
+                const openSmartUploadModal = () => { stagedRecords.value = []; showSmartUploadModal.value = true; };
+
+                const getDaysInProcess = (item) => {
+                    if (!item || !item.fechaIngreso) return 0;
+                    return Math.floor(Math.abs(new Date() - new Date(item.fechaIngreso)) / (1000 * 60 * 60 * 24));
+                };
+
+                const activeWhatsAppRecord = ref(null);
+                const customWhatsAppMessage = ref('');
+                const openWhatsAppModal = (item) => {
+                    activeWhatsAppRecord.value = item;
+                    
+                    const documentosFaltantes = (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) 
+                        ? item.docFaltante.join(', ') 
+                        : '[Indicar documentación]';
+
+                    // Formatear Fecha y manejar FD vacío
+                    const fdText = item.fd ? item.fd : 'S/D';
+                    const fechaText = formatDate(item.fechaIngreso);
+
+                    // Mensaje actualizado con los nuevos campos incrustados
+                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo (FD: ${fdText} / Fecha de ingreso: ${fechaText}) para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
+                    
+                    showWhatsAppModal.value = true;
+                };
+                const finalWhatsAppLink = computed(() => {
+                    if (!activeWhatsAppRecord.value || !activeWhatsAppRecord.value.celular) return '#';
+                    return `https://wa.me/549${activeWhatsAppRecord.value.celular.replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`;
+                });
+
+                const getStatusKey = (item) => {
+                    if (item.enviadoMinisterio === 'SI') return 'COMPLETADO';
+                    const hasDoc = Array.isArray(item.docFaltante) ? item.docFaltante.length > 0 : (item.docFaltante && item.docFaltante !== 'NINGUNA' && item.docFaltante !== 'NO');
+                    if (hasDoc) return 'CRITICO';
+                    return 'EN_PROCESO';
+                };
+
+                const filteredRecords = computed(() => {
+                    let result = records.value.filter(item => {
+                        // 1. Búsqueda por texto general
+                        const query = searchQuery.value.toLowerCase().trim();
+                        const matchesSearch = !query || 
+                            item.nombre.toLowerCase().includes(query) || 
+                            (item.dni && item.dni.includes(query)) || 
+                            (item.fd && item.fd.toLowerCase().includes(query)) ||
+                            (item.legajo && item.legajo.toLowerCase().includes(query));
+                        
+                        if (!matchesSearch) return false;
+
+                        // 2. Filtro por Año
+                        if (filterAño.value !== 'ALL') {
+                            const year = item.fechaIngreso ? item.fechaIngreso.split('-')[0] : '';
+                            if (year !== filterAño.value) return false;
+                        }
+
+                        // 3. Filtro por Mes
+                        if (filterMes.value !== 'ALL') {
+                            const month = item.fechaIngreso ? item.fechaIngreso.split('-')[1] : '';
+                            if (month !== filterMes.value) return false;
+                        }
+
+                        // 4. Filtro Digitalizado
+                        if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
+
+                        // 5. Filtro Sisper
+                        if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
+
+                        // 6. Filtro Documentación Faltante
+                        if (filterDocFaltante.value !== 'ALL') {
+                            const hasMissingDocs = Array.isArray(item.docFaltante) && item.docFaltante.length > 0;
+                            if (filterDocFaltante.value === 'COMPLETO' && hasMissingDocs) return false;
+                            if (filterDocFaltante.value === 'INCOMPLETO' && !hasMissingDocs) return false;
+                        }
+
+                        // 7. Filtro SLA / Días de demora
+                        if (filterSLA.value !== 'ALL') {
+                            const days = getDaysInProcess(item);
+                            if (filterSLA.value === 'VERDE' && days >= 30) return false;
+                            if (filterSLA.value === 'AMARILLO' && (days < 30 || days > 60)) return false;
+                            if (filterSLA.value === 'ROJO' && days <= 60) return false;
+                        }
+
+                        // 8. Filtro Toggle "Solo Críticos"
+                        if (showOnlyCritical.value && getStatusKey(item) !== 'CRITICO') return false;
+
+                        return true;
+                    });
+
+                    // Aplicar el ordenamiento de las columnas (sortColumn y sortAsc)
+                    result.sort((a, b) => {
+                        let valA = a[sortColumn.value] || '';
+                        let valB = b[sortColumn.value] || '';
+
+                        if (sortColumn.value === 'status') {
+                            valA = getStatusKey(a);
+                            valB = getStatusKey(b);
+                        }
+
+                        if (valA < valB) return sortAsc.value ? -1 : 1;
+                        if (valA > valB) return sortAsc.value ? 1 : -1;
+                        return 0;
+                    });
+
+                    return result;
+                });
+
+                const paginatedRecords = computed(() => {
+                    const start = (currentPage.value - 1) * itemsPerPage.value;
+                    return filteredRecords.value.slice(start, start + itemsPerPage.value);
+                });
+
+                const totalPages = computed(() => Math.ceil(filteredRecords.value.length / itemsPerPage.value) || 1);
+                const isAllSelected = computed(() => paginatedRecords.value.length > 0 && paginatedRecords.value.every(r => selectedRecordIds.value.includes(r.id)));
+
+                const toggleSelectAll = () => {
+                    if (isAllSelected.value) {
+                        const currentIds = paginatedRecords.value.map(r => r.id);
+                        selectedRecordIds.value = selectedRecordIds.value.filter(id => !currentIds.includes(id));
+                    } else {
+                        paginatedRecords.value.forEach(r => { if (!selectedRecordIds.value.includes(r.id)) selectedRecordIds.value.push(r.id); });
+                    }
+                };
+
+                const stats = computed(() => {
+                    const total = records.value.length;
+                    if (total === 0) return { total: 0, pctDigitalizado: 0, digitalizadosCount: 0, pctEnviados: 0, enviadosCount: 0, conFaltanteCount: 0, pctConFaltante: 0, demoradosSLACount: 0 };
+                    const digitalizadosCount = records.value.filter(r => r.digitalizado === 'SI').length;
+                    const enviadosCount = records.value.filter(r => r.enviadoMinisterio === 'SI').length;
+                    const conFaltanteCount = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
+                    const demoradosSLACount = records.value.filter(r => r.enviadoMinisterio !== 'SI' && getDaysInProcess(r) > 60).length;
+                    return {
+                        total, digitalizadosCount, pctDigitalizado: Math.round((digitalizadosCount / total) * 100),
+                        enviadosCount, pctEnviados: Math.round((enviadosCount / total) * 100),
+                        conFaltanteCount, pctConFaltante: Math.round((conFaltanteCount / total) * 100), demoradosSLACount
+                    };
+                });
+
+                const processHealthScore = computed(() => {
+                    if (stats.value.total === 0) return 100;
+                    return Math.round((stats.value.pctDigitalizado * 0.4) + (stats.value.pctEnviados * 0.4) + ((100 - stats.value.pctConFaltante) * 0.2));
+                });
+
+                const aiInsightText = computed(() => {
+                    return `Se gestionan <strong>${stats.value.total}</strong> expedientes activos con una salud de proceso del <strong>${processHealthScore.value}%</strong>.`;
+                });
+
+                const getStatusBadgeClass = (item) => {
+                    const key = getStatusKey(item);
+                    if (key === 'COMPLETADO') return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
+                    if (key === 'CRITICO') return 'bg-rose-100 text-rose-800 border border-rose-300';
+                    return 'bg-amber-100 text-amber-800 border border-amber-300';
+                };
+
+                const getStatusIcon = (item) => {
+                    const key = getStatusKey(item);
+                    if (key === 'COMPLETADO') return 'fa-solid fa-circle-check text-emerald-600';
+                    if (key === 'CRITICO') return 'fa-solid fa-triangle-exclamation text-rose-600';
+                    return 'fa-solid fa-clock text-amber-600';
+                };
+
+                const getStatusLabel = (item) => {
+                    const key = getStatusKey(item);
+                    if (key === 'COMPLETADO') return 'Finalizado';
+                    if (key === 'CRITICO') return 'Doc. Pendiente';
+                    return 'En Proceso';
+                };
+
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return '---';
+                    const parts = dateStr.split('-');
+                    return parts.length < 3 ? dateStr : `${parts[2]}/${parts[1]}/${parts[0]}`;
+                };
+
+                const resetFilters = () => { searchQuery.value = ''; selectedRecordIds.value = []; currentPage.value = 1; };
+                const openNewModal = () => {
+                    isEditing.value = false; formDocFaltanteArray.value = [];
+                    form.value = { 
+                        id: 'exp_' + Date.now(), nombre: '', dni: '', fd: '', legajo: '', 
+                        digitalizado: 'NO', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', 
+                        celular: '', urlDigital: '', fechaIngreso: new Date().toISOString().split('T')[0],
+                        historialContacto: []
+                    };
+                    showModal.value = true;
+                };
+
+                const editRecord = (item) => {
+                    isEditing.value = true;
+                    form.value = JSON.parse(JSON.stringify(item));
+                    if (!form.value.historialContacto) form.value.historialContacto = [];
+                    formDocFaltanteArray.value = Array.isArray(item.docFaltante) ? [...item.docFaltante] : [];
+                    showModal.value = true;
+                };
+
+                const saveRecord = async () => {
+                    const recordData = {
+                        ...form.value,
+                        id: String(form.value.id || ('exp_' + Date.now())),
+                        docFaltante: [...formDocFaltanteArray.value]
+                    };
+                    if (isEditing.value) {
+                        const idx = records.value.findIndex(r => String(r.id) === String(recordData.id));
+                        if (idx !== -1) records.value[idx] = recordData;
+                    } else {
+                        records.value.unshift(recordData);
+                    }
+                    saveToLocalStorage(records.value);
+                    showModal.value = false;
+                    showToast("Guardado exitosamente", "success");
+                    nextTick(() => updateCharts());
+                };
+
+                const confirmDelete = (item) => {
+                    records.value = records.value.filter(r => String(r.id) !== String(item.id));
+                    saveToLocalStorage(records.value);
+                    showToast("Expediente eliminado", "info");
+                    nextTick(() => updateCharts());
+                };
+
+                const bulkSetDigitalizado = (val) => {
+                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, digitalizado: val } : r);
+                    saveToLocalStorage(records.value);
+                    showToast("Actualización masiva completada", "success");
+                    selectedRecordIds.value = [];
+                    nextTick(() => updateCharts());
+                };
+
+                const bulkSetMinisterio = (val) => {
+                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: val } : r);
+                    saveToLocalStorage(records.value);
+                    showToast("Actualización masiva completada", "success");
+                    selectedRecordIds.value = [];
+                    nextTick(() => updateCharts());
+                };
+
+                const openExportModal = () => showExportModal.value = true;
+                const pdfStats = computed(() => {
+                    const faltantes = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
+                    const sisper = records.value.filter(r => r.enviadoSisper === 'SI').length;
+                    const digEnv = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI').length;
+                    return { faltantes, sisper, digEnv };
+                });
+
+                const exportPDF = (type) => {
+                    let itemsToExport = records.value;
+                    let reportTitle = "INFORME GENERAL DE ALTAS PURAS";
+
+                    if (type === 'FALTANTE') {
+                        itemsToExport = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0);
+                        reportTitle = "INFORME DE EXPEDIENTES CON DOCUMENTACIÓN PENDIENTE";
+                    } else if (type === 'ENVIADO_SISPER') {
+                        itemsToExport = records.value.filter(r => r.enviadoSisper === 'SI');
+                        reportTitle = "INFORME DE TRÁMITES REGISTRADOS EN SISPER";
+                    } else if (type === 'MINISTERIO') {
+                        itemsToExport = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI');
+                        reportTitle = "INFORME DE TRÁMITES FINALIZADOS Y REMITIDOS AL MINISTERIO";
+                    }
+
+                    if (itemsToExport.length === 0) {
+                        showToast("No hay registros para este informe.", "warning");
+                        return;
+                    }
+
+                    showToast("Generando reporte PDF profesional...", "info");
+
+                    const tableBody = [
+                        [
+                            { text: 'Fecha', style: 'tableHeader' },
+                            { text: 'Días', style: 'tableHeader' },
+                            { text: 'Apellido y Nombre', style: 'tableHeader' },
+                            { text: 'DNI', style: 'tableHeader' },
+                            { text: 'Expediente (FD)', style: 'tableHeader' },
+                            { text: 'Legajo', style: 'tableHeader' },
+                            { text: 'Dig.', style: 'tableHeader' },
+                            { text: 'Sisper', style: 'tableHeader' },
+                            { text: 'Estado', style: 'tableHeader' }
+                        ]
+                    ];
+
+                    itemsToExport.forEach(r => {
+                        tableBody.push([
+                            formatDate(r.fechaIngreso),
+                            getDaysInProcess(r) + 'd',
+                            r.nombre || '---',
+                            r.dni || '---',
+                            r.fd || 'S/D',
+                            r.legajo || 'S/D',
+                            r.digitalizado || 'NO',
+                            r.enviadoSisper || 'NO',
+                            getStatusLabel(r)
+                        ]);
+                    });
+
+                    const now = new Date();
+                    const fechaEmj = `${now.toLocaleDateString('es-AR')} ${now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`.trim();
+
+                    const docDefinition = {
+                        pageOrientation: 'landscape',
+                        pageSize: 'A4',
+                        pageMargins: [20, 30, 20, 30],
+                        content: [
+                            { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
+                            { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
+                            { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 780, y2: 8, lineWidth: 1.5, lineColor: '#334155' }] },
+                            { text: reportTitle, style: 'reportTitle' },
+                            { text: `Fecha de Emisión: ${fechaEmj} | Total de Registros: ${itemsToExport.length}`, style: 'metaText' },
+                            {
+                                style: 'tableExample',
+                                table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody },
+                                layout: {
+                                    fillColor: function (rowIndex) { return (rowIndex === 0) ? '#334155' : (rowIndex % 2 === 0) ? '#f8fafc' : null; },
+                                    hLineWidth: function () { return 0.5; },
+                                    vLineWidth: function () { return 0; },
+                                    hLineColor: function () { return '#cbd5e1'; },
+                                    paddingLeft: function() { return 6; }, paddingRight: function() { return 6; },
+                                    paddingTop: function() { return 5; }, paddingBottom: function() { return 5; }
+                                }
+                            }
+                        ],
+                        styles: {
+                            mainHeader: { fontSize: 16, bold: true, color: '#0f172a' },
+                            subHeader: { fontSize: 10, bold: true, color: '#475569', margin: [0, 2, 0, 15] },
+                            reportTitle: { fontSize: 12, bold: true, color: '#1e293b', margin: [0, 10, 0, 2] },
+                            metaText: { fontSize: 9, color: '#64748b', margin: [0, 0, 0, 12] },
+                            tableExample: { margin: [0, 5, 0, 15] },
+                            tableHeader: { bold: true, fontSize: 9, color: 'white', alignment: 'center' }
+                        },
+                        defaultStyle: { fontSize: 8, color: '#334155' }
+                    };
+
+                    pdfMake.createPdf(docDefinition).download(`Informe_AltasPuras_${type}_${new Date().toISOString().split('T')[0]}.pdf`);
+                    showToast("¡Reporte oficial PDF generado con éxito!", "success");
+                    showExportModal.value = false;
+                };
+
+                const exportCSV = () => {
+                    let csv = 'ID,Nombre,DNI,FD,Legajo,FechaIngreso,DiasGestion,Digitalizado,EnviadoSisper,EnviadoMinisterio,Celular,UrlDigital\n';
+                    records.value.forEach(r => {
+                        csv += `"${r.id}","${r.nombre}","${r.dni}","${r.fd}","${r.legajo}","${r.fechaIngreso || ''}","${getDaysInProcess(r)}","${r.digitalizado}","${r.enviadoSisper || 'NO'}","${r.enviadoMinisterio}","${r.celular}","${r.urlDigital || ''}"\n`;
+                    });
+                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.setAttribute('download', `Altas_Puras_Export_${new Date().toISOString().split('T')[0]}.csv`);
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                    showToast("Archivo Excel CSV descargado", "success");
+                };
+
+                let chartFunnel = null, chartDocs = null;
+                const initCharts = () => {
+                    if (document.getElementById('funnelChart')) {
+                        chartFunnel = new Chart(document.getElementById('funnelChart').getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: ['Ingresados', 'Digitalizados', 'Enviados Sisper', 'Enviados Min.'],
+                                datasets: [{ data: [records.value.length, records.value.filter(r => r.digitalizado === 'SI').length, records.value.filter(r => r.enviadoSisper === 'SI').length, records.value.filter(r => r.enviadoMinisterio === 'SI').length], backgroundColor: ['#475569', '#64748b', '#334155', '#10b981'], borderRadius: 6 }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                        });
+                    }
+                    if (document.getElementById('docsChart')) {
+                        chartDocs = new Chart(document.getElementById('docsChart').getContext('2d'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Completos', 'Con Faltantes'],
+                                datasets: [{ data: [records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length, records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length], backgroundColor: ['#10b981', '#f43f5e'] }]
+                            },
+                            options: { responsive: true, maintainAspectRatio: false }
+                        });
+                    }
+                };
+
+                const updateCharts = () => {
+                    if (chartFunnel) {
+                        chartFunnel.data.datasets[0].data = [
+                            records.value.length,
+                            records.value.filter(r => r.digitalizado === 'SI').length,
+                            records.value.filter(r => r.enviadoSisper === 'SI').length,
+                            records.value.filter(r => r.enviadoMinisterio === 'SI').length
+                        ];
+                        chartFunnel.update();
+                    }
+                    if (chartDocs) {
+                        chartDocs.data.datasets[0].data = [
+                            records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length,
+                            records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length
+                        ];
+                        chartDocs.update();
+                    }
+                };
+
+                onMounted(() => nextTick(() => { initCharts(); initCloudStorage(); loadColaboradores(); }));
+
+                return {
+                    records, isCloudConnected, currentShareUrl, toasts, removeToast,
+                    availableDocOptions, searchQuery, filterAño, filterMes, filterSisper,
+                    filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
+                    currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
+                    sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
+                    toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
+                    aiInsightText, processHealthScore, getDaysInProcess,
+                    showModal, showExportModal, showWhatsAppModal, showShareModal, showSmartUploadModal,
+                    isEditing, form, formDocFaltanteArray, getStatusBadgeClass, getStatusIcon,
+                    getStatusLabel, formatDate, resetFilters, openNewModal, editRecord, saveRecord,
+                    confirmDelete, exportPDF, exportCSV, copyShareLink, exportDatabaseJSON,
+                    importDatabaseJSON, activeWhatsAppRecord, customWhatsAppMessage, finalWhatsAppLink,
+                    openWhatsAppModal, openExportModal, pdfStats, handleBatchFileSelect, stagedRecords,
+                    commitStagedRecords, isAiProcessing, isBatchProcessing, handleSingleFileAIUpload, openSmartUploadModal,
+                    
+                    // Lógica Historial de Contacto
+                    nuevaNotaFecha, nuevaNotaMensaje, agregarNota, eliminarNota,
+                    
+                    // Variables expuestas de Autenticación
+                    isLoggedIn, isAdmin, currentUserName, loginName, loginDni, doLogin, doLogout, 
+                    requirePasswordChange, newPassword, confirmPassword, saveNewPassword, cancelPasswordChange,
+                    showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, 
+                    removeColaborador, resetColabPassword, editColabEmail
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
