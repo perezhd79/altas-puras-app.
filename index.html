@@ -184,11 +184,14 @@
                                     </span>
                                 </div>
                                 <p class="text-xs text-slate-300 flex items-center gap-2 mt-0.5">
-                                    <span><i class="fa-solid fa-building-columns text-slate-400 mr-1"></i>Dirección de Gestión Escolar</span>
+                                    <span><i class="fa-solid fa-building-columns text-slate-400 mr-1"></i>Gestión Escolar</span>
                                     <span class="text-slate-500">•</span>
-                                    <span><i class="fa-solid fa-user-tie text-slate-400 mr-1"></i>Director: <strong>Aguirre Juan Manuel</strong></span>
-                                    <span class="text-slate-500">•</span>
-                                    <span class="text-emerald-300 font-semibold"><i class="fa-solid fa-user-check mr-1"></i>{{ currentUserName }}</span>
+                                    <span class="text-emerald-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-user-check"></i> {{ currentUserName }}</span>
+                                    
+                                    <!-- NUEVO: ETIQUETA VISUAL DE SOLO LECTURA -->
+                                    <span v-if="!isAdmin" class="bg-blue-900/60 text-blue-200 text-[10px] px-2 py-0.5 rounded border border-blue-700 font-bold ml-2 flex items-center gap-1">
+                                        <i class="fa-solid fa-eye"></i> MODO LECTURA
+                                    </span>
                                 </p>
                             </div>
                         </div>
@@ -299,7 +302,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. BARRA DE ACCIONES EN LOTE -->
+                        <!-- 2. BARRA DE ACCIONES EN LOTE (Oculta para colaboradores) -->
                         <div v-if="selectedRecordIds.length > 0 && isAdmin" 
                              class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex flex-wrap items-center justify-between gap-3">
                             <div class="flex items-center gap-2 text-xs">
@@ -355,6 +358,7 @@
                                 <table class="w-full text-left border-collapse text-xs">
                                    <thead>
                                         <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200 select-none">
+                                            <!-- Checkbox oculto para colaboradores -->
                                             <th class="p-3 text-center w-8" v-if="isAdmin">
                                                 <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
                                             </th>
@@ -370,6 +374,7 @@
                                             <th class="p-3">FD / Legajo</th>
                                             <th class="p-3">Doc. Faltante</th>
                                             <th class="p-3 text-center">Legajo Digital</th>
+                                            <!-- Acciones ocultas para colaboradores -->
                                             <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
                                         </tr>
                                     </thead>
@@ -402,7 +407,6 @@
                                                 <div class="font-bold text-slate-900">{{ item.nombre }}</div>
                                                 <div class="flex items-center gap-2 mt-0.5">
                                                     <span class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</span>
-                                                    <!-- NUEVO: Etiqueta Visual de Contacto -->
                                                     <span v-if="item.historialContacto && item.historialContacto.length > 0" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 inline-flex items-center gap-1 shadow-sm" title="Contactado">
                                                         <i class="fa-brands fa-whatsapp"></i> Contactado
                                                     </span>
@@ -429,7 +433,7 @@
                                                 </template>
                                             </td>
 
-                                            <!-- Columna Legajo Digital (Enlace directo a URL) -->
+                                            <!-- Columna Legajo Digital (Enlace directo a URL visible para todos) -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-blue-200 transition shadow-sm">
                                                     <i class="fa-solid fa-link text-xs"></i>
@@ -438,6 +442,7 @@
                                                 <span v-else class="text-slate-300 text-[11px] italic font-mono">Sin enlace</span>
                                             </td>
 
+                                            <!-- Acciones ocultas para colaboradores -->
                                             <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
                                                 <div class="flex items-center justify-center gap-1">
                                                     <button v-if="item.celular" @click="openWhatsAppModal(item)" title="Enviar notificación por WhatsApp" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm inline-flex items-center justify-center">
@@ -871,7 +876,6 @@
                     </div>
                     <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
                         <button @click="showWhatsAppModal = false" class="px-4 py-2 bg-white border border-slate-300 rounded-lg font-semibold">Cancelar</button>
-                        <!-- NUEVO: Ahora al hacer clic se registra el contacto automáticamente en el historial -->
                         <a :href="finalWhatsAppLink" target="_blank" @click="registrarContactoWhatsApp" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow-md flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Abrir en WhatsApp</a>
                     </div>
                 </div>
@@ -1024,6 +1028,9 @@
 
                 // --- FUNCIONES DEL PANEL ADMIN ---
                 const saveColaboradores = () => {
+                    // Solo el Admin puede guardar configuraciones
+                    if (!isAdmin.value) return; 
+                    
                     localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     if (window.cloudDB && isCloudConnected.value) {
                         const { db, doc, setDoc, appId } = window.cloudDB;
@@ -1032,6 +1039,7 @@
                 };
 
                 const addColaborador = () => {
+                    if (!isAdmin.value) return;
                     if (!nuevoColaborador.value.nombre || !nuevoColaborador.value.dni) {
                         showToast('Complete nombre y DNI', 'warning');
                         return;
@@ -1049,6 +1057,7 @@
                 };
 
                 const removeColaborador = (id) => {
+                    if (!isAdmin.value) return;
                     if(confirm("¿Estás seguro de eliminar permanentemente a este usuario?")) {
                         colaboradores.value = colaboradores.value.filter(c => c.id !== id);
                         saveColaboradores();
@@ -1057,6 +1066,7 @@
                 };
 
                 const resetColabPassword = (id) => {
+                    if (!isAdmin.value) return;
                     const colab = colaboradores.value.find(c => c.id === id);
                     if (colab) {
                         if(confirm(`¿Deseas restaurar la contraseña de ${colab.nombre}? (Volverá a ser su DNI)`)) {
@@ -1068,6 +1078,7 @@
                 };
 
                 const editColabEmail = (id) => {
+                    if (!isAdmin.value) return;
                     const colab = colaboradores.value.find(c => c.id === id);
                     if (colab) {
                         const newEmail = prompt(`Editar correo de ${colab.nombre}:`, colab.correo);
@@ -1120,6 +1131,7 @@
                 };
 
                 const importDatabaseJSON = (event) => {
+                    if (!isAdmin.value) return; // Protección JS
                     const file = event.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
@@ -1157,7 +1169,7 @@
                     const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
 
                     onSnapshot(colRef, (snapshot) => {
-                        if (snapshot.empty && records.value.length > 0) {
+                        if (snapshot.empty && records.value.length > 0 && isAdmin.value) {
                             records.value.forEach(rec => {
                                 setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(rec.id)), rec).catch(() => {});
                             });
@@ -1168,16 +1180,16 @@
                             records.value = cloudItems;
                             saveToLocalStorage(cloudItems);
                         }
-                        // NUEVO: Sincronizar usuarios en tiempo real
-                    const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
-                    onSnapshot(usersDocRef, (snapshot) => {
-                        if (snapshot.exists()) {
-                            colaboradores.value = snapshot.data().list || [];
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                        } else if (colaboradores.value.length > 0) {
-                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
-                        }
-                    });
+                        // Sincronizar usuarios en tiempo real
+                        const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
+                        onSnapshot(usersDocRef, (snapshot) => {
+                            if (snapshot.exists()) {
+                                colaboradores.value = snapshot.data().list || [];
+                                localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            } else if (colaboradores.value.length > 0 && isAdmin.value) {
+                                setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+                            }
+                        });
                         isCloudConnected.value = true;
                     }, (error) => {
                         isCloudConnected.value = false;
@@ -1317,6 +1329,7 @@
                 };
 
                 const commitStagedRecords = () => {
+                    if (!isAdmin.value) return; // Protección JS
                     if (stagedRecords.value.length === 0) return;
                     stagedRecords.value.forEach(st => {
                         records.value.unshift({ id: 'exp_' + Math.random(), ...st });
@@ -1382,11 +1395,11 @@
                 const formDocFaltanteArray = ref([]);
                 const stagedRecords = ref([]);
                 
-                // --- NUEVA LÓGICA DE HISTORIAL DE CONTACTO ---
                 const nuevaNotaFecha = ref(new Date().toISOString().split('T')[0]);
                 const nuevaNotaMensaje = ref('');
 
                 const agregarNota = () => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     if (!nuevaNotaMensaje.value.trim()) {
                         showToast("Escribe un mensaje para guardar en el historial", "warning");
                         return;
@@ -1403,11 +1416,11 @@
                 };
 
                 const eliminarNota = (idx) => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     if (confirm("¿Eliminar este registro de contacto?")) {
                         form.value.historialContacto.splice(idx, 1);
                     }
                 };
-                // ---------------------------------------------
                 
                 const form = ref({
                     id: null, nombre: '', dni: '', fd: '', legajo: '',
@@ -1418,32 +1431,24 @@
 
                 const openSmartUploadModal = () => { stagedRecords.value = []; showSmartUploadModal.value = true; };
 
-                // NUEVO: Función para calcular exclusivamente días hábiles (Salta Sábados y Domingos)
                 const getDaysInProcess = (item) => {
                     if (!item || !item.fechaIngreso) return 0;
-                    
                     const [y, m, d] = item.fechaIngreso.split('-');
                     let current = new Date(y, m - 1, d);
                     current.setHours(0, 0, 0, 0);
-                    
                     let today = new Date();
                     today.setHours(0, 0, 0, 0);
-
                     if (current >= today) return 0;
 
                     let days = 0;
                     while (current < today) {
                         current.setDate(current.getDate() + 1);
                         const dayOfWeek = current.getDay();
-                        // 0 = Domingo, 6 = Sábado
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { 
-                            days++;
-                        }
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) days++;
                     }
                     return days;
                 };
 
-                // NUEVO: Color del texto de los días de SLA
                 const getSlaColorClass = (days) => {
                     if (days >= 60) return 'text-rose-600';
                     if (days >= 30) return 'text-amber-600';
@@ -1453,17 +1458,16 @@
                 const activeWhatsAppRecord = ref(null);
                 const customWhatsAppMessage = ref('');
                 const openWhatsAppModal = (item) => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     activeWhatsAppRecord.value = item;
                     
                     const documentosFaltantes = (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) 
                         ? item.docFaltante.join(', ') 
                         : '[Indicar documentación]';
 
-                    // Formatear Fecha y manejar FD vacío
                     const fdText = item.fd ? item.fd : 'S/D';
                     const fechaText = formatDate(item.fechaIngreso);
 
-                    // Mensaje actualizado con los nuevos campos incrustados
                     customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo (FD: ${fdText} / Fecha de ingreso: ${fechaText}) para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
                     
                     showWhatsAppModal.value = true;
@@ -1474,19 +1478,17 @@
                     return `https://wa.me/549${activeWhatsAppRecord.value.celular.replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`;
                 });
 
-                // NUEVO: Registrar automáticamente el contacto en el historial al abrir WhatsApp
                 const registrarContactoWhatsApp = () => {
+                    if (!isAdmin.value) return; // Protección JS
                     if (activeWhatsAppRecord.value) {
                         const record = records.value.find(r => r.id === activeWhatsAppRecord.value.id);
                         if (record) {
                             if (!record.historialContacto) record.historialContacto = [];
                             const hoy = new Date().toISOString().split('T')[0];
-                            
                             record.historialContacto.unshift({
                                 fecha: hoy,
                                 mensaje: 'Notificación enviada por WhatsApp (Autogenerado)'
                             });
-                            
                             saveToLocalStorage(records.value);
                             
                             if (window.cloudDB && isCloudConnected.value) {
@@ -1508,7 +1510,6 @@
 
                 const filteredRecords = computed(() => {
                     let result = records.value.filter(item => {
-                        // 1. Búsqueda por texto general incluyendo CELULAR
                         const query = searchQuery.value.toLowerCase().trim();
                         const matchesSearch = !query || 
                             item.nombre.toLowerCase().includes(query) || 
@@ -1519,32 +1520,26 @@
                         
                         if (!matchesSearch) return false;
 
-                        // 2. Filtro por Año
                         if (filterAño.value !== 'ALL') {
                             const year = item.fechaIngreso ? item.fechaIngreso.split('-')[0] : '';
                             if (year !== filterAño.value) return false;
                         }
 
-                        // 3. Filtro por Mes
                         if (filterMes.value !== 'ALL') {
                             const month = item.fechaIngreso ? item.fechaIngreso.split('-')[1] : '';
                             if (month !== filterMes.value) return false;
                         }
 
-                        // 4. Filtro Digitalizado
                         if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
 
-                        // 5. Filtro Sisper
                         if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
 
-                        // 6. Filtro Documentación Faltante
                         if (filterDocFaltante.value !== 'ALL') {
                             const hasMissingDocs = Array.isArray(item.docFaltante) && item.docFaltante.length > 0;
                             if (filterDocFaltante.value === 'COMPLETO' && hasMissingDocs) return false;
                             if (filterDocFaltante.value === 'INCOMPLETO' && !hasMissingDocs) return false;
                         }
 
-                        // 7. Filtro SLA / Días de demora
                         if (filterSLA.value !== 'ALL') {
                             const days = getDaysInProcess(item);
                             if (filterSLA.value === 'VERDE' && days >= 30) return false;
@@ -1552,13 +1547,11 @@
                             if (filterSLA.value === 'ROJO' && days <= 60) return false;
                         }
 
-                        // 8. Filtro Toggle "Solo Críticos"
                         if (showOnlyCritical.value && getStatusKey(item) !== 'CRITICO') return false;
 
                         return true;
                     });
 
-                    // Aplicar el ordenamiento de las columnas (sortColumn y sortAsc)
                     result.sort((a, b) => {
                         let valA = a[sortColumn.value] || '';
                         let valB = b[sortColumn.value] || '';
@@ -1585,6 +1578,7 @@
                 const isAllSelected = computed(() => paginatedRecords.value.length > 0 && paginatedRecords.value.every(r => selectedRecordIds.value.includes(r.id)));
 
                 const toggleSelectAll = () => {
+                    if (!isAdmin.value) return;
                     if (isAllSelected.value) {
                         const currentIds = paginatedRecords.value.map(r => r.id);
                         selectedRecordIds.value = selectedRecordIds.value.filter(id => !currentIds.includes(id));
@@ -1644,7 +1638,9 @@
                 };
 
                 const resetFilters = () => { searchQuery.value = ''; selectedRecordIds.value = []; currentPage.value = 1; };
+                
                 const openNewModal = () => {
+                    if (!isAdmin.value) return;
                     isEditing.value = false; formDocFaltanteArray.value = [];
                     form.value = { 
                         id: 'exp_' + Date.now(), nombre: '', dni: '', fd: '', legajo: '', 
@@ -1656,6 +1652,7 @@
                 };
 
                 const editRecord = (item) => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     isEditing.value = true;
                     form.value = JSON.parse(JSON.stringify(item));
                     if (!form.value.historialContacto) form.value.historialContacto = [];
@@ -1664,6 +1661,7 @@
                 };
 
                 const saveRecord = async () => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     const recordData = {
                         ...form.value,
                         id: String(form.value.id || ('exp_' + Date.now())),
@@ -1682,6 +1680,7 @@
                 };
 
                 const confirmDelete = (item) => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     records.value = records.value.filter(r => String(r.id) !== String(item.id));
                     saveToLocalStorage(records.value);
                     showToast("Expediente eliminado", "info");
@@ -1689,6 +1688,7 @@
                 };
 
                 const bulkSetDigitalizado = (val) => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, digitalizado: val } : r);
                     saveToLocalStorage(records.value);
                     showToast("Actualización masiva completada", "success");
@@ -1697,6 +1697,7 @@
                 };
 
                 const bulkSetMinisterio = (val) => {
+                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
                     records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: val } : r);
                     saveToLocalStorage(records.value);
                     showToast("Actualización masiva completada", "success");
