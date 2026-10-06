@@ -29,14 +29,14 @@
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'altas-puras-gestor';
         const firebaseConfig = {
-  apiKey: "AIzaSyAnrofIMoCu2bmD1ipjJ07YPtgsXbay7tg",
-  authDomain: "altas-puras-proyect.firebaseapp.com",
-  projectId: "altas-puras-proyect",
-  storageBucket: "altas-puras-proyect.firebasestorage.app",
-  messagingSenderId: "384103149695",
-  appId: "1:384103149695:web:9a8a9e45b600c7641f8f4a",
-  measurementId: "G-CL23212DNM"
-};
+            apiKey: "AIzaSyAnrofIMoCu2bmD1ipjJ07YPtgsXbay7tg",
+            authDomain: "altas-puras-proyect.firebaseapp.com",
+            projectId: "altas-puras-proyect",
+            storageBucket: "altas-puras-proyect.firebasestorage.app",
+            messagingSenderId: "384103149695",
+            appId: "1:384103149695:web:9a8a9e45b600c7641f8f4a",
+            measurementId: "G-CL23212DNM"
+        };
 
         if (firebaseConfig) {
             const app = initializeApp(firebaseConfig);
@@ -243,7 +243,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 <div class="relative sm:col-span-2">
                                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD o Legajo..." 
+                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD, Legajo o Celular..." 
                                            class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition">
                                     <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition">
                                         <i class="fa-solid fa-xmark text-xs"></i>
@@ -390,14 +390,23 @@
                                             </td>
 
                                             <td class="p-3 text-slate-600 font-medium whitespace-nowrap">
-                                                <span class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono">
+                                                <div class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono inline-block mb-1">
                                                     {{ formatDate(item.fechaIngreso) }}
-                                                </span>
+                                                </div>
+                                                <div class="text-[9px] font-bold" :class="getSlaColorClass(getDaysInProcess(item))">
+                                                    <i class="fa-regular fa-clock"></i> {{ getDaysInProcess(item) }} días háb.
+                                                </div>
                                             </td>
 
                                             <td class="p-3 whitespace-nowrap">
                                                 <div class="font-bold text-slate-900">{{ item.nombre }}</div>
-                                                <div class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</div>
+                                                <div class="flex items-center gap-2 mt-0.5">
+                                                    <span class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</span>
+                                                    <!-- NUEVO: Etiqueta Visual de Contacto -->
+                                                    <span v-if="item.historialContacto && item.historialContacto.length > 0" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 inline-flex items-center gap-1 shadow-sm" title="Contactado">
+                                                        <i class="fa-brands fa-whatsapp"></i> Contactado
+                                                    </span>
+                                                </div>
                                             </td>
 
                                             <td class="p-3 text-slate-700 font-medium whitespace-nowrap">
@@ -862,7 +871,8 @@
                     </div>
                     <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
                         <button @click="showWhatsAppModal = false" class="px-4 py-2 bg-white border border-slate-300 rounded-lg font-semibold">Cancelar</button>
-                        <a :href="finalWhatsAppLink" target="_blank" @click="showWhatsAppModal = false" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow-md flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Abrir en WhatsApp</a>
+                        <!-- NUEVO: Ahora al hacer clic se registra el contacto automáticamente en el historial -->
+                        <a :href="finalWhatsAppLink" target="_blank" @click="registrarContactoWhatsApp" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow-md flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Abrir en WhatsApp</a>
                     </div>
                 </div>
             </div>
@@ -1408,9 +1418,36 @@
 
                 const openSmartUploadModal = () => { stagedRecords.value = []; showSmartUploadModal.value = true; };
 
+                // NUEVO: Función para calcular exclusivamente días hábiles (Salta Sábados y Domingos)
                 const getDaysInProcess = (item) => {
                     if (!item || !item.fechaIngreso) return 0;
-                    return Math.floor(Math.abs(new Date() - new Date(item.fechaIngreso)) / (1000 * 60 * 60 * 24));
+                    
+                    const [y, m, d] = item.fechaIngreso.split('-');
+                    let current = new Date(y, m - 1, d);
+                    current.setHours(0, 0, 0, 0);
+                    
+                    let today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    if (current >= today) return 0;
+
+                    let days = 0;
+                    while (current < today) {
+                        current.setDate(current.getDate() + 1);
+                        const dayOfWeek = current.getDay();
+                        // 0 = Domingo, 6 = Sábado
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { 
+                            days++;
+                        }
+                    }
+                    return days;
+                };
+
+                // NUEVO: Color del texto de los días de SLA
+                const getSlaColorClass = (days) => {
+                    if (days >= 60) return 'text-rose-600';
+                    if (days >= 30) return 'text-amber-600';
+                    return 'text-emerald-600';
                 };
 
                 const activeWhatsAppRecord = ref(null);
@@ -1431,10 +1468,36 @@
                     
                     showWhatsAppModal.value = true;
                 };
+
                 const finalWhatsAppLink = computed(() => {
                     if (!activeWhatsAppRecord.value || !activeWhatsAppRecord.value.celular) return '#';
                     return `https://wa.me/549${activeWhatsAppRecord.value.celular.replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`;
                 });
+
+                // NUEVO: Registrar automáticamente el contacto en el historial al abrir WhatsApp
+                const registrarContactoWhatsApp = () => {
+                    if (activeWhatsAppRecord.value) {
+                        const record = records.value.find(r => r.id === activeWhatsAppRecord.value.id);
+                        if (record) {
+                            if (!record.historialContacto) record.historialContacto = [];
+                            const hoy = new Date().toISOString().split('T')[0];
+                            
+                            record.historialContacto.unshift({
+                                fecha: hoy,
+                                mensaje: 'Notificación enviada por WhatsApp (Autogenerado)'
+                            });
+                            
+                            saveToLocalStorage(records.value);
+                            
+                            if (window.cloudDB && isCloudConnected.value) {
+                                const { db, doc, setDoc, appId } = window.cloudDB;
+                                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(record.id)), record).catch(() => {});
+                            }
+                            showToast("Contacto registrado en el historial", "success");
+                        }
+                    }
+                    showWhatsAppModal.value = false;
+                };
 
                 const getStatusKey = (item) => {
                     if (item.enviadoMinisterio === 'SI') return 'COMPLETADO';
@@ -1445,13 +1508,14 @@
 
                 const filteredRecords = computed(() => {
                     let result = records.value.filter(item => {
-                        // 1. Búsqueda por texto general
+                        // 1. Búsqueda por texto general incluyendo CELULAR
                         const query = searchQuery.value.toLowerCase().trim();
                         const matchesSearch = !query || 
                             item.nombre.toLowerCase().includes(query) || 
                             (item.dni && item.dni.includes(query)) || 
                             (item.fd && item.fd.toLowerCase().includes(query)) ||
-                            (item.legajo && item.legajo.toLowerCase().includes(query));
+                            (item.legajo && item.legajo.toLowerCase().includes(query)) ||
+                            (item.celular && item.celular.includes(query));
                         
                         if (!matchesSearch) return false;
 
@@ -1673,7 +1737,7 @@
                     const tableBody = [
                         [
                             { text: 'Fecha', style: 'tableHeader' },
-                            { text: 'Días', style: 'tableHeader' },
+                            { text: 'Días Háb.', style: 'tableHeader' },
                             { text: 'Apellido y Nombre', style: 'tableHeader' },
                             { text: 'DNI', style: 'tableHeader' },
                             { text: 'Expediente (FD)', style: 'tableHeader' },
@@ -1687,7 +1751,7 @@
                     itemsToExport.forEach(r => {
                         tableBody.push([
                             formatDate(r.fechaIngreso),
-                            getDaysInProcess(r) + 'd',
+                            getDaysInProcess(r) + ' háb.',
                             r.nombre || '---',
                             r.dni || '---',
                             r.fd || 'S/D',
@@ -1803,13 +1867,13 @@
                     currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
                     sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
                     toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
-                    aiInsightText, processHealthScore, getDaysInProcess,
+                    aiInsightText, processHealthScore, getDaysInProcess, getSlaColorClass,
                     showModal, showExportModal, showWhatsAppModal, showShareModal, showSmartUploadModal,
                     isEditing, form, formDocFaltanteArray, getStatusBadgeClass, getStatusIcon,
                     getStatusLabel, formatDate, resetFilters, openNewModal, editRecord, saveRecord,
                     confirmDelete, exportPDF, exportCSV, copyShareLink, exportDatabaseJSON,
                     importDatabaseJSON, activeWhatsAppRecord, customWhatsAppMessage, finalWhatsAppLink,
-                    openWhatsAppModal, openExportModal, pdfStats, handleBatchFileSelect, stagedRecords,
+                    openWhatsAppModal, registrarContactoWhatsApp, openExportModal, pdfStats, handleBatchFileSelect, stagedRecords,
                     commitStagedRecords, isAiProcessing, isBatchProcessing, handleSingleFileAIUpload, openSmartUploadModal,
                     
                     // Lógica Historial de Contacto
