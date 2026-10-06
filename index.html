@@ -188,7 +188,7 @@
                                     <span class="text-slate-500">•</span>
                                     <span class="text-emerald-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-user-check"></i> {{ currentUserName }}</span>
                                     
-                                    <!-- NUEVO: ETIQUETA VISUAL DE SOLO LECTURA -->
+                                    <!-- ETIQUETA VISUAL DE SOLO LECTURA -->
                                     <span v-if="!isAdmin" class="bg-blue-900/60 text-blue-200 text-[10px] px-2 py-0.5 rounded border border-blue-700 font-bold ml-2 flex items-center gap-1">
                                         <i class="fa-solid fa-eye"></i> MODO LECTURA
                                     </span>
@@ -358,7 +358,6 @@
                                 <table class="w-full text-left border-collapse text-xs">
                                    <thead>
                                         <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200 select-none">
-                                            <!-- Checkbox oculto para colaboradores -->
                                             <th class="p-3 text-center w-8" v-if="isAdmin">
                                                 <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
                                             </th>
@@ -374,7 +373,6 @@
                                             <th class="p-3">FD / Legajo</th>
                                             <th class="p-3">Doc. Faltante</th>
                                             <th class="p-3 text-center">Legajo Digital</th>
-                                            <!-- Acciones ocultas para colaboradores -->
                                             <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
                                         </tr>
                                     </thead>
@@ -433,7 +431,6 @@
                                                 </template>
                                             </td>
 
-                                            <!-- Columna Legajo Digital (Enlace directo a URL visible para todos) -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-blue-200 transition shadow-sm">
                                                     <i class="fa-solid fa-link text-xs"></i>
@@ -442,7 +439,6 @@
                                                 <span v-else class="text-slate-300 text-[11px] italic font-mono">Sin enlace</span>
                                             </td>
 
-                                            <!-- Acciones ocultas para colaboradores -->
                                             <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
                                                 <div class="flex items-center justify-center gap-1">
                                                     <button v-if="item.celular" @click="openWhatsAppModal(item)" title="Enviar notificación por WhatsApp" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm inline-flex items-center justify-center">
@@ -928,15 +924,13 @@
                 const colaboradores = ref([]);
                 const nuevoColaborador = ref({ nombre: '', dni: '', correo: '' });
 
-                // Cargar colaboradores y asegurar que todos tengan campo password y correo
                 const loadColaboradores = () => {
                     const local = localStorage.getItem('altas_puras_colabs');
                     if (local) {
                         let parsed = JSON.parse(local);
-                        // Estructura de seguridad compatible
                         parsed = parsed.map(c => ({
                             ...c,
-                            password: c.password || c.dni, // Si no tiene pass, es el DNI
+                            password: c.password || c.dni,
                             correo: c.correo || ''
                         }));
                         colaboradores.value = parsed;
@@ -960,9 +954,8 @@
                     
                     if (u === '') return;
 
-                    // 1. Chequeo Admin
                     if (u === adminData.value.username && p === adminData.value.password) {
-                        if (p === '1234') { // Contraseña por defecto
+                        if (p === '1234') {
                             pendingLoginUser.value = { role: 'ADMIN' };
                             requirePasswordChange.value = true;
                             showToast('Por seguridad, crea una nueva contraseña.', 'warning');
@@ -972,10 +965,10 @@
                         return;
                     }
 
-                    // 2. Chequeo Colaborador
-                    const colab = colaboradores.value.find(c => c.nombre.toLowerCase() === u.toLowerCase() && c.password === p);
+                    // FIX: Búsqueda eliminando espacios accidentales
+                    const colab = colaboradores.value.find(c => c.nombre.trim().toLowerCase() === u.toLowerCase() && c.password === p);
                     if (colab) {
-                        if (colab.password === colab.dni) { // Contraseña por defecto
+                        if (colab.password === colab.dni) {
                             pendingLoginUser.value = { role: 'COLABORADOR', id: colab.id };
                             requirePasswordChange.value = true;
                             showToast('Por seguridad, crea tu nueva contraseña.', 'warning');
@@ -1001,6 +994,13 @@
                     if (pendingLoginUser.value.role === 'ADMIN') {
                         adminData.value.password = newPassword.value;
                         localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value));
+                        
+                        // EXTRA FIX: Guardar también en la nube para el admin
+                        if (window.cloudDB && isCloudConnected.value) {
+                            const { db, doc, setDoc, appId } = window.cloudDB;
+                            setDoc(doc(db, 'artifacts', appId, 'config', 'admin'), adminData.value).catch(()=>{});
+                        }
+                        
                         requirePasswordChange.value = false;
                         loginSuccess('ADMIN', 'Administrador Principal');
                     } else {
@@ -1017,7 +1017,7 @@
                 const cancelPasswordChange = () => {
                     requirePasswordChange.value = false;
                     pendingLoginUser.value = null;
-                    loginDni.value = ''; // limpiar pass
+                    loginDni.value = '';
                 };
 
                 const doLogout = () => {
@@ -1026,15 +1026,13 @@
                     loginDni.value = '';
                 };
 
-                // --- FUNCIONES DEL PANEL ADMIN ---
                 const saveColaboradores = () => {
-                    // Solo el Admin puede guardar configuraciones
                     if (!isAdmin.value) return; 
-                    
                     localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     if (window.cloudDB && isCloudConnected.value) {
                         const { db, doc, setDoc, appId } = window.cloudDB;
-                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios'), { list: colaboradores.value }).catch(()=>{});
+                        // FIX: Ruta válida en Firestore (número par de segmentos)
+                        setDoc(doc(db, 'artifacts', appId, 'config', 'usuarios'), { list: colaboradores.value }).catch(()=>{});
                     }
                 };
 
@@ -1046,10 +1044,10 @@
                     }
                     colaboradores.value.push({ 
                         id: Date.now(),
-                        nombre: nuevoColaborador.value.nombre, 
-                        dni: nuevoColaborador.value.dni,
-                        correo: nuevoColaborador.value.correo || '',
-                        password: nuevoColaborador.value.dni
+                        nombre: nuevoColaborador.value.nombre.trim(), 
+                        dni: nuevoColaborador.value.dni.trim(),
+                        correo: (nuevoColaborador.value.correo || '').trim(),
+                        password: nuevoColaborador.value.dni.trim()
                     });
                     saveColaboradores();
                     nuevoColaborador.value = { nombre: '', dni: '', correo: '' };
@@ -1089,7 +1087,6 @@
                         }
                     }
                 };
-                // ----------------------------------------
 
                 if (window.pdfjsLib) {
                     window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -1131,7 +1128,7 @@
                 };
 
                 const importDatabaseJSON = (event) => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return;
                     const file = event.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
@@ -1148,26 +1145,19 @@
                     reader.readAsText(file);
                 };
 
+                // FIX: Lógica de la nube reforzada
                 const initCloudStorage = async () => {
                     loadFromLocalStorage();
                     if (!window.cloudDB) return;
                     const { appId, auth, db, collection, doc, setDoc, onSnapshot, signInWithCustomToken, signInAnonymously } = window.cloudDB;
 
-                    let currentUser = null;
                     try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            const res = await signInWithCustomToken(auth, __initial_auth_token);
-                            currentUser = res.user;
-                        } else {
-                            const res = await signInAnonymously(auth);
-                            currentUser = res.user;
-                        }
-                    } catch (err) {}
-
-                    if (!currentUser) return;
+                        await signInAnonymously(auth);
+                    } catch (err) {
+                        console.warn("Auth silencioso ignorado, conectando lectura de base de datos...");
+                    }
 
                     const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
-
                     onSnapshot(colRef, (snapshot) => {
                         if (snapshot.empty && records.value.length > 0 && isAdmin.value) {
                             records.value.forEach(rec => {
@@ -1180,19 +1170,37 @@
                             records.value = cloudItems;
                             saveToLocalStorage(cloudItems);
                         }
-                        // Sincronizar usuarios en tiempo real
-                        const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
-                        onSnapshot(usersDocRef, (snapshot) => {
-                            if (snapshot.exists()) {
-                                colaboradores.value = snapshot.data().list || [];
-                                localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                            } else if (colaboradores.value.length > 0 && isAdmin.value) {
-                                setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
-                            }
-                        });
                         isCloudConnected.value = true;
                     }, (error) => {
                         isCloudConnected.value = false;
+                    });
+
+                    // FIX CRÍTICO: Ruta correcta (4 segmentos) para sincronizar usuarios
+                    const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
+                    onSnapshot(usersDocRef, (snapshot) => {
+                        if (snapshot.exists()) {
+                            let firebaseColabs = snapshot.data().list || [];
+                            firebaseColabs = firebaseColabs.map(c => ({
+                                ...c,
+                                password: c.password || c.dni,
+                                correo: c.correo || ''
+                            }));
+                            colaboradores.value = firebaseColabs;
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                        } else if (colaboradores.value.length > 0 && isAdmin.value) {
+                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+                        }
+                    });
+
+                    // EXTRA FIX: Sincronizar credenciales de Admin
+                    const adminDocRef = doc(db, 'artifacts', appId, 'config', 'admin');
+                    onSnapshot(adminDocRef, (snapshot) => {
+                        if (snapshot.exists()) {
+                            adminData.value = snapshot.data();
+                            localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value));
+                        } else if (isAdmin.value) {
+                            setDoc(adminDocRef, adminData.value).catch(()=>{});
+                        }
                     });
                 };
 
@@ -1329,7 +1337,7 @@
                 };
 
                 const commitStagedRecords = () => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return;
                     if (stagedRecords.value.length === 0) return;
                     stagedRecords.value.forEach(st => {
                         records.value.unshift({ id: 'exp_' + Math.random(), ...st });
@@ -1479,7 +1487,7 @@
                 });
 
                 const registrarContactoWhatsApp = () => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return;
                     if (activeWhatsAppRecord.value) {
                         const record = records.value.find(r => r.id === activeWhatsAppRecord.value.id);
                         if (record) {
