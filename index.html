@@ -1184,24 +1184,29 @@
                         isCloudConnected.value = false;
                     });
 
-                    // FIX CRÍTICO: Sincronizar usuarios y desbloquear el Login
-                    const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
-                    onSnapshot(usersDocRef, (snapshot) => {
-                        if (snapshot.exists()) {
-                            let firebaseColabs = snapshot.data().list || [];
-                            firebaseColabs = firebaseColabs.map(c => ({
-                                ...c,
-                                password: c.password || c.dni,
-                                correo: c.correo || ''
-                            }));
-                            colaboradores.value = firebaseColabs;
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                        } else if (colaboradores.value.length > 0 && isAdmin.value) {
-                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
-                        }
-                        // Quitar pantalla de carga tras sincronizar
-                        isCloudConnecting.value = false;
-                    });
+                    // FIX CRÍTICO: Sincronizar usuarios y manejo de errores para evitar bloqueos
+const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
+onSnapshot(usersDocRef, (snapshot) => {
+    if (snapshot.exists()) {
+        let firebaseColabs = snapshot.data().list || [];
+        firebaseColabs = firebaseColabs.map(c => ({
+            ...c,
+            password: c.password || c.dni,
+            correo: c.correo || ''
+        }));
+        colaboradores.value = firebaseColabs;
+        localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+    } else if (colaboradores.value.length > 0 && isAdmin.value) {
+        setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+    }
+    // Quitar pantalla de carga tras sincronizar exitosamente
+    isCloudConnecting.value = false;
+}, (error) => {
+    console.error("Error de permisos en Firestore:", error);
+    showToast("Error conectando con la base de datos. Avisar al Administrador.", "error");
+    // Desbloquear el botón de login para no dejar atascado al usuario
+    isCloudConnecting.value = false;
+});
 
                     // EXTRA FIX: Sincronizar credenciales de Admin
                     const adminDocRef = doc(db, 'artifacts', appId, 'config', 'admin');
