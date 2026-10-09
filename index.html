@@ -126,7 +126,14 @@
                             <label class="block font-semibold text-slate-700 mb-1">Contraseña</label>
                             <input v-model="loginDni" type="password" placeholder="Tu contraseña (DNI si es la 1ra vez)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="doLogin">
                         </div>
-                        <button @click="doLogin" class="w-full py-3 mt-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Ingresar al Sistema</button>
+                        
+                        <!-- BOTÓN DE INGRESO PROTEGIDO -->
+                        <button v-if="isCloudConnecting" disabled class="w-full py-3 mt-2 bg-slate-400 text-white rounded-lg font-bold shadow-md flex items-center justify-center gap-2 cursor-not-allowed">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Conectando...
+                        </button>
+                        <button v-else @click="doLogin" class="w-full py-3 mt-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">
+                            Ingresar al Sistema
+                        </button>
                     </div>
                 </div>
 
@@ -893,6 +900,7 @@
 
                 const records = ref([...seedRecords]);
                 const isCloudConnected = ref(false);
+                const isCloudConnecting = ref(true); // NUEVO: Bloqueador de Login
                 const currentShareUrl = ref(window.location.href);
 
                 const toasts = ref([]);
@@ -1128,7 +1136,7 @@
                 };
 
                 const importDatabaseJSON = (event) => {
-                    if (!isAdmin.value) return;
+                    if (!isAdmin.value) return; // Protección JS
                     const file = event.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
@@ -1154,7 +1162,8 @@
                     try {
                         await signInAnonymously(auth);
                     } catch (err) {
-                        console.warn("Auth silencioso ignorado, conectando lectura de base de datos...");
+                        console.warn("Autenticación fallida. Revisa si Anónimo está activado en Firebase Console.");
+                        isCloudConnecting.value = false;
                     }
 
                     const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
@@ -1175,7 +1184,7 @@
                         isCloudConnected.value = false;
                     });
 
-                    // FIX CRÍTICO: Ruta correcta (4 segmentos) para sincronizar usuarios
+                    // FIX CRÍTICO: Sincronizar usuarios y desbloquear el Login
                     const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
                     onSnapshot(usersDocRef, (snapshot) => {
                         if (snapshot.exists()) {
@@ -1190,6 +1199,8 @@
                         } else if (colaboradores.value.length > 0 && isAdmin.value) {
                             setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
                         }
+                        // Quitar pantalla de carga tras sincronizar
+                        isCloudConnecting.value = false;
                     });
 
                     // EXTRA FIX: Sincronizar credenciales de Admin
@@ -1337,7 +1348,7 @@
                 };
 
                 const commitStagedRecords = () => {
-                    if (!isAdmin.value) return;
+                    if (!isAdmin.value) return; // Protección JS
                     if (stagedRecords.value.length === 0) return;
                     stagedRecords.value.forEach(st => {
                         records.value.unshift({ id: 'exp_' + Math.random(), ...st });
@@ -1487,7 +1498,7 @@
                 });
 
                 const registrarContactoWhatsApp = () => {
-                    if (!isAdmin.value) return;
+                    if (!isAdmin.value) return; // Protección JS
                     if (activeWhatsAppRecord.value) {
                         const record = records.value.find(r => r.id === activeWhatsAppRecord.value.id);
                         if (record) {
@@ -1870,7 +1881,7 @@
                 onMounted(() => nextTick(() => { initCharts(); initCloudStorage(); loadColaboradores(); }));
 
                 return {
-                    records, isCloudConnected, currentShareUrl, toasts, removeToast,
+                    records, isCloudConnected, isCloudConnecting, currentShareUrl, toasts, removeToast,
                     availableDocOptions, searchQuery, filterAño, filterMes, filterSisper,
                     filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
                     currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
