@@ -172,7 +172,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.1 Pro Split</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.2 Pro Split</span>
                                     
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -314,7 +314,7 @@
                                     <i class="fa-solid fa-paper-plane"></i> Marcar Enviado Ministerio SÍ
                                 </button>
                                 <button @click="selectedRecordIds = []" class="px-2 py-1 text-slate-300 hover:text-white transition">
-                                    Deseleccionar
+                                    <i class="fa-solid fa-xmark"></i> Deseleccionar
                                 </button>
                             </div>
                         </div>
@@ -369,6 +369,10 @@
                                             </th>
                                             <th class="p-3">FD / Legajo</th>
                                             <th class="p-3">Doc. Faltante</th>
+                                            <!-- NUEVA COLUMNA TURNO PSICOFÍSICO -->
+                                            <th @click="sortBy('fechaTurnoPsicofisico')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition text-center whitespace-nowrap">
+                                                Turno Psico. <i :class="getSortIcon('fechaTurnoPsicofisico')" class="ml-1 text-[10px]"></i>
+                                            </th>
                                             <th class="p-3 text-center">Legajo Digital</th>
                                             <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
                                         </tr>
@@ -402,7 +406,6 @@
                                                 <div class="font-bold text-slate-900">{{ item.nombre }}</div>
                                                 <div class="flex items-center gap-2 mt-0.5">
                                                     <span class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</span>
-                                                    <!-- NUEVO: Etiqueta Visual de Contacto -->
                                                     <span v-if="item.historialContacto && item.historialContacto.length > 0" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 inline-flex items-center gap-1 shadow-sm" title="Contactado">
                                                         <i class="fa-brands fa-whatsapp"></i> Contactado
                                                     </span>
@@ -414,10 +417,10 @@
                                                 <div class="text-slate-500 text-[10px]">Leg: {{ item.legajo || 'S/D' }}</div>
                                             </td>
 
-                                            <td class="p-3 whitespace-normal max-w-[200px]">
+                                            <td class="p-3 whitespace-normal max-w-[150px]">
                                                 <template v-if="Array.isArray(item.docFaltante) && item.docFaltante.length > 0">
                                                     <div class="flex flex-wrap gap-1">
-                                                        <span v-for="doc in item.docFaltante" :key="doc" class="text-rose-700 bg-rose-50 border border-rose-200 font-medium px-1.5 py-0.5 rounded text-[9px] inline-block truncate max-w-[150px]" :title="doc">
+                                                        <span v-for="doc in item.docFaltante" :key="doc" class="text-rose-700 bg-rose-50 border border-rose-200 font-medium px-1.5 py-0.5 rounded text-[9px] inline-block truncate max-w-[130px]" :title="doc">
                                                             {{ doc }}
                                                         </span>
                                                     </div>
@@ -429,13 +432,24 @@
                                                 </template>
                                             </td>
 
-                                            <!-- Columna Legajo Digital (Enlace directo a URL) -->
+                                            <!-- CELDA TURNO PSICOFÍSICO -->
                                             <td class="p-3 text-center whitespace-nowrap">
-                                                <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-blue-200 transition shadow-sm">
+                                                <div v-if="item.fechaTurnoPsicofisico" class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 text-[10px] font-mono inline-flex items-center gap-1">
+                                                    <i class="fa-regular fa-calendar-check"></i>
+                                                    {{ formatDate(item.fechaTurnoPsicofisico) }}
+                                                </div>
+                                                <div v-else class="text-slate-400 text-[10px] italic">
+                                                    S/T
+                                                </div>
+                                            </td>
+
+                                            <!-- Columna Legajo Digital -->
+                                            <td class="p-3 text-center whitespace-nowrap">
+                                                <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-slate-200 transition shadow-sm">
                                                     <i class="fa-solid fa-link text-xs"></i>
-                                                    <span>Ver Legajo</span>
+                                                    <span>Abrir</span>
                                                 </a>
-                                                <span v-else class="text-slate-300 text-[11px] italic font-mono">Sin enlace</span>
+                                                <span v-else class="text-slate-300 text-[11px] italic font-mono">---</span>
                                             </td>
 
                                             <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
@@ -453,7 +467,7 @@
                                             </td>
                                         </tr>
                                         <tr v-if="filteredRecords.length === 0">
-                                            <td colspan="8" class="p-8 text-center text-slate-400">
+                                            <td colspan="9" class="p-8 text-center text-slate-400">
                                                 <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
                                                 <p class="font-medium text-slate-500">No se encontraron expedientes con los filtros seleccionados.</p>
                                             </td>
@@ -478,7 +492,7 @@
                         </div>
                     </div>
 
-                    <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS, ESTADÍSTICAS Y GRÁFICOS -->
+                    <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS -->
                     <div class="xl:col-span-4 space-y-6 sticky top-20">
 
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
@@ -546,7 +560,7 @@
                 <p>Dirección de Gestión Escolar © 2026 — Departamento de Altas Puras (Director: Aguirre Juan Manuel)</p>
             </footer>
 
-            <!-- MODAL GESTION DE COLABORADORES (ADMIN PANEL) -->
+            <!-- MODAL GESTION DE COLABORADORES -->
             <div v-if="showColaboradoresModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showColaboradoresModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
                     <div class="bg-emerald-700 text-white p-4 px-6 flex items-center justify-between">
@@ -588,8 +602,8 @@
                                     </div>
                                     <div class="flex items-center gap-1">
                                         <button @click="editColabEmail(colab.id)" title="Editar Correo" class="text-blue-500 hover:text-blue-700 p-1.5 bg-blue-50 hover:bg-blue-100 rounded transition"><i class="fa-solid fa-envelope text-xs"></i></button>
-                                        <button @click="resetColabPassword(colab.id)" title="Restaurar contraseña (volverá a ser su DNI)" class="text-amber-500 hover:text-amber-700 p-1.5 bg-amber-50 hover:bg-amber-100 rounded transition"><i class="fa-solid fa-key text-xs"></i></button>
-                                        <button @click="removeColaborador(colab.id)" title="Eliminar usuario permanentemente" class="text-rose-500 hover:text-rose-700 p-1.5 bg-rose-50 hover:bg-rose-100 rounded transition"><i class="fa-solid fa-trash text-xs"></i></button>
+                                        <button @click="resetColabPassword(colab.id)" title="Restaurar contraseña" class="text-amber-500 hover:text-amber-700 p-1.5 bg-amber-50 hover:bg-amber-100 rounded transition"><i class="fa-solid fa-key text-xs"></i></button>
+                                        <button @click="removeColaborador(colab.id)" title="Eliminar usuario" class="text-rose-500 hover:text-rose-700 p-1.5 bg-rose-50 hover:bg-rose-100 rounded transition"><i class="fa-solid fa-trash text-xs"></i></button>
                                     </div>
                                 </div>
                                 <p v-if="colaboradores.length === 0" class="text-xs text-slate-400 text-center py-4">No hay colaboradores registrados.</p>
@@ -698,7 +712,9 @@
                                     <input v-model="form.fechaIngreso" required type="date" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            
+                            <!-- SECCIÓN MODIFICADA: Ahora incluye Fecha de Turno Psicofísico -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
                                     <label class="block font-semibold text-slate-700 mb-1">N° Legajo</label>
                                     <input v-model="form.legajo" type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
@@ -706,6 +722,10 @@
                                 <div>
                                     <label class="block font-semibold text-slate-700 mb-1">Celular / Teléfono</label>
                                     <input v-model="form.celular" type="text" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Turno Psicofísico</label>
+                                    <input v-model="form.fechaTurnoPsicofisico" type="date" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[11px]">
                                 </div>
                             </div>
                             
@@ -727,13 +747,12 @@
                             </div>
                         </div>
 
-                        <!-- Historial de Contacto (Solo visible en Edición) -->
+                        <!-- Historial de Contacto -->
                         <div v-if="isEditing" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                             <h4 class="font-bold text-slate-800 text-xs border-b border-slate-100 pb-2 mb-3">
                                 <i class="fa-regular fa-comments text-slate-500 mr-1"></i> Historial de Contacto
                             </h4>
                             
-                            <!-- Lista de notas guardadas -->
                             <div v-if="form.historialContacto && form.historialContacto.length > 0" class="max-h-32 overflow-y-auto space-y-2 custom-scrollbar pr-2">
                                 <div v-for="(nota, idx) in form.historialContacto" :key="idx" class="p-2.5 bg-slate-50 border border-slate-100 rounded-lg text-xs group">
                                     <div class="flex justify-between items-center mb-1">
@@ -747,7 +766,6 @@
                             </div>
                             <p v-else class="text-slate-400 text-[10px] italic text-center py-2">Sin registros de contacto previos.</p>
                             
-                            <!-- Formulario para nueva nota -->
                             <div class="flex gap-2 items-start pt-2 border-t border-slate-100 mt-2">
                                 <input v-model="nuevaNotaFecha" type="date" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-mono">
                                 <textarea v-model="nuevaNotaMensaje" rows="1" placeholder="Detalle de la conversación..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] resize-none focus:ring-2 focus:ring-slate-400 focus:outline-none"></textarea>
@@ -871,14 +889,12 @@
                     </div>
                     <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end gap-2">
                         <button @click="showWhatsAppModal = false" class="px-4 py-2 bg-white border border-slate-300 rounded-lg font-semibold">Cancelar</button>
-                        <!-- NUEVO: Ahora al hacer clic se registra el contacto automáticamente en el historial -->
                         <a :href="finalWhatsAppLink" target="_blank" @click="registrarContactoWhatsApp" class="px-4 py-2 bg-emerald-600 text-white rounded-lg font-bold shadow-md flex items-center gap-1.5"><i class="fa-brands fa-whatsapp"></i> Abrir en WhatsApp</a>
                     </div>
                 </div>
             </div>
 
-        </div> <!-- CIERRE DEL CONTENIDO PRINCIPAL -->
-
+        </div> 
     </div>
 
     <script>
@@ -887,8 +903,8 @@
         createApp({
             setup() {
                 const seedRecords = [
-                    { id: '1', nombre: 'Perez Dario', dni: '27715290', fd: '23568/26', legajo: 'L-1024', docFaltante: ['CERTIFICADO DE APTITUD PSICOFÍSICA', 'CONSTANCIA DE CUIL'], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '3794256936', fechaIngreso: '2026-06-10', urlDigital: 'https://drive.google.com/file/d/example1' },
-                    { id: '2', nombre: 'Gómez María Laura', dni: '32415890', fd: '24110/26', legajo: 'L-2105', docFaltante: [], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'SI', enviadoMinisterio: 'SI', celular: '3794123456', fechaIngreso: '2026-06-12', urlDigital: 'https://drive.google.com/file/d/example2' }
+                    { id: '1', nombre: 'Perez Dario', dni: '27715290', fd: '23568/26', legajo: 'L-1024', fechaTurnoPsicofisico: '2026-07-15', docFaltante: ['CERTIFICADO DE APTITUD PSICOFÍSICA', 'CONSTANCIA DE CUIL'], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', celular: '3794256936', fechaIngreso: '2026-06-10', urlDigital: 'https://drive.google.com/file/d/example1' },
+                    { id: '2', nombre: 'Gómez María Laura', dni: '32415890', fd: '24110/26', legajo: 'L-2105', fechaTurnoPsicofisico: '', docFaltante: [], digitalizado: 'SI', devuelto: 'NO', enviadoSisper: 'SI', enviadoMinisterio: 'SI', celular: '3794123456', fechaIngreso: '2026-06-12', urlDigital: 'https://drive.google.com/file/d/example2' }
                 ];
 
                 const records = ref([...seedRecords]);
@@ -903,7 +919,6 @@
                 };
                 const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id);
 
-                // --- SISTEMA DE AUTENTICACIÓN AVANZADO ---
                 const adminData = ref(JSON.parse(localStorage.getItem('altas_puras_admin')) || { username: 'admin', password: '1234' });
                 
                 const isLoggedIn = ref(false);
@@ -914,7 +929,6 @@
                 const loginName = ref('');
                 const loginDni = ref('');
                 
-                // Variables para Cambio de Contraseña
                 const requirePasswordChange = ref(false);
                 const pendingLoginUser = ref(null);
                 const newPassword = ref('');
@@ -924,15 +938,13 @@
                 const colaboradores = ref([]);
                 const nuevoColaborador = ref({ nombre: '', dni: '', correo: '' });
 
-                // Cargar colaboradores y asegurar que todos tengan campo password y correo
                 const loadColaboradores = () => {
                     const local = localStorage.getItem('altas_puras_colabs');
                     if (local) {
                         let parsed = JSON.parse(local);
-                        // Estructura de seguridad compatible
                         parsed = parsed.map(c => ({
                             ...c,
-                            password: c.password || c.dni, // Si no tiene pass, es el DNI
+                            password: c.password || c.dni,
                             correo: c.correo || ''
                         }));
                         colaboradores.value = parsed;
@@ -956,9 +968,8 @@
                     
                     if (u === '') return;
 
-                    // 1. Chequeo Admin
                     if (u === adminData.value.username && p === adminData.value.password) {
-                        if (p === '1234') { // Contraseña por defecto
+                        if (p === '1234') { 
                             pendingLoginUser.value = { role: 'ADMIN' };
                             requirePasswordChange.value = true;
                             showToast('Por seguridad, crea una nueva contraseña.', 'warning');
@@ -968,10 +979,9 @@
                         return;
                     }
 
-                    // 2. Chequeo Colaborador
                     const colab = colaboradores.value.find(c => c.nombre.toLowerCase() === u.toLowerCase() && c.password === p);
                     if (colab) {
-                        if (colab.password === colab.dni) { // Contraseña por defecto
+                        if (colab.password === colab.dni) { 
                             pendingLoginUser.value = { role: 'COLABORADOR', id: colab.id };
                             requirePasswordChange.value = true;
                             showToast('Por seguridad, crea tu nueva contraseña.', 'warning');
@@ -1013,7 +1023,7 @@
                 const cancelPasswordChange = () => {
                     requirePasswordChange.value = false;
                     pendingLoginUser.value = null;
-                    loginDni.value = ''; // limpiar pass
+                    loginDni.value = '';
                 };
 
                 const doLogout = () => {
@@ -1022,7 +1032,6 @@
                     loginDni.value = '';
                 };
 
-                // --- FUNCIONES DEL PANEL ADMIN ---
                 const saveColaboradores = () => {
                     localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     if (window.cloudDB && isCloudConnected.value) {
@@ -1078,7 +1087,6 @@
                         }
                     }
                 };
-                // ----------------------------------------
 
                 if (window.pdfjsLib) {
                     window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -1168,7 +1176,6 @@
                             records.value = cloudItems;
                             saveToLocalStorage(cloudItems);
                         }
-                        // NUEVO: Sincronizar usuarios en tiempo real
                     const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
                     onSnapshot(usersDocRef, (snapshot) => {
                         if (snapshot.exists()) {
@@ -1303,6 +1310,7 @@
                             celular: data?.telefono ? String(data.telefono).replace(/\D/g, '') : '',
                             fd: '',
                             legajo: '',
+                            fechaTurnoPsicofisico: '',
                             docFaltante: [],
                             digitalizado: 'SI',
                             enviadoSisper: 'NO',
@@ -1382,7 +1390,6 @@
                 const formDocFaltanteArray = ref([]);
                 const stagedRecords = ref([]);
                 
-                // --- NUEVA LÓGICA DE HISTORIAL DE CONTACTO ---
                 const nuevaNotaFecha = ref(new Date().toISOString().split('T')[0]);
                 const nuevaNotaMensaje = ref('');
 
@@ -1407,10 +1414,9 @@
                         form.value.historialContacto.splice(idx, 1);
                     }
                 };
-                // ---------------------------------------------
                 
                 const form = ref({
-                    id: null, nombre: '', dni: '', fd: '', legajo: '',
+                    id: null, nombre: '', dni: '', fd: '', legajo: '', fechaTurnoPsicofisico: '',
                     digitalizado: 'NO', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO',
                     celular: '', urlDigital: '', fechaIngreso: new Date().toISOString().split('T')[0],
                     historialContacto: []
@@ -1418,7 +1424,6 @@
 
                 const openSmartUploadModal = () => { stagedRecords.value = []; showSmartUploadModal.value = true; };
 
-                // NUEVO: Función para calcular exclusivamente días hábiles (Salta Sábados y Domingos)
                 const getDaysInProcess = (item) => {
                     if (!item || !item.fechaIngreso) return 0;
                     
@@ -1435,7 +1440,6 @@
                     while (current < today) {
                         current.setDate(current.getDate() + 1);
                         const dayOfWeek = current.getDay();
-                        // 0 = Domingo, 6 = Sábado
                         if (dayOfWeek !== 0 && dayOfWeek !== 6) { 
                             days++;
                         }
@@ -1443,7 +1447,6 @@
                     return days;
                 };
 
-                // NUEVO: Color del texto de los días de SLA
                 const getSlaColorClass = (days) => {
                     if (days >= 60) return 'text-rose-600';
                     if (days >= 30) return 'text-amber-600';
@@ -1459,11 +1462,9 @@
                         ? item.docFaltante.join(', ') 
                         : '[Indicar documentación]';
 
-                    // Formatear Fecha y manejar FD vacío
                     const fdText = item.fd ? item.fd : 'S/D';
                     const fechaText = formatDate(item.fechaIngreso);
 
-                    // Mensaje actualizado con los nuevos campos incrustados
                     customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo (FD: ${fdText} / Fecha de ingreso: ${fechaText}) para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
                     
                     showWhatsAppModal.value = true;
@@ -1474,7 +1475,6 @@
                     return `https://wa.me/549${activeWhatsAppRecord.value.celular.replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`;
                 });
 
-                // NUEVO: Registrar automáticamente el contacto en el historial al abrir WhatsApp
                 const registrarContactoWhatsApp = () => {
                     if (activeWhatsAppRecord.value) {
                         const record = records.value.find(r => r.id === activeWhatsAppRecord.value.id);
@@ -1508,7 +1508,6 @@
 
                 const filteredRecords = computed(() => {
                     let result = records.value.filter(item => {
-                        // 1. Búsqueda por texto general incluyendo CELULAR
                         const query = searchQuery.value.toLowerCase().trim();
                         const matchesSearch = !query || 
                             item.nombre.toLowerCase().includes(query) || 
@@ -1519,32 +1518,25 @@
                         
                         if (!matchesSearch) return false;
 
-                        // 2. Filtro por Año
                         if (filterAño.value !== 'ALL') {
                             const year = item.fechaIngreso ? item.fechaIngreso.split('-')[0] : '';
                             if (year !== filterAño.value) return false;
                         }
 
-                        // 3. Filtro por Mes
                         if (filterMes.value !== 'ALL') {
                             const month = item.fechaIngreso ? item.fechaIngreso.split('-')[1] : '';
                             if (month !== filterMes.value) return false;
                         }
 
-                        // 4. Filtro Digitalizado
                         if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
-
-                        // 5. Filtro Sisper
                         if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
 
-                        // 6. Filtro Documentación Faltante
                         if (filterDocFaltante.value !== 'ALL') {
                             const hasMissingDocs = Array.isArray(item.docFaltante) && item.docFaltante.length > 0;
                             if (filterDocFaltante.value === 'COMPLETO' && hasMissingDocs) return false;
                             if (filterDocFaltante.value === 'INCOMPLETO' && !hasMissingDocs) return false;
                         }
 
-                        // 7. Filtro SLA / Días de demora
                         if (filterSLA.value !== 'ALL') {
                             const days = getDaysInProcess(item);
                             if (filterSLA.value === 'VERDE' && days >= 30) return false;
@@ -1552,13 +1544,11 @@
                             if (filterSLA.value === 'ROJO' && days <= 60) return false;
                         }
 
-                        // 8. Filtro Toggle "Solo Críticos"
                         if (showOnlyCritical.value && getStatusKey(item) !== 'CRITICO') return false;
 
                         return true;
                     });
 
-                    // Aplicar el ordenamiento de las columnas (sortColumn y sortAsc)
                     result.sort((a, b) => {
                         let valA = a[sortColumn.value] || '';
                         let valB = b[sortColumn.value] || '';
@@ -1647,7 +1637,7 @@
                 const openNewModal = () => {
                     isEditing.value = false; formDocFaltanteArray.value = [];
                     form.value = { 
-                        id: 'exp_' + Date.now(), nombre: '', dni: '', fd: '', legajo: '', 
+                        id: 'exp_' + Date.now(), nombre: '', dni: '', fd: '', legajo: '', fechaTurnoPsicofisico: '', 
                         digitalizado: 'NO', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', 
                         celular: '', urlDigital: '', fechaIngreso: new Date().toISOString().split('T')[0],
                         historialContacto: []
@@ -1737,10 +1727,10 @@
                     const tableBody = [
                         [
                             { text: 'Fecha', style: 'tableHeader' },
-                            { text: 'Días Háb.', style: 'tableHeader' },
+                            { text: 'Turno Psico.', style: 'tableHeader' },
                             { text: 'Apellido y Nombre', style: 'tableHeader' },
                             { text: 'DNI', style: 'tableHeader' },
-                            { text: 'Expediente (FD)', style: 'tableHeader' },
+                            { text: 'Expediente', style: 'tableHeader' },
                             { text: 'Legajo', style: 'tableHeader' },
                             { text: 'Dig.', style: 'tableHeader' },
                             { text: 'Sisper', style: 'tableHeader' },
@@ -1751,7 +1741,7 @@
                     itemsToExport.forEach(r => {
                         tableBody.push([
                             formatDate(r.fechaIngreso),
-                            getDaysInProcess(r) + ' háb.',
+                            formatDate(r.fechaTurnoPsicofisico),
                             r.nombre || '---',
                             r.dni || '---',
                             r.fd || 'S/D',
@@ -1805,9 +1795,9 @@
                 };
 
                 const exportCSV = () => {
-                    let csv = 'ID,Nombre,DNI,FD,Legajo,FechaIngreso,DiasGestion,Digitalizado,EnviadoSisper,EnviadoMinisterio,Celular,UrlDigital\n';
+                    let csv = 'ID,Nombre,DNI,FD,Legajo,TurnoPsicofisico,FechaIngreso,DiasGestion,Digitalizado,EnviadoSisper,EnviadoMinisterio,Celular,UrlDigital\n';
                     records.value.forEach(r => {
-                        csv += `"${r.id}","${r.nombre}","${r.dni}","${r.fd}","${r.legajo}","${r.fechaIngreso || ''}","${getDaysInProcess(r)}","${r.digitalizado}","${r.enviadoSisper || 'NO'}","${r.enviadoMinisterio}","${r.celular}","${r.urlDigital || ''}"\n`;
+                        csv += `"${r.id}","${r.nombre}","${r.dni}","${r.fd}","${r.legajo}","${r.fechaTurnoPsicofisico || ''}","${r.fechaIngreso || ''}","${getDaysInProcess(r)}","${r.digitalizado}","${r.enviadoSisper || 'NO'}","${r.enviadoMinisterio}","${r.celular}","${r.urlDigital || ''}"\n`;
                     });
                     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.setAttribute('download', `Altas_Puras_Export_${new Date().toISOString().split('T')[0]}.csv`);
