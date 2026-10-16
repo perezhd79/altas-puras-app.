@@ -127,7 +127,6 @@
                             <input v-model="loginDni" type="password" placeholder="Tu contraseña (DNI si es la 1ra vez)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="doLogin">
                         </div>
                         
-                        <!-- BOTÓN DE INGRESO PROTEGIDO -->
                         <button v-if="isCloudConnecting" disabled class="w-full py-3 mt-2 bg-slate-400 text-white rounded-lg font-bold shadow-md flex items-center justify-center gap-2 cursor-not-allowed">
                             <i class="fa-solid fa-spinner fa-spin"></i> Conectando...
                         </button>
@@ -195,7 +194,6 @@
                                     <span class="text-slate-500">•</span>
                                     <span class="text-emerald-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-user-check"></i> {{ currentUserName }}</span>
                                     
-                                    <!-- ETIQUETA VISUAL DE SOLO LECTURA -->
                                     <span v-if="!isAdmin" class="bg-blue-900/60 text-blue-200 text-[10px] px-2 py-0.5 rounded border border-blue-700 font-bold ml-2 flex items-center gap-1">
                                         <i class="fa-solid fa-eye"></i> MODO LECTURA
                                     </span>
@@ -352,6 +350,12 @@
                                             <option :value="1000">Todos</option>
                                         </select>
                                     </div>
+                                    <button @click="showOnlyTurnos = !showOnlyTurnos" 
+                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1.5"
+                                            :class="showOnlyTurnos ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50'">
+                                        <i class="fa-solid fa-calendar-check"></i>
+                                        Solo con Turno
+                                    </button>
                                     <button @click="showOnlyCritical = !showOnlyCritical" 
                                             class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1.5"
                                             :class="showOnlyCritical ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'">
@@ -378,7 +382,7 @@
                                                 Agente / DNI <i :class="getSortIcon('nombre')" class="ml-1 text-[10px]"></i>
                                             </th>
                                             <th class="p-3">FD / Legajo</th>
-                                            <th class="p-3">Doc. Faltante</th>
+                                            <th class="p-3">Doc. Faltante / Alertas</th>
                                             <th class="p-3 text-center">Legajo Digital</th>
                                             <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
                                         </tr>
@@ -436,6 +440,18 @@
                                                         COMPLETA
                                                     </span>
                                                 </template>
+                                                
+                                                <div v-if="extractTurnoDate(item)" class="mt-1.5 flex flex-col gap-1 items-start">
+                                                    <span v-if="getTurnoStatusInfo(item)" :class="getTurnoStatusInfo(item).class" class="font-bold px-1.5 py-0.5 rounded text-[9px] inline-flex items-center gap-1 shadow-sm transition-all">
+                                                        <i v-if="getTurnoStatusInfo(item).status === 'HOY'" class="fa-solid fa-bell animate-bounce"></i>
+                                                        <i v-else-if="getTurnoStatusInfo(item).status === 'VENCIDO'" class="fa-solid fa-triangle-exclamation"></i>
+                                                        <i v-else class="fa-solid fa-calendar-check"></i>
+                                                        {{ getTurnoStatusInfo(item).label }}
+                                                    </span>
+                                                    <span v-else class="text-indigo-700 bg-indigo-50 border border-indigo-200 font-bold px-1.5 py-0.5 rounded text-[9px] inline-flex items-center gap-1 shadow-sm">
+                                                        <i class="fa-solid fa-calendar-check text-indigo-500"></i> Turno: {{ extractTurnoDate(item) }}
+                                                    </span>
+                                                </div>
                                             </td>
 
                                             <td class="p-3 text-center whitespace-nowrap">
@@ -758,7 +774,7 @@
                             <!-- Formulario para nueva nota -->
                             <div class="flex gap-2 items-start pt-2 border-t border-slate-100 mt-2">
                                 <input v-model="nuevaNotaFecha" type="date" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-mono">
-                                <textarea v-model="nuevaNotaMensaje" rows="1" placeholder="Detalle de la conversación..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] resize-none focus:ring-2 focus:ring-slate-400 focus:outline-none"></textarea>
+                                <textarea v-model="nuevaNotaMensaje" rows="1" placeholder="Ej. Se solicitó documentación. Turno: 25/10" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] resize-none focus:ring-2 focus:ring-slate-400 focus:outline-none"></textarea>
                                 <button @click.prevent="agregarNota" class="px-3.5 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold shrink-0 transition text-[11px] shadow-sm flex items-center gap-1.5 h-[34px]">
                                     <i class="fa-solid fa-plus text-[10px]"></i> Añadir
                                 </button>
@@ -900,7 +916,7 @@
 
                 const records = ref([...seedRecords]);
                 const isCloudConnected = ref(false);
-                const isCloudConnecting = ref(true); // NUEVO: Bloqueador de Login
+                const isCloudConnecting = ref(true);
                 const currentShareUrl = ref(window.location.href);
 
                 const toasts = ref([]);
@@ -954,6 +970,25 @@
                     newPassword.value = '';
                     confirmPassword.value = '';
                     showToast(`Bienvenido ${name}`, 'success');
+                    
+                    // Alerta automática de turnos al ingresar
+                    checkTurnosAlert();
+                };
+
+                const checkTurnosAlert = () => {
+                    let hoyCount = 0;
+                    let vencidosCount = 0;
+                    
+                    records.value.forEach(r => {
+                        const statusInfo = getTurnoStatusInfo(r);
+                        if (statusInfo) {
+                            if (statusInfo.status === 'HOY') hoyCount++;
+                            if (statusInfo.status === 'VENCIDO') vencidosCount++;
+                        }
+                    });
+                    
+                    if (hoyCount > 0) showToast(`¡Tienes ${hoyCount} turno(s) para atender HOY!`, 'warning');
+                    if (vencidosCount > 0) showToast(`Atención: Tienes ${vencidosCount} turno(s) VENCIDO(S).`, 'error');
                 };
 
                 const doLogin = () => {
@@ -973,7 +1008,6 @@
                         return;
                     }
 
-                    // FIX: Búsqueda eliminando espacios accidentales
                     const colab = colaboradores.value.find(c => c.nombre.trim().toLowerCase() === u.toLowerCase() && c.password === p);
                     if (colab) {
                         if (colab.password === colab.dni) {
@@ -1003,7 +1037,6 @@
                         adminData.value.password = newPassword.value;
                         localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value));
                         
-                        // EXTRA FIX: Guardar también en la nube para el admin
                         if (window.cloudDB && isCloudConnected.value) {
                             const { db, doc, setDoc, appId } = window.cloudDB;
                             setDoc(doc(db, 'artifacts', appId, 'config', 'admin'), adminData.value).catch(()=>{});
@@ -1039,7 +1072,6 @@
                     localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     if (window.cloudDB && isCloudConnected.value) {
                         const { db, doc, setDoc, appId } = window.cloudDB;
-                        // FIX: Ruta válida en Firestore (número par de segmentos)
                         setDoc(doc(db, 'artifacts', appId, 'config', 'usuarios'), { list: colaboradores.value }).catch(()=>{});
                     }
                 };
@@ -1136,7 +1168,7 @@
                 };
 
                 const importDatabaseJSON = (event) => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return; 
                     const file = event.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
@@ -1153,7 +1185,6 @@
                     reader.readAsText(file);
                 };
 
-                // FIX: Lógica de la nube reforzada
                 const initCloudStorage = async () => {
                     loadFromLocalStorage();
                     if (!window.cloudDB) return;
@@ -1184,31 +1215,25 @@
                         isCloudConnected.value = false;
                     });
 
-                    // FIX CRÍTICO: Sincronizar usuarios y manejo de errores para evitar bloqueos
-const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
-onSnapshot(usersDocRef, (snapshot) => {
-    if (snapshot.exists()) {
-        let firebaseColabs = snapshot.data().list || [];
-        firebaseColabs = firebaseColabs.map(c => ({
-            ...c,
-            password: c.password || c.dni,
-            correo: c.correo || ''
-        }));
-        colaboradores.value = firebaseColabs;
-        localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-    } else if (colaboradores.value.length > 0 && isAdmin.value) {
-        setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
-    }
-    // Quitar pantalla de carga tras sincronizar exitosamente
-    isCloudConnecting.value = false;
-}, (error) => {
-    console.error("Error de permisos en Firestore:", error);
-    showToast("Error conectando con la base de datos. Avisar al Administrador.", "error");
-    // Desbloquear el botón de login para no dejar atascado al usuario
-    isCloudConnecting.value = false;
-});
+                    const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
+                    onSnapshot(usersDocRef, (snapshot) => {
+                        if (snapshot.exists()) {
+                            let firebaseColabs = snapshot.data().list || [];
+                            firebaseColabs = firebaseColabs.map(c => ({
+                                ...c,
+                                password: c.password || c.dni,
+                                correo: c.correo || ''
+                            }));
+                            colaboradores.value = firebaseColabs;
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                        } else if (colaboradores.value.length > 0 && isAdmin.value) {
+                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+                        }
+                        isCloudConnecting.value = false;
+                    }, (error) => {
+                        isCloudConnecting.value = false;
+                    });
 
-                    // EXTRA FIX: Sincronizar credenciales de Admin
                     const adminDocRef = doc(db, 'artifacts', appId, 'config', 'admin');
                     onSnapshot(adminDocRef, (snapshot) => {
                         if (snapshot.exists()) {
@@ -1245,7 +1270,7 @@ onSnapshot(usersDocRef, (snapshot) => {
 
                 const parseInfoFromFilenameOrFallback = (filename) => {
                     if (!filename) return { nombre: '', dni: '', celular: '' };
-                    const cleanName = filename.replace(/\.[^/.]+$/, "");
+                    const cleanName = filename.replace(/\.[^/.]+\$/, "");
                     let dni = '', celular = '';
                     const dniMatch = cleanName.match(/\b(\d{7,8})\b/);
                     if (dniMatch) dni = dniMatch[1];
@@ -1334,7 +1359,7 @@ onSnapshot(usersDocRef, (snapshot) => {
                     for (const file of files) {
                         const data = (await parseDocumentWithGeminiAI(file)) || parseInfoFromFilenameOrFallback(file.name);
                         stagedRecords.value.push({
-                            nombre: data?.nombre || file.name.replace(/\.[^/.]+$/, ""),
+                            nombre: data?.nombre || file.name.replace(/\.[^/.]+\$/, ""),
                             dni: data?.identificacion ? String(data.identificacion).replace(/\D/g, '') : '',
                             celular: data?.telefono ? String(data.telefono).replace(/\D/g, '') : '',
                             fd: '',
@@ -1353,7 +1378,7 @@ onSnapshot(usersDocRef, (snapshot) => {
                 };
 
                 const commitStagedRecords = () => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return; 
                     if (stagedRecords.value.length === 0) return;
                     stagedRecords.value.forEach(st => {
                         records.value.unshift({ id: 'exp_' + Math.random(), ...st });
@@ -1378,6 +1403,7 @@ onSnapshot(usersDocRef, (snapshot) => {
                 const filterDocFaltante = ref('ALL');
                 const filterSLA = ref('ALL');
                 const showOnlyCritical = ref(false);
+                const showOnlyTurnos = ref(false); // NUEVA VARIABLE PARA FILTRO TURNOS
 
                 const sortColumn = ref('fechaIngreso');
                 const sortAsc = ref(false);
@@ -1453,465 +1479,40 @@ onSnapshot(usersDocRef, (snapshot) => {
                     historialContacto: []
                 });
 
-                const openSmartUploadModal = () => { stagedRecords.value = []; showSmartUploadModal.value = true; };
+                // FUNCIÓN: Extraer fecha del turno del historial de contacto
+                const extractTurnoDate = (item) => {
+                    if (!item.historialContacto || !Array.isArray(item.historialContacto)) return null;
+                    const notaTurno = item.historialContacto.find(nota => nota.mensaje.toLowerCase().includes('turno'));
+                    if (!notaTurno) return null;
+                    
+                    const dateMatch = notaTurno.mensaje.match(/(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?)/);
+                    if (dateMatch) {
+                        return dateMatch[1]; 
+                    }
+                    return "Asig. el " + formatDate(notaTurno.fecha);
+                };
 
-                const getDaysInProcess = (item) => {
-                    if (!item || !item.fechaIngreso) return 0;
-                    const [y, m, d] = item.fechaIngreso.split('-');
-                    let current = new Date(y, m - 1, d);
-                    current.setHours(0, 0, 0, 0);
+                // FUNCIÓN: Evaluar si el turno es hoy, está vencido o es a futuro
+                const getTurnoStatusInfo = (item) => {
+                    const extracted = extractTurnoDate(item);
+                    if (!extracted || extracted.startsWith("Asig. el")) return null;
+
+                    let parts = extracted.split(/[\/\-]/);
+                    if (parts.length < 2) return null;
+
+                    let d = parseInt(parts[0], 10);
+                    let m = parseInt(parts[1], 10) - 1; 
+                    let y = parts.length >= 3 ? parseInt(parts[2], 10) : new Date().getFullYear();
+                    if (y < 100) y += 2000; 
+
+                    let turnoDate = new Date(y, m, d);
+                    turnoDate.setHours(0, 0, 0, 0);
+
                     let today = new Date();
                     today.setHours(0, 0, 0, 0);
-                    if (current >= today) return 0;
 
-                    let days = 0;
-                    while (current < today) {
-                        current.setDate(current.getDate() + 1);
-                        const dayOfWeek = current.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) days++;
+                    if (turnoDate.getTime() === today.getTime()) {
+                        return { status: 'HOY', label: `¡Turno Hoy! (${extracted})`, class: 'text-amber-800 bg-amber-100 border-amber-400 animate-pulse ring-1 ring-amber-300' };
                     }
-                    return days;
-                };
-
-                const getSlaColorClass = (days) => {
-                    if (days >= 60) return 'text-rose-600';
-                    if (days >= 30) return 'text-amber-600';
-                    return 'text-emerald-600';
-                };
-
-                const activeWhatsAppRecord = ref(null);
-                const customWhatsAppMessage = ref('');
-                const openWhatsAppModal = (item) => {
-                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
-                    activeWhatsAppRecord.value = item;
-                    
-                    const documentosFaltantes = (Array.isArray(item.docFaltante) && item.docFaltante.length > 0) 
-                        ? item.docFaltante.join(', ') 
-                        : '[Indicar documentación]';
-
-                    const fdText = item.fd ? item.fd : 'S/D';
-                    const fechaText = formatDate(item.fechaIngreso);
-
-                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo (FD: ${fdText} / Fecha de ingreso: ${fechaText}) para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
-                    
-                    showWhatsAppModal.value = true;
-                };
-
-                const finalWhatsAppLink = computed(() => {
-                    if (!activeWhatsAppRecord.value || !activeWhatsAppRecord.value.celular) return '#';
-                    return `https://wa.me/549${activeWhatsAppRecord.value.celular.replace(/\D/g, '')}?text=${encodeURIComponent(customWhatsAppMessage.value)}`;
-                });
-
-                const registrarContactoWhatsApp = () => {
-                    if (!isAdmin.value) return; // Protección JS
-                    if (activeWhatsAppRecord.value) {
-                        const record = records.value.find(r => r.id === activeWhatsAppRecord.value.id);
-                        if (record) {
-                            if (!record.historialContacto) record.historialContacto = [];
-                            const hoy = new Date().toISOString().split('T')[0];
-                            record.historialContacto.unshift({
-                                fecha: hoy,
-                                mensaje: 'Notificación enviada por WhatsApp (Autogenerado)'
-                            });
-                            saveToLocalStorage(records.value);
-                            
-                            if (window.cloudDB && isCloudConnected.value) {
-                                const { db, doc, setDoc, appId } = window.cloudDB;
-                                setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(record.id)), record).catch(() => {});
-                            }
-                            showToast("Contacto registrado en el historial", "success");
-                        }
-                    }
-                    showWhatsAppModal.value = false;
-                };
-
-                const getStatusKey = (item) => {
-                    if (item.enviadoMinisterio === 'SI') return 'COMPLETADO';
-                    const hasDoc = Array.isArray(item.docFaltante) ? item.docFaltante.length > 0 : (item.docFaltante && item.docFaltante !== 'NINGUNA' && item.docFaltante !== 'NO');
-                    if (hasDoc) return 'CRITICO';
-                    return 'EN_PROCESO';
-                };
-
-                const filteredRecords = computed(() => {
-                    let result = records.value.filter(item => {
-                        const query = searchQuery.value.toLowerCase().trim();
-                        const matchesSearch = !query || 
-                            item.nombre.toLowerCase().includes(query) || 
-                            (item.dni && item.dni.includes(query)) || 
-                            (item.fd && item.fd.toLowerCase().includes(query)) ||
-                            (item.legajo && item.legajo.toLowerCase().includes(query)) ||
-                            (item.celular && item.celular.includes(query));
-                        
-                        if (!matchesSearch) return false;
-
-                        if (filterAño.value !== 'ALL') {
-                            const year = item.fechaIngreso ? item.fechaIngreso.split('-')[0] : '';
-                            if (year !== filterAño.value) return false;
-                        }
-
-                        if (filterMes.value !== 'ALL') {
-                            const month = item.fechaIngreso ? item.fechaIngreso.split('-')[1] : '';
-                            if (month !== filterMes.value) return false;
-                        }
-
-                        if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
-
-                        if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
-
-                        if (filterDocFaltante.value !== 'ALL') {
-                            const hasMissingDocs = Array.isArray(item.docFaltante) && item.docFaltante.length > 0;
-                            if (filterDocFaltante.value === 'COMPLETO' && hasMissingDocs) return false;
-                            if (filterDocFaltante.value === 'INCOMPLETO' && !hasMissingDocs) return false;
-                        }
-
-                        if (filterSLA.value !== 'ALL') {
-                            const days = getDaysInProcess(item);
-                            if (filterSLA.value === 'VERDE' && days >= 30) return false;
-                            if (filterSLA.value === 'AMARILLO' && (days < 30 || days > 60)) return false;
-                            if (filterSLA.value === 'ROJO' && days <= 60) return false;
-                        }
-
-                        if (showOnlyCritical.value && getStatusKey(item) !== 'CRITICO') return false;
-
-                        return true;
-                    });
-
-                    result.sort((a, b) => {
-                        let valA = a[sortColumn.value] || '';
-                        let valB = b[sortColumn.value] || '';
-
-                        if (sortColumn.value === 'status') {
-                            valA = getStatusKey(a);
-                            valB = getStatusKey(b);
-                        }
-
-                        if (valA < valB) return sortAsc.value ? -1 : 1;
-                        if (valA > valB) return sortAsc.value ? 1 : -1;
-                        return 0;
-                    });
-
-                    return result;
-                });
-
-                const paginatedRecords = computed(() => {
-                    const start = (currentPage.value - 1) * itemsPerPage.value;
-                    return filteredRecords.value.slice(start, start + itemsPerPage.value);
-                });
-
-                const totalPages = computed(() => Math.ceil(filteredRecords.value.length / itemsPerPage.value) || 1);
-                const isAllSelected = computed(() => paginatedRecords.value.length > 0 && paginatedRecords.value.every(r => selectedRecordIds.value.includes(r.id)));
-
-                const toggleSelectAll = () => {
-                    if (!isAdmin.value) return;
-                    if (isAllSelected.value) {
-                        const currentIds = paginatedRecords.value.map(r => r.id);
-                        selectedRecordIds.value = selectedRecordIds.value.filter(id => !currentIds.includes(id));
-                    } else {
-                        paginatedRecords.value.forEach(r => { if (!selectedRecordIds.value.includes(r.id)) selectedRecordIds.value.push(r.id); });
-                    }
-                };
-
-                const stats = computed(() => {
-                    const total = records.value.length;
-                    if (total === 0) return { total: 0, pctDigitalizado: 0, digitalizadosCount: 0, pctEnviados: 0, enviadosCount: 0, conFaltanteCount: 0, pctConFaltante: 0, demoradosSLACount: 0 };
-                    const digitalizadosCount = records.value.filter(r => r.digitalizado === 'SI').length;
-                    const enviadosCount = records.value.filter(r => r.enviadoMinisterio === 'SI').length;
-                    const conFaltanteCount = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
-                    const demoradosSLACount = records.value.filter(r => r.enviadoMinisterio !== 'SI' && getDaysInProcess(r) > 60).length;
-                    return {
-                        total, digitalizadosCount, pctDigitalizado: Math.round((digitalizadosCount / total) * 100),
-                        enviadosCount, pctEnviados: Math.round((enviadosCount / total) * 100),
-                        conFaltanteCount, pctConFaltante: Math.round((conFaltanteCount / total) * 100), demoradosSLACount
-                    };
-                });
-
-                const processHealthScore = computed(() => {
-                    if (stats.value.total === 0) return 100;
-                    return Math.round((stats.value.pctDigitalizado * 0.4) + (stats.value.pctEnviados * 0.4) + ((100 - stats.value.pctConFaltante) * 0.2));
-                });
-
-                const aiInsightText = computed(() => {
-                    return `Se gestionan <strong>${stats.value.total}</strong> expedientes activos con una salud de proceso del <strong>${processHealthScore.value}%</strong>.`;
-                });
-
-                const getStatusBadgeClass = (item) => {
-                    const key = getStatusKey(item);
-                    if (key === 'COMPLETADO') return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
-                    if (key === 'CRITICO') return 'bg-rose-100 text-rose-800 border border-rose-300';
-                    return 'bg-amber-100 text-amber-800 border border-amber-300';
-                };
-
-                const getStatusIcon = (item) => {
-                    const key = getStatusKey(item);
-                    if (key === 'COMPLETADO') return 'fa-solid fa-circle-check text-emerald-600';
-                    if (key === 'CRITICO') return 'fa-solid fa-triangle-exclamation text-rose-600';
-                    return 'fa-solid fa-clock text-amber-600';
-                };
-
-                const getStatusLabel = (item) => {
-                    const key = getStatusKey(item);
-                    if (key === 'COMPLETADO') return 'Finalizado';
-                    if (key === 'CRITICO') return 'Doc. Pendiente';
-                    return 'En Proceso';
-                };
-
-                const formatDate = (dateStr) => {
-                    if (!dateStr) return '---';
-                    const parts = dateStr.split('-');
-                    return parts.length < 3 ? dateStr : `${parts[2]}/${parts[1]}/${parts[0]}`;
-                };
-
-                const resetFilters = () => { searchQuery.value = ''; selectedRecordIds.value = []; currentPage.value = 1; };
-                
-                const openNewModal = () => {
-                    if (!isAdmin.value) return;
-                    isEditing.value = false; formDocFaltanteArray.value = [];
-                    form.value = { 
-                        id: 'exp_' + Date.now(), nombre: '', dni: '', fd: '', legajo: '', 
-                        digitalizado: 'NO', devuelto: 'NO', enviadoSisper: 'NO', enviadoMinisterio: 'NO', 
-                        celular: '', urlDigital: '', fechaIngreso: new Date().toISOString().split('T')[0],
-                        historialContacto: []
-                    };
-                    showModal.value = true;
-                };
-
-                const editRecord = (item) => {
-                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
-                    isEditing.value = true;
-                    form.value = JSON.parse(JSON.stringify(item));
-                    if (!form.value.historialContacto) form.value.historialContacto = [];
-                    formDocFaltanteArray.value = Array.isArray(item.docFaltante) ? [...item.docFaltante] : [];
-                    showModal.value = true;
-                };
-
-                const saveRecord = async () => {
-                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
-                    const recordData = {
-                        ...form.value,
-                        id: String(form.value.id || ('exp_' + Date.now())),
-                        docFaltante: [...formDocFaltanteArray.value]
-                    };
-                    if (isEditing.value) {
-                        const idx = records.value.findIndex(r => String(r.id) === String(recordData.id));
-                        if (idx !== -1) records.value[idx] = recordData;
-                    } else {
-                        records.value.unshift(recordData);
-                    }
-                    saveToLocalStorage(records.value);
-                    showModal.value = false;
-                    showToast("Guardado exitosamente", "success");
-                    nextTick(() => updateCharts());
-                };
-
-                const confirmDelete = (item) => {
-                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
-                    records.value = records.value.filter(r => String(r.id) !== String(item.id));
-                    saveToLocalStorage(records.value);
-                    showToast("Expediente eliminado", "info");
-                    nextTick(() => updateCharts());
-                };
-
-                const bulkSetDigitalizado = (val) => {
-                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
-                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, digitalizado: val } : r);
-                    saveToLocalStorage(records.value);
-                    showToast("Actualización masiva completada", "success");
-                    selectedRecordIds.value = [];
-                    nextTick(() => updateCharts());
-                };
-
-                const bulkSetMinisterio = (val) => {
-                    if (!isAdmin.value) { showToast("Acceso denegado: Solo lectura.", "error"); return; }
-                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: val } : r);
-                    saveToLocalStorage(records.value);
-                    showToast("Actualización masiva completada", "success");
-                    selectedRecordIds.value = [];
-                    nextTick(() => updateCharts());
-                };
-
-                const openExportModal = () => showExportModal.value = true;
-                const pdfStats = computed(() => {
-                    const faltantes = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
-                    const sisper = records.value.filter(r => r.enviadoSisper === 'SI').length;
-                    const digEnv = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI').length;
-                    return { faltantes, sisper, digEnv };
-                });
-
-                const exportPDF = (type) => {
-                    let itemsToExport = records.value;
-                    let reportTitle = "INFORME GENERAL DE ALTAS PURAS";
-
-                    if (type === 'FALTANTE') {
-                        itemsToExport = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0);
-                        reportTitle = "INFORME DE EXPEDIENTES CON DOCUMENTACIÓN PENDIENTE";
-                    } else if (type === 'ENVIADO_SISPER') {
-                        itemsToExport = records.value.filter(r => r.enviadoSisper === 'SI');
-                        reportTitle = "INFORME DE TRÁMITES REGISTRADOS EN SISPER";
-                    } else if (type === 'MINISTERIO') {
-                        itemsToExport = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI');
-                        reportTitle = "INFORME DE TRÁMITES FINALIZADOS Y REMITIDOS AL MINISTERIO";
-                    }
-
-                    if (itemsToExport.length === 0) {
-                        showToast("No hay registros para este informe.", "warning");
-                        return;
-                    }
-
-                    showToast("Generando reporte PDF profesional...", "info");
-
-                    const tableBody = [
-                        [
-                            { text: 'Fecha', style: 'tableHeader' },
-                            { text: 'Días Háb.', style: 'tableHeader' },
-                            { text: 'Apellido y Nombre', style: 'tableHeader' },
-                            { text: 'DNI', style: 'tableHeader' },
-                            { text: 'Expediente (FD)', style: 'tableHeader' },
-                            { text: 'Legajo', style: 'tableHeader' },
-                            { text: 'Dig.', style: 'tableHeader' },
-                            { text: 'Sisper', style: 'tableHeader' },
-                            { text: 'Estado', style: 'tableHeader' }
-                        ]
-                    ];
-
-                    itemsToExport.forEach(r => {
-                        tableBody.push([
-                            formatDate(r.fechaIngreso),
-                            getDaysInProcess(r) + ' háb.',
-                            r.nombre || '---',
-                            r.dni || '---',
-                            r.fd || 'S/D',
-                            r.legajo || 'S/D',
-                            r.digitalizado || 'NO',
-                            r.enviadoSisper || 'NO',
-                            getStatusLabel(r)
-                        ]);
-                    });
-
-                    const now = new Date();
-                    const fechaEmj = `${now.toLocaleDateString('es-AR')} ${now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`.trim();
-
-                    const docDefinition = {
-                        pageOrientation: 'landscape',
-                        pageSize: 'A4',
-                        pageMargins: [20, 30, 20, 30],
-                        content: [
-                            { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
-                            { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
-                            { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 780, y2: 8, lineWidth: 1.5, lineColor: '#334155' }] },
-                            { text: reportTitle, style: 'reportTitle' },
-                            { text: `Fecha de Emisión: ${fechaEmj} | Total de Registros: ${itemsToExport.length}`, style: 'metaText' },
-                            {
-                                style: 'tableExample',
-                                table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody },
-                                layout: {
-                                    fillColor: function (rowIndex) { return (rowIndex === 0) ? '#334155' : (rowIndex % 2 === 0) ? '#f8fafc' : null; },
-                                    hLineWidth: function () { return 0.5; },
-                                    vLineWidth: function () { return 0; },
-                                    hLineColor: function () { return '#cbd5e1'; },
-                                    paddingLeft: function() { return 6; }, paddingRight: function() { return 6; },
-                                    paddingTop: function() { return 5; }, paddingBottom: function() { return 5; }
-                                }
-                            }
-                        ],
-                        styles: {
-                            mainHeader: { fontSize: 16, bold: true, color: '#0f172a' },
-                            subHeader: { fontSize: 10, bold: true, color: '#475569', margin: [0, 2, 0, 15] },
-                            reportTitle: { fontSize: 12, bold: true, color: '#1e293b', margin: [0, 10, 0, 2] },
-                            metaText: { fontSize: 9, color: '#64748b', margin: [0, 0, 0, 12] },
-                            tableExample: { margin: [0, 5, 0, 15] },
-                            tableHeader: { bold: true, fontSize: 9, color: 'white', alignment: 'center' }
-                        },
-                        defaultStyle: { fontSize: 8, color: '#334155' }
-                    };
-
-                    pdfMake.createPdf(docDefinition).download(`Informe_AltasPuras_${type}_${new Date().toISOString().split('T')[0]}.pdf`);
-                    showToast("¡Reporte oficial PDF generado con éxito!", "success");
-                    showExportModal.value = false;
-                };
-
-                const exportCSV = () => {
-                    let csv = 'ID,Nombre,DNI,FD,Legajo,FechaIngreso,DiasGestion,Digitalizado,EnviadoSisper,EnviadoMinisterio,Celular,UrlDigital\n';
-                    records.value.forEach(r => {
-                        csv += `"${r.id}","${r.nombre}","${r.dni}","${r.fd}","${r.legajo}","${r.fechaIngreso || ''}","${getDaysInProcess(r)}","${r.digitalizado}","${r.enviadoSisper || 'NO'}","${r.enviadoMinisterio}","${r.celular}","${r.urlDigital || ''}"\n`;
-                    });
-                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.setAttribute('download', `Altas_Puras_Export_${new Date().toISOString().split('T')[0]}.csv`);
-                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                    showToast("Archivo Excel CSV descargado", "success");
-                };
-
-                let chartFunnel = null, chartDocs = null;
-                const initCharts = () => {
-                    if (document.getElementById('funnelChart')) {
-                        chartFunnel = new Chart(document.getElementById('funnelChart').getContext('2d'), {
-                            type: 'bar',
-                            data: {
-                                labels: ['Ingresados', 'Digitalizados', 'Enviados Sisper', 'Enviados Min.'],
-                                datasets: [{ data: [records.value.length, records.value.filter(r => r.digitalizado === 'SI').length, records.value.filter(r => r.enviadoSisper === 'SI').length, records.value.filter(r => r.enviadoMinisterio === 'SI').length], backgroundColor: ['#475569', '#64748b', '#334155', '#10b981'], borderRadius: 6 }]
-                            },
-                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-                        });
-                    }
-                    if (document.getElementById('docsChart')) {
-                        chartDocs = new Chart(document.getElementById('docsChart').getContext('2d'), {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['Completos', 'Con Faltantes'],
-                                datasets: [{ data: [records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length, records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length], backgroundColor: ['#10b981', '#f43f5e'] }]
-                            },
-                            options: { responsive: true, maintainAspectRatio: false }
-                        });
-                    }
-                };
-
-                const updateCharts = () => {
-                    if (chartFunnel) {
-                        chartFunnel.data.datasets[0].data = [
-                            records.value.length,
-                            records.value.filter(r => r.digitalizado === 'SI').length,
-                            records.value.filter(r => r.enviadoSisper === 'SI').length,
-                            records.value.filter(r => r.enviadoMinisterio === 'SI').length
-                        ];
-                        chartFunnel.update();
-                    }
-                    if (chartDocs) {
-                        chartDocs.data.datasets[0].data = [
-                            records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length,
-                            records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length
-                        ];
-                        chartDocs.update();
-                    }
-                };
-
-                onMounted(() => nextTick(() => { initCharts(); initCloudStorage(); loadColaboradores(); }));
-
-                return {
-                    records, isCloudConnected, isCloudConnecting, currentShareUrl, toasts, removeToast,
-                    availableDocOptions, searchQuery, filterAño, filterMes, filterSisper,
-                    filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
-                    currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
-                    sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
-                    toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
-                    aiInsightText, processHealthScore, getDaysInProcess, getSlaColorClass,
-                    showModal, showExportModal, showWhatsAppModal, showShareModal, showSmartUploadModal,
-                    isEditing, form, formDocFaltanteArray, getStatusBadgeClass, getStatusIcon,
-                    getStatusLabel, formatDate, resetFilters, openNewModal, editRecord, saveRecord,
-                    confirmDelete, exportPDF, exportCSV, copyShareLink, exportDatabaseJSON,
-                    importDatabaseJSON, activeWhatsAppRecord, customWhatsAppMessage, finalWhatsAppLink,
-                    openWhatsAppModal, registrarContactoWhatsApp, openExportModal, pdfStats, handleBatchFileSelect, stagedRecords,
-                    commitStagedRecords, isAiProcessing, isBatchProcessing, handleSingleFileAIUpload, openSmartUploadModal,
-                    
-                    // Lógica Historial de Contacto
-                    nuevaNotaFecha, nuevaNotaMensaje, agregarNota, eliminarNota,
-                    
-                    // Variables expuestas de Autenticación
-                    isLoggedIn, isAdmin, currentUserName, loginName, loginDni, doLogin, doLogout, 
-                    requirePasswordChange, newPassword, confirmPassword, saveNewPassword, cancelPasswordChange,
-                    showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, 
-                    removeColaborador, resetColabPassword, editColabEmail
-                };
-            }
-        }).mount('#app');
-    </script>
-</body>
-</html>
+                    if (turnoDate < today) {
+                        return { status: 'VENCIDO', label: `Vencido (${extracted})`, class:
