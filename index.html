@@ -127,7 +127,6 @@
                             <input v-model="loginDni" type="password" placeholder="Tu contraseña (DNI si es la 1ra vez)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400" @keyup.enter="doLogin">
                         </div>
                         
-                        <!-- BOTÓN DE INGRESO PROTEGIDO -->
                         <button v-if="isCloudConnecting" disabled class="w-full py-3 mt-2 bg-slate-400 text-white rounded-lg font-bold shadow-md flex items-center justify-center gap-2 cursor-not-allowed">
                             <i class="fa-solid fa-spinner fa-spin"></i> Conectando...
                         </button>
@@ -195,7 +194,6 @@
                                     <span class="text-slate-500">•</span>
                                     <span class="text-emerald-300 font-semibold flex items-center gap-1"><i class="fa-solid fa-user-check"></i> {{ currentUserName }}</span>
                                     
-                                    <!-- ETIQUETA VISUAL DE SOLO LECTURA -->
                                     <span v-if="!isAdmin" class="bg-blue-900/60 text-blue-200 text-[10px] px-2 py-0.5 rounded border border-blue-700 font-bold ml-2 flex items-center gap-1">
                                         <i class="fa-solid fa-eye"></i> MODO LECTURA
                                     </span>
@@ -216,7 +214,6 @@
                             <button @click="openExportModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95 shrink-0">
                                 <i class="fa-solid fa-file-pdf text-slate-200 text-xs"></i> Exportar PDF
                             </button>
-                            <!-- Accesos (Solo Admin) y Salir -->
                             <button v-if="isAdmin" @click="showColaboradoresModal = true" class="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center gap-1.5 shrink-0">
                                 <i class="fa-solid fa-user-shield"></i> Accesos
                             </button>
@@ -309,7 +306,7 @@
                             </div>
                         </div>
 
-                        <!-- 2. BARRA DE ACCIONES EN LOTE (Oculta para colaboradores) -->
+                        <!-- 2. BARRA DE ACCIONES EN LOTE -->
                         <div v-if="selectedRecordIds.length > 0 && isAdmin" 
                              class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex flex-wrap items-center justify-between gap-3">
                             <div class="flex items-center gap-2 text-xs">
@@ -423,6 +420,7 @@
                                                 <div class="text-slate-500 text-[10px]">Leg: {{ item.legajo || 'S/D' }}</div>
                                             </td>
 
+                                            <!-- COLUMNA DOC FALTANTE ACTUALIZADA CON TURNO -->
                                             <td class="p-3 whitespace-normal max-w-[200px]">
                                                 <template v-if="Array.isArray(item.docFaltante) && item.docFaltante.length > 0">
                                                     <div class="flex flex-wrap gap-1">
@@ -436,6 +434,13 @@
                                                         COMPLETA
                                                     </span>
                                                 </template>
+                                                
+                                                <!-- ETIQUETA INTELIGENTE DE TURNO -->
+                                                <div v-if="extractTurnoDate(item)" class="mt-1.5">
+                                                    <span class="text-indigo-700 bg-indigo-50 border border-indigo-200 font-bold px-1.5 py-0.5 rounded text-[9px] inline-flex items-center gap-1 shadow-sm" title="Turno extraído del historial">
+                                                        <i class="fa-solid fa-calendar-check text-indigo-500"></i> Turno: {{ extractTurnoDate(item) }}
+                                                    </span>
+                                                </div>
                                             </td>
 
                                             <td class="p-3 text-center whitespace-nowrap">
@@ -758,7 +763,7 @@
                             <!-- Formulario para nueva nota -->
                             <div class="flex gap-2 items-start pt-2 border-t border-slate-100 mt-2">
                                 <input v-model="nuevaNotaFecha" type="date" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-mono">
-                                <textarea v-model="nuevaNotaMensaje" rows="1" placeholder="Detalle de la conversación..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] resize-none focus:ring-2 focus:ring-slate-400 focus:outline-none"></textarea>
+                                <textarea v-model="nuevaNotaMensaje" rows="1" placeholder="Ej. Se solicitó documentación. Turno: 25/10" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[11px] resize-none focus:ring-2 focus:ring-slate-400 focus:outline-none"></textarea>
                                 <button @click.prevent="agregarNota" class="px-3.5 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-semibold shrink-0 transition text-[11px] shadow-sm flex items-center gap-1.5 h-[34px]">
                                     <i class="fa-solid fa-plus text-[10px]"></i> Añadir
                                 </button>
@@ -900,7 +905,7 @@
 
                 const records = ref([...seedRecords]);
                 const isCloudConnected = ref(false);
-                const isCloudConnecting = ref(true); // NUEVO: Bloqueador de Login
+                const isCloudConnecting = ref(true);
                 const currentShareUrl = ref(window.location.href);
 
                 const toasts = ref([]);
@@ -973,7 +978,6 @@
                         return;
                     }
 
-                    // FIX: Búsqueda eliminando espacios accidentales
                     const colab = colaboradores.value.find(c => c.nombre.trim().toLowerCase() === u.toLowerCase() && c.password === p);
                     if (colab) {
                         if (colab.password === colab.dni) {
@@ -1003,7 +1007,6 @@
                         adminData.value.password = newPassword.value;
                         localStorage.setItem('altas_puras_admin', JSON.stringify(adminData.value));
                         
-                        // EXTRA FIX: Guardar también en la nube para el admin
                         if (window.cloudDB && isCloudConnected.value) {
                             const { db, doc, setDoc, appId } = window.cloudDB;
                             setDoc(doc(db, 'artifacts', appId, 'config', 'admin'), adminData.value).catch(()=>{});
@@ -1039,7 +1042,6 @@
                     localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
                     if (window.cloudDB && isCloudConnected.value) {
                         const { db, doc, setDoc, appId } = window.cloudDB;
-                        // FIX: Ruta válida en Firestore (número par de segmentos)
                         setDoc(doc(db, 'artifacts', appId, 'config', 'usuarios'), { list: colaboradores.value }).catch(()=>{});
                     }
                 };
@@ -1136,7 +1138,7 @@
                 };
 
                 const importDatabaseJSON = (event) => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return; 
                     const file = event.target.files[0];
                     if (!file) return;
                     const reader = new FileReader();
@@ -1153,7 +1155,6 @@
                     reader.readAsText(file);
                 };
 
-                // FIX: Lógica de la nube reforzada
                 const initCloudStorage = async () => {
                     loadFromLocalStorage();
                     if (!window.cloudDB) return;
@@ -1184,31 +1185,27 @@
                         isCloudConnected.value = false;
                     });
 
-                    // FIX CRÍTICO: Sincronizar usuarios y manejo de errores para evitar bloqueos
-const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
-onSnapshot(usersDocRef, (snapshot) => {
-    if (snapshot.exists()) {
-        let firebaseColabs = snapshot.data().list || [];
-        firebaseColabs = firebaseColabs.map(c => ({
-            ...c,
-            password: c.password || c.dni,
-            correo: c.correo || ''
-        }));
-        colaboradores.value = firebaseColabs;
-        localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-    } else if (colaboradores.value.length > 0 && isAdmin.value) {
-        setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
-    }
-    // Quitar pantalla de carga tras sincronizar exitosamente
-    isCloudConnecting.value = false;
-}, (error) => {
-    console.error("Error de permisos en Firestore:", error);
-    showToast("Error conectando con la base de datos. Avisar al Administrador.", "error");
-    // Desbloquear el botón de login para no dejar atascado al usuario
-    isCloudConnecting.value = false;
-});
+                    const usersDocRef = doc(db, 'artifacts', appId, 'config', 'usuarios');
+                    onSnapshot(usersDocRef, (snapshot) => {
+                        if (snapshot.exists()) {
+                            let firebaseColabs = snapshot.data().list || [];
+                            firebaseColabs = firebaseColabs.map(c => ({
+                                ...c,
+                                password: c.password || c.dni,
+                                correo: c.correo || ''
+                            }));
+                            colaboradores.value = firebaseColabs;
+                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                        } else if (colaboradores.value.length > 0 && isAdmin.value) {
+                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+                        }
+                        isCloudConnecting.value = false;
+                    }, (error) => {
+                        console.error("Error de permisos en Firestore:", error);
+                        showToast("Error conectando con la base de datos.", "error");
+                        isCloudConnecting.value = false;
+                    });
 
-                    // EXTRA FIX: Sincronizar credenciales de Admin
                     const adminDocRef = doc(db, 'artifacts', appId, 'config', 'admin');
                     onSnapshot(adminDocRef, (snapshot) => {
                         if (snapshot.exists()) {
@@ -1353,7 +1350,7 @@ onSnapshot(usersDocRef, (snapshot) => {
                 };
 
                 const commitStagedRecords = () => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return; 
                     if (stagedRecords.value.length === 0) return;
                     stagedRecords.value.forEach(st => {
                         records.value.unshift({ id: 'exp_' + Math.random(), ...st });
@@ -1453,6 +1450,20 @@ onSnapshot(usersDocRef, (snapshot) => {
                     historialContacto: []
                 });
 
+                // NUEVA FUNCIÓN: Extraer fecha del turno del historial de contacto
+                const extractTurnoDate = (item) => {
+                    if (!item.historialContacto || !Array.isArray(item.historialContacto)) return null;
+                    const notaTurno = item.historialContacto.find(nota => nota.mensaje.toLowerCase().includes('turno'));
+                    if (!notaTurno) return null;
+                    
+                    // Buscar una fecha en el mensaje (ej: 25/10, 25-10, 25/10/2026)
+                    const dateMatch = notaTurno.mensaje.match(/(\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?)/);
+                    if (dateMatch) {
+                        return dateMatch[1]; 
+                    }
+                    return "Asig. el " + formatDate(notaTurno.fecha);
+                };
+
                 const openSmartUploadModal = () => { stagedRecords.value = []; showSmartUploadModal.value = true; };
 
                 const getDaysInProcess = (item) => {
@@ -1503,7 +1514,7 @@ onSnapshot(usersDocRef, (snapshot) => {
                 });
 
                 const registrarContactoWhatsApp = () => {
-                    if (!isAdmin.value) return; // Protección JS
+                    if (!isAdmin.value) return; 
                     if (activeWhatsAppRecord.value) {
                         const record = records.value.find(r => r.id === activeWhatsAppRecord.value.id);
                         if (record) {
@@ -1902,7 +1913,7 @@ onSnapshot(usersDocRef, (snapshot) => {
                     commitStagedRecords, isAiProcessing, isBatchProcessing, handleSingleFileAIUpload, openSmartUploadModal,
                     
                     // Lógica Historial de Contacto
-                    nuevaNotaFecha, nuevaNotaMensaje, agregarNota, eliminarNota,
+                    nuevaNotaFecha, nuevaNotaMensaje, agregarNota, eliminarNota, extractTurnoDate,
                     
                     // Variables expuestas de Autenticación
                     isLoggedIn, isAdmin, currentUserName, loginName, loginDni, doLogin, doLogout, 
