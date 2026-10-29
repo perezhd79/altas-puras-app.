@@ -107,8 +107,6 @@
         <!-- PANTALLA DE LOGIN Y CAMBIO DE CONTRASEÑA -->
         <div v-if="!isLoggedIn" class="min-h-screen flex items-center justify-center bg-slate-800 px-4 absolute inset-0 z-[100]">
             <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full border border-slate-200">
-                
-                <!-- Formulario de Login Normal -->
                 <div v-if="!requirePasswordChange">
                     <div class="text-center mb-6">
                         <div class="w-16 h-16 bg-slate-700 rounded-xl shadow-inner flex items-center justify-center mx-auto mb-4">
@@ -129,8 +127,6 @@
                         <button @click="doLogin" class="w-full py-3 mt-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold shadow-md transition active:scale-95">Ingresar al Sistema</button>
                     </div>
                 </div>
-
-                <!-- Formulario de Cambio de Contraseña Obligatorio -->
                 <div v-else>
                     <div class="text-center mb-6">
                         <div class="w-16 h-16 bg-amber-100 rounded-xl shadow-inner flex items-center justify-center mx-auto mb-4 border border-amber-200">
@@ -154,14 +150,12 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
         <!-- CONTENIDO PRINCIPAL DE LA APP -->
         <div v-else class="flex flex-col min-h-screen w-full">
 
-            <!-- Encabezado de la aplicación -->
             <header class="bg-slate-700 text-slate-100 border-b border-slate-600 sticky top-0 z-30 shadow-sm">
                 <div class="max-w-[98%] mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
                     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -172,8 +166,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.5 Check Archivo</span>
-                                    
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v8.0 Registros</span>
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                         Nube Sincronizada
@@ -206,7 +199,6 @@
                             <button @click="openExportModal" class="h-8 px-3.5 bg-slate-600 hover:bg-slate-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center justify-center gap-1.5 active:scale-95 shrink-0">
                                 <i class="fa-solid fa-file-pdf text-slate-200 text-xs"></i> Exportar PDF
                             </button>
-                            <!-- Accesos (Solo Admin) y Salir -->
                             <button v-if="isAdmin" @click="showColaboradoresModal = true" class="h-8 px-3.5 bg-emerald-600 hover:bg-emerald-500 text-slate-100 rounded-lg text-[11px] font-semibold shadow-sm transition flex items-center gap-1.5 shrink-0">
                                 <i class="fa-solid fa-user-shield"></i> Accesos
                             </button>
@@ -218,14 +210,12 @@
                 </div>
             </header>
 
-            <!-- CONTENEDOR PRINCIPAL EN DOS COLUMNAS -->
             <main class="flex-1 max-w-[98%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                     
-                    <!-- COLUMNA IZQUIERDA: GESTIÓN DE EXPEDIENTES -->
                     <div class="xl:col-span-8 space-y-4">
 
-                        <!-- NAVEGACIÓN POR PESTAÑAS (ACTIVOS / ARCHIVO) -->
+                        <!-- NAVEGACIÓN POR PESTAÑAS (3 VISTAS AHORA) -->
                         <div class="flex gap-6 border-b border-slate-200 px-2 mt-2">
                             <button @click="currentView = 'ACTIVOS'; currentPage = 1; selectedRecordIds = []" 
                                     class="pb-3 border-b-2 font-bold text-sm transition flex items-center gap-2"
@@ -239,298 +229,341 @@
                                 <i class="fa-solid fa-box-archive"></i> Archivo Histórico
                                 <span class="bg-slate-200 text-slate-700 py-0.5 px-2 rounded-full text-[10px]">{{ archiveCount }}</span>
                             </button>
+                            <button @click="currentView = 'REPORTES'; currentPage = 1; selectedRecordIds = []" 
+                                    class="pb-3 border-b-2 font-bold text-sm transition flex items-center gap-2"
+                                    :class="currentView === 'REPORTES' ? 'border-slate-700 text-slate-800' : 'border-transparent text-slate-400 hover:text-slate-600'">
+                                <i class="fa-solid fa-file-contract"></i> Historial de Reportes
+                                <span class="bg-slate-200 text-slate-700 py-0.5 px-2 rounded-full text-[10px]">{{ reportesGenerados.length }}</span>
+                            </button>
                         </div>
 
-                        <!-- 1. FILTROS Y BÚSQUEDA OPERATIVA -->
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3" :class="currentView === 'ARCHIVO' ? 'bg-slate-50/50' : ''">
-                            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-sliders text-slate-600 text-sm"></i>
-                                    <h2 class="font-bold text-sm text-slate-800">
-                                        Filtros de Búsqueda 
-                                        <span v-if="currentView === 'ARCHIVO'" class="text-amber-600 ml-1">(Buscando en Archivo)</span>
-                                    </h2>
-                                </div>
-                                <div class="flex items-center gap-3 self-end md:self-auto">
-                                    <button @click="resetFilters" class="text-xs text-slate-600 hover:text-slate-800 font-semibold flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
-                                        <i class="fa-solid fa-rotate-left"></i> Restablecer Filtros
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                <div class="relative sm:col-span-2">
-                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
-                                    <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD, Legajo o Celular..." 
-                                           class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition">
-                                    <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition">
-                                        <i class="fa-solid fa-xmark text-xs"></i>
-                                    </button>
-                                </div>
-
-                                <div>
-                                    <select v-model="filterAño" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700 font-medium">
-                                        <option value="ALL">Año: Todos</option>
-                                        <option v-for="year in availableYears" :key="year" :value="year">Año: {{ year }}</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <select v-model="filterMes" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700 font-medium">
-                                        <option value="ALL">Mes: Todos</option>
-                                        <option v-for="m in monthsList" :key="m.value" :value="m.value">{{ m.label }}</option>
-                                    </select>
-                                </div>
-
-                                <div v-if="currentView === 'ACTIVOS'">
-                                    <select v-model="filterDigitalizado" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">Digitalizado: Todos</option>
-                                        <option value="SI">Digitalizado: SÍ</option>
-                                        <option value="NO">Digitalizado: NO</option>
-                                    </select>
-                                </div>
-
-                                <div v-if="currentView === 'ACTIVOS'">
-                                    <select v-model="filterSisper" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">Sisper: Todos</option>
-                                        <option value="SI">Enviado: SÍ</option>
-                                        <option value="NO">Enviado: NO</option>
-                                    </select>
-                                </div>
-
-                                <div v-if="currentView === 'ACTIVOS'">
-                                    <select v-model="filterDocFaltante" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">Doc: Todas</option>
-                                        <option value="COMPLETO">Documentación Completa</option>
-                                        <option value="INCOMPLETO">Con Faltante</option>
-                                    </select>
-                                </div>
-
-                                <div v-if="currentView === 'ACTIVOS'">
-                                    <select v-model="filterSLA" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
-                                        <option value="ALL">SLA / Días: Todos</option>
-                                        <option value="VERDE">&lt; 30 días (Al día)</option>
-                                        <option value="AMARILLO">30 - 60 días (Atención)</option>
-                                        <option value="ROJO">&gt; 60 días (Demorado)</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 2. BARRA DE ACCIONES EN LOTE (Solo Activos) -->
-                        <div v-if="selectedRecordIds.length > 0 && isAdmin && currentView === 'ACTIVOS'" 
-                             class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex flex-wrap items-center justify-between gap-3">
-                            <div class="flex items-center gap-2 text-xs">
-                                <span class="bg-slate-500 px-2.5 py-1 rounded-full font-bold">{{ selectedRecordIds.length }}</span>
-                                <span>expedientes seleccionados</span>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap text-xs">
-                                <button @click="bulkSetDigitalizado('SI')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-laptop-code"></i> Digitalizado SÍ
-                                </button>
-                                <!-- NUEVO BOTÓN DE ARCHIVADO MASIVO -->
-                                <button @click="bulkArchive()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold shadow-md transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-box-archive"></i> Archivar Seleccionados
-                                </button>
-                                <button @click="selectedRecordIds = []" class="px-2 py-1 text-slate-300 hover:text-white transition">
-                                    <i class="fa-solid fa-xmark"></i> Cancelar
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 3. PLANILLA DE SEGUIMIENTO OPERATIVO -->
-                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" :class="currentView === 'ARCHIVO' ? 'border-amber-200' : ''">
-                            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50" :class="currentView === 'ARCHIVO' ? 'bg-amber-50/30' : ''">
-                                <div>
+                        <!-- VISTAS DE EXPEDIENTES (ACTIVOS y ARCHIVO) -->
+                        <div v-if="currentView === 'ACTIVOS' || currentView === 'ARCHIVO'">
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3 mb-4" :class="currentView === 'ARCHIVO' ? 'bg-slate-50/50' : ''">
+                                <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                                     <div class="flex items-center gap-2">
-                                        <h3 class="font-bold text-slate-800 text-base">
-                                            {{ currentView === 'ACTIVOS' ? 'Planilla de Seguimiento Operativo' : 'Baúl de Archivo Definitivo' }}
-                                        </h3>
-                                        <span class="bg-slate-100 text-slate-700 font-bold text-xs px-2.5 py-0.5 rounded-full border border-slate-200">
-                                            {{ filteredRecords.length }} registros filtrados
-                                        </span>
+                                        <i class="fa-solid fa-sliders text-slate-600 text-sm"></i>
+                                        <h2 class="font-bold text-sm text-slate-800">
+                                            Filtros de Búsqueda 
+                                            <span v-if="currentView === 'ARCHIVO'" class="text-amber-600 ml-1">(Buscando en Archivo)</span>
+                                        </h2>
                                     </div>
-                                    <p class="text-xs text-slate-500 mt-0.5">
-                                        {{ currentView === 'ACTIVOS' ? 'Usa las casillas de la izquierda para seleccionar y archivar.' : 'Expedientes que ya han sido finalizados y enviados al Ministerio. Protegidos contra edición.' }}
-                                    </p>
+                                    <div class="flex items-center gap-3 self-end md:self-auto">
+                                        <button @click="resetFilters" class="text-xs text-slate-600 hover:text-slate-800 font-semibold flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
+                                            <i class="fa-solid fa-rotate-left"></i> Restablecer Filtros
+                                        </button>
+                                    </div>
                                 </div>
 
-                                <div class="flex items-center gap-3">
-                                    <div class="flex items-center gap-1.5 text-xs text-slate-500">
-                                        <span>Ver:</span>
-                                        <select v-model.number="itemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-700">
-                                            <option :value="8">8 por pág.</option>
-                                            <option :value="15">15 por pág.</option>
-                                            <option :value="25">25 por pág.</option>
-                                            <option :value="1000">Todos</option>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                                    <div class="relative sm:col-span-2">
+                                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                                        <input v-model="searchQuery" type="text" placeholder="Buscar Agente, DNI, FD, Legajo o Celular..." 
+                                               class="w-full pl-8 pr-8 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400 focus:bg-white transition">
+                                        <button v-if="searchQuery" @click="searchQuery = ''" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition">
+                                            <i class="fa-solid fa-xmark text-xs"></i>
+                                        </button>
+                                    </div>
+
+                                    <div>
+                                        <select v-model="filterAño" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700 font-medium">
+                                            <option value="ALL">Año: Todos</option>
+                                            <option v-for="year in availableYears" :key="year" :value="year">Año: {{ year }}</option>
                                         </select>
                                     </div>
-                                    <button v-if="currentView === 'ACTIVOS'" @click="showOnlyCritical = !showOnlyCritical" 
-                                            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1.5"
-                                            :class="showOnlyCritical ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'">
-                                        <i class="fa-solid fa-triangle-exclamation"></i>
-                                        Solo Críticos
+
+                                    <div>
+                                        <select v-model="filterMes" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700 font-medium">
+                                            <option value="ALL">Mes: Todos</option>
+                                            <option v-for="m in monthsList" :key="m.value" :value="m.value">{{ m.label }}</option>
+                                        </select>
+                                    </div>
+
+                                    <div v-if="currentView === 'ACTIVOS'">
+                                        <select v-model="filterDigitalizado" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
+                                            <option value="ALL">Digitalizado: Todos</option>
+                                            <option value="SI">Digitalizado: SÍ</option>
+                                            <option value="NO">Digitalizado: NO</option>
+                                        </select>
+                                    </div>
+
+                                    <div v-if="currentView === 'ACTIVOS'">
+                                        <select v-model="filterSisper" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
+                                            <option value="ALL">Sisper: Todos</option>
+                                            <option value="SI">Enviado: SÍ</option>
+                                            <option value="NO">Enviado: NO</option>
+                                        </select>
+                                    </div>
+
+                                    <div v-if="currentView === 'ACTIVOS'">
+                                        <select v-model="filterDocFaltante" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
+                                            <option value="ALL">Doc: Todas</option>
+                                            <option value="COMPLETO">Documentación Completa</option>
+                                            <option value="INCOMPLETO">Con Faltante</option>
+                                        </select>
+                                    </div>
+
+                                    <div v-if="currentView === 'ACTIVOS'">
+                                        <select v-model="filterSLA" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
+                                            <option value="ALL">SLA / Días: Todos</option>
+                                            <option value="VERDE">&lt; 30 días (Al día)</option>
+                                            <option value="AMARILLO">30 - 60 días (Atención)</option>
+                                            <option value="ROJO">&gt; 60 días (Demorado)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-if="selectedRecordIds.length > 0 && isAdmin && currentView === 'ACTIVOS'" 
+                                 class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex flex-wrap items-center justify-between gap-3 mb-4">
+                                <div class="flex items-center gap-2 text-xs">
+                                    <span class="bg-slate-500 px-2.5 py-1 rounded-full font-bold">{{ selectedRecordIds.length }}</span>
+                                    <span>expedientes seleccionados</span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap text-xs">
+                                    <button @click="bulkSetDigitalizado('SI')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition flex items-center gap-1">
+                                        <i class="fa-solid fa-laptop-code"></i> Digitalizado SÍ
+                                    </button>
+                                    <button @click="bulkArchive()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold shadow-md transition flex items-center gap-1.5">
+                                        <i class="fa-solid fa-box-archive"></i> Archivar Seleccionados
+                                    </button>
+                                    <button @click="selectedRecordIds = []" class="px-2 py-1 text-slate-300 hover:text-white transition">
+                                        <i class="fa-solid fa-xmark"></i> Cancelar
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="overflow-x-auto custom-scrollbar">
-                                <table class="w-full text-left border-collapse text-xs">
-                                   <thead>
-                                        <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200 select-none">
-                                            <th class="p-3 text-center w-8" v-if="isAdmin && currentView === 'ACTIVOS'">
-                                                <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
-                                            </th>
-                                            <th @click="sortBy('status')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
-                                                Estado <i :class="getSortIcon('status')" class="ml-1 text-[10px]"></i>
-                                            </th>
-                                            <th @click="sortBy('fechaIngreso')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
-                                                Ingreso <i :class="getSortIcon('fechaIngreso')" class="ml-1 text-[10px]"></i>
-                                            </th>
-                                            <th @click="sortBy('nombre')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
-                                                Agente / DNI <i :class="getSortIcon('nombre')" class="ml-1 text-[10px]"></i>
-                                            </th>
-                                            <th class="p-3">FD / Legajo</th>
-                                            <th class="p-3" v-if="currentView === 'ACTIVOS'">Doc. Faltante</th>
-                                            <th @click="sortBy('fechaTurnoPsicofisico')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition text-center whitespace-nowrap">
-                                                Turno Psico. <i :class="getSortIcon('fechaTurnoPsicofisico')" class="ml-1 text-[10px]"></i>
-                                            </th>
-                                            <th class="p-3 text-center">Legajo Digital</th>
-                                            <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-100">
-                                        <tr v-for="item in paginatedRecords" :key="item.id" 
-                                            class="hover:bg-slate-50/80 transition group"
-                                            :class="[selectedRecordIds.includes(item.id) ? 'bg-slate-100/60' : '', currentView === 'ARCHIVO' ? 'opacity-80 hover:opacity-100' : '']">
-                                            
-                                            <td class="p-3 text-center" v-if="isAdmin && currentView === 'ACTIVOS'">
-                                                <input type="checkbox" :value="item.id" v-model="selectedRecordIds" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
-                                            </td>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" :class="currentView === 'ARCHIVO' ? 'border-amber-200' : ''">
+                                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50" :class="currentView === 'ARCHIVO' ? 'bg-amber-50/30' : ''">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h3 class="font-bold text-slate-800 text-base">
+                                                {{ currentView === 'ACTIVOS' ? 'Planilla de Seguimiento Operativo' : 'Baúl de Archivo Definitivo' }}
+                                            </h3>
+                                            <span class="bg-slate-100 text-slate-700 font-bold text-xs px-2.5 py-0.5 rounded-full border border-slate-200">
+                                                {{ filteredRecords.length }} registros filtrados
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-slate-500 mt-0.5">
+                                            {{ currentView === 'ACTIVOS' ? 'Usa las casillas de la izquierda para seleccionar y archivar.' : 'Expedientes que ya han sido finalizados y enviados al Ministerio. Protegidos contra edición.' }}
+                                        </p>
+                                    </div>
 
-                                            <td class="p-3 whitespace-nowrap">
-                                                <span :class="getStatusBadgeClass(item)" class="px-2 py-0.5 rounded-full font-bold text-[10px] inline-flex items-center gap-1 shadow-sm">
-                                                    <i :class="getStatusIcon(item)"></i>
-                                                    {{ getStatusLabel(item) }}
-                                                </span>
-                                            </td>
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex items-center gap-1.5 text-xs text-slate-500">
+                                            <span>Ver:</span>
+                                            <select v-model.number="itemsPerPage" class="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-700">
+                                                <option :value="8">8 por pág.</option>
+                                                <option :value="15">15 por pág.</option>
+                                                <option :value="25">25 por pág.</option>
+                                                <option :value="1000">Todos</option>
+                                            </select>
+                                        </div>
+                                        <button v-if="currentView === 'ACTIVOS'" @click="showOnlyCritical = !showOnlyCritical" 
+                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1.5"
+                                                :class="showOnlyCritical ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'">
+                                            <i class="fa-solid fa-triangle-exclamation"></i>
+                                            Solo Críticos
+                                        </button>
+                                    </div>
+                                </div>
 
-                                            <td class="p-3 text-slate-600 font-medium whitespace-nowrap">
-                                                <div class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono inline-block mb-1">
-                                                    {{ formatDate(item.fechaIngreso) }}
-                                                </div>
-                                                <div class="text-[9px] font-bold" :class="getSlaColorClass(getDaysInProcess(item))" v-if="currentView === 'ACTIVOS'">
-                                                    <i class="fa-regular fa-clock"></i> {{ getDaysInProcess(item) }} días háb.
-                                                </div>
-                                            </td>
+                                <div class="overflow-x-auto custom-scrollbar">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                       <thead>
+                                            <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200 select-none">
+                                                <th class="p-3 text-center w-8" v-if="isAdmin && currentView === 'ACTIVOS'">
+                                                    <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
+                                                </th>
+                                                <th @click="sortBy('status')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
+                                                    Estado <i :class="getSortIcon('status')" class="ml-1 text-[10px]"></i>
+                                                </th>
+                                                <th @click="sortBy('fechaIngreso')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
+                                                    Ingreso <i :class="getSortIcon('fechaIngreso')" class="ml-1 text-[10px]"></i>
+                                                </th>
+                                                <th @click="sortBy('nombre')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
+                                                    Agente / DNI <i :class="getSortIcon('nombre')" class="ml-1 text-[10px]"></i>
+                                                </th>
+                                                <th class="p-3">FD / Legajo</th>
+                                                <th class="p-3" v-if="currentView === 'ACTIVOS'">Doc. Faltante</th>
+                                                <th @click="sortBy('fechaTurnoPsicofisico')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition text-center whitespace-nowrap">
+                                                    Turno Psico. <i :class="getSortIcon('fechaTurnoPsicofisico')" class="ml-1 text-[10px]"></i>
+                                                </th>
+                                                <th class="p-3 text-center">Legajo Digital</th>
+                                                <th class="p-3 text-center" v-if="isAdmin">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100">
+                                            <tr v-for="item in paginatedRecords" :key="item.id" 
+                                                class="hover:bg-slate-50/80 transition group"
+                                                :class="[selectedRecordIds.includes(item.id) ? 'bg-slate-100/60' : '', currentView === 'ARCHIVO' ? 'opacity-80 hover:opacity-100' : '']">
+                                                
+                                                <td class="p-3 text-center" v-if="isAdmin && currentView === 'ACTIVOS'">
+                                                    <input type="checkbox" :value="item.id" v-model="selectedRecordIds" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
+                                                </td>
 
-                                            <td class="p-3 whitespace-nowrap">
-                                                <div class="font-bold text-slate-900">{{ item.nombre }}</div>
-                                                <div class="flex items-center gap-2 mt-0.5">
-                                                    <span class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</span>
-                                                    <span v-if="item.historialContacto && item.historialContacto.length > 0" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 inline-flex items-center gap-1 shadow-sm" title="Contactado">
-                                                        <i class="fa-brands fa-whatsapp"></i> Contactado
+                                                <td class="p-3 whitespace-nowrap">
+                                                    <span :class="getStatusBadgeClass(item)" class="px-2 py-0.5 rounded-full font-bold text-[10px] inline-flex items-center gap-1 shadow-sm">
+                                                        <i :class="getStatusIcon(item)"></i>
+                                                        {{ getStatusLabel(item) }}
                                                     </span>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            <td class="p-3 text-slate-700 font-medium whitespace-nowrap">
-                                                <div class="font-mono text-[11px]">{{ item.fd || 'Sin FD' }}</div>
-                                                <div class="text-slate-500 text-[10px]">Leg: {{ item.legajo || 'S/D' }}</div>
-                                            </td>
+                                                <td class="p-3 text-slate-600 font-medium whitespace-nowrap">
+                                                    <div class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono inline-block mb-1">
+                                                        {{ formatDate(item.fechaIngreso) }}
+                                                    </div>
+                                                    <div class="text-[9px] font-bold" :class="getSlaColorClass(getDaysInProcess(item))" v-if="currentView === 'ACTIVOS'">
+                                                        <i class="fa-regular fa-clock"></i> {{ getDaysInProcess(item) }} días háb.
+                                                    </div>
+                                                </td>
 
-                                            <td class="p-3 whitespace-normal max-w-[150px]" v-if="currentView === 'ACTIVOS'">
-                                                <template v-if="Array.isArray(item.docFaltante) && item.docFaltante.length > 0">
-                                                    <div class="flex flex-wrap gap-1">
-                                                        <span v-for="doc in item.docFaltante" :key="doc" class="text-rose-700 bg-rose-50 border border-rose-200 font-medium px-1.5 py-0.5 rounded text-[9px] inline-block truncate max-w-[130px]" :title="doc">
-                                                            {{ doc }}
+                                                <td class="p-3 whitespace-nowrap">
+                                                    <div class="font-bold text-slate-900">{{ item.nombre }}</div>
+                                                    <div class="flex items-center gap-2 mt-0.5">
+                                                        <span class="text-slate-500 font-mono text-[10px]">DNI: {{ item.dni || '---' }}</span>
+                                                        <span v-if="item.historialContacto && item.historialContacto.length > 0" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 inline-flex items-center gap-1 shadow-sm" title="Contactado">
+                                                            <i class="fa-brands fa-whatsapp"></i> Contactado
                                                         </span>
                                                     </div>
-                                                </template>
-                                                <template v-else>
-                                                    <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 font-semibold px-1.5 py-0.5 rounded text-[10px] inline-block">
-                                                        COMPLETA
-                                                    </span>
-                                                </template>
-                                            </td>
+                                                </td>
 
-                                            <td class="p-3 text-center whitespace-nowrap">
-                                                <div v-if="item.fechaTurnoPsicofisico" class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 text-[10px] font-mono inline-flex items-center gap-1">
-                                                    <i class="fa-regular fa-calendar-check"></i>
-                                                    {{ formatDate(item.fechaTurnoPsicofisico) }}
-                                                </div>
-                                                <div v-else class="text-slate-400 text-[10px] italic">
-                                                    S/T
-                                                </div>
-                                            </td>
+                                                <td class="p-3 text-slate-700 font-medium whitespace-nowrap">
+                                                    <div class="font-mono text-[11px]">{{ item.fd || 'Sin FD' }}</div>
+                                                    <div class="text-slate-500 text-[10px]">Leg: {{ item.legajo || 'S/D' }}</div>
+                                                </td>
 
-                                            <td class="p-3 text-center whitespace-nowrap">
-                                                <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-slate-200 transition shadow-sm">
-                                                    <i class="fa-solid fa-link text-xs"></i>
-                                                    <span>Abrir</span>
-                                                </a>
-                                                <span v-else class="text-slate-300 text-[11px] italic font-mono">---</span>
-                                            </td>
-
-                                            <!-- COLUMNA DE ACCIONES -->
-                                            <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
-                                                <div class="flex items-center justify-center gap-1">
-                                                    <button v-if="item.celular" @click="openWhatsAppModal(item)" title="Enviar notificación por WhatsApp" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm inline-flex items-center justify-center">
-                                                        <i class="fa-brands fa-whatsapp text-xs"></i>
-                                                    </button>
-
-                                                    <template v-if="currentView === 'ACTIVOS'">
-                                                        <!-- BOTÓN ARCHIVAR RÁPIDO INDIVIDUAL -->
-                                                        <button @click="archiveRecord(item)" title="Mover al Archivo Histórico" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition border border-amber-200 inline-flex items-center justify-center">
-                                                            <i class="fa-solid fa-box-archive text-xs"></i>
-                                                        </button>
-                                                        <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200 inline-flex items-center justify-center">
-                                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                                        </button>
-                                                        <button @click="confirmDelete(item)" title="Eliminar" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition border border-slate-200 inline-flex items-center justify-center">
-                                                            <i class="fa-solid fa-trash text-xs"></i>
-                                                        </button>
+                                                <td class="p-3 whitespace-normal max-w-[150px]" v-if="currentView === 'ACTIVOS'">
+                                                    <template v-if="Array.isArray(item.docFaltante) && item.docFaltante.length > 0">
+                                                        <div class="flex flex-wrap gap-1">
+                                                            <span v-for="doc in item.docFaltante" :key="doc" class="text-rose-700 bg-rose-50 border border-rose-200 font-medium px-1.5 py-0.5 rounded text-[9px] inline-block truncate max-w-[130px]" :title="doc">
+                                                                {{ doc }}
+                                                            </span>
+                                                        </div>
                                                     </template>
                                                     <template v-else>
-                                                        <button @click="undoArchive(item)" title="Deshacer Archivo (Devolver a Activos)" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition border border-emerald-200 inline-flex items-center justify-center">
-                                                            <i class="fa-solid fa-rotate-left text-xs"></i>
-                                                        </button>
-                                                        <span class="px-2 py-1 bg-slate-100 text-slate-500 rounded text-[9px] font-bold inline-flex items-center gap-1 cursor-not-allowed border border-slate-200" title="Expediente archivado (Solo lectura)">
-                                                            <i class="fa-solid fa-lock text-[9px]"></i> Archivado
+                                                        <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 font-semibold px-1.5 py-0.5 rounded text-[10px] inline-block">
+                                                            COMPLETA
                                                         </span>
                                                     </template>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr v-if="filteredRecords.length === 0">
-                                            <td :colspan="currentView === 'ACTIVOS' ? (isAdmin ? 9 : 8) : (isAdmin ? 8 : 7)" class="p-8 text-center text-slate-400">
-                                                <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
-                                                <p class="font-medium text-slate-500">No se encontraron expedientes en esta vista con los filtros actuales.</p>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                                </td>
 
-                            <div class="p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-slate-50">
-                                <span class="text-slate-500">
-                                    Mostrando <strong class="text-slate-800">{{ paginatedRecords.length }}</strong> de <strong class="text-slate-800">{{ filteredRecords.length }}</strong> expedientes (Página {{ currentPage }} de {{ totalPages || 1 }})
-                                </span>
-                                <div class="flex items-center gap-1">
-                                    <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-100 transition">
-                                        <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
-                                    </button>
-                                    <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-100 transition">
-                                        Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
-                                    </button>
+                                                <td class="p-3 text-center whitespace-nowrap">
+                                                    <div v-if="item.fechaTurnoPsicofisico" class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 text-[10px] font-mono inline-flex items-center gap-1">
+                                                        <i class="fa-regular fa-calendar-check"></i>
+                                                        {{ formatDate(item.fechaTurnoPsicofisico) }}
+                                                    </div>
+                                                    <div v-else class="text-slate-400 text-[10px] italic">
+                                                        S/T
+                                                    </div>
+                                                </td>
+
+                                                <td class="p-3 text-center whitespace-nowrap">
+                                                    <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-slate-200 transition shadow-sm">
+                                                        <i class="fa-solid fa-link text-xs"></i>
+                                                        <span>Abrir</span>
+                                                    </a>
+                                                    <span v-else class="text-slate-300 text-[11px] italic font-mono">---</span>
+                                                </td>
+
+                                                <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
+                                                    <div class="flex items-center justify-center gap-1">
+                                                        <button v-if="item.celular" @click="openWhatsAppModal(item)" title="Enviar notificación por WhatsApp" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm inline-flex items-center justify-center">
+                                                            <i class="fa-brands fa-whatsapp text-xs"></i>
+                                                        </button>
+
+                                                        <template v-if="currentView === 'ACTIVOS'">
+                                                            <button @click="archiveRecord(item)" title="Mover al Archivo Histórico" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition border border-amber-200 inline-flex items-center justify-center">
+                                                                <i class="fa-solid fa-box-archive text-xs"></i>
+                                                            </button>
+                                                            <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200 inline-flex items-center justify-center">
+                                                                <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                            </button>
+                                                            <button @click="confirmDelete(item)" title="Eliminar" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition border border-slate-200 inline-flex items-center justify-center">
+                                                                <i class="fa-solid fa-trash text-xs"></i>
+                                                            </button>
+                                                        </template>
+                                                        <template v-else>
+                                                            <button @click="undoArchive(item)" title="Deshacer Archivo (Devolver a Activos)" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition border border-emerald-200 inline-flex items-center justify-center">
+                                                                <i class="fa-solid fa-rotate-left text-xs"></i>
+                                                            </button>
+                                                            <span class="px-2 py-1 bg-slate-100 text-slate-500 rounded text-[9px] font-bold inline-flex items-center gap-1 cursor-not-allowed border border-slate-200" title="Expediente archivado (Solo lectura)">
+                                                                <i class="fa-solid fa-lock text-[9px]"></i> Archivado
+                                                            </span>
+                                                        </template>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="filteredRecords.length === 0">
+                                                <td :colspan="currentView === 'ACTIVOS' ? (isAdmin ? 9 : 8) : (isAdmin ? 8 : 7)" class="p-8 text-center text-slate-400">
+                                                    <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
+                                                    <p class="font-medium text-slate-500">No se encontraron expedientes en esta vista con los filtros actuales.</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="p-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-slate-50">
+                                    <span class="text-slate-500">
+                                        Mostrando <strong class="text-slate-800">{{ paginatedRecords.length }}</strong> de <strong class="text-slate-800">{{ filteredRecords.length }}</strong> expedientes (Página {{ currentPage }} de {{ totalPages || 1 }})
+                                    </span>
+                                    <div class="flex items-center gap-1">
+                                        <button @click="currentPage--" :disabled="currentPage <= 1" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-100 transition">
+                                            <i class="fa-solid fa-chevron-left mr-1"></i> Anterior
+                                        </button>
+                                        <button @click="currentPage++" :disabled="currentPage >= totalPages" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg disabled:opacity-40 hover:bg-slate-100 transition">
+                                            Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- NUEVA VISTA: HISTORIAL DE REPORTES -->
+                        <div v-else-if="currentView === 'REPORTES'">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                    <div>
+                                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                                            <i class="fa-solid fa-clock-rotate-left text-slate-500"></i> Registro de Reportes Emitidos
+                                        </h3>
+                                        <p class="text-xs text-slate-500 mt-1">Historial inmutable de los expedientes enviados y documentados en cada exportación.</p>
+                                    </div>
+                                </div>
+                                <div class="p-5">
+                                    <div v-if="reportesGenerados.length === 0" class="text-center py-10 text-slate-400">
+                                        <i class="fa-solid fa-file-signature text-4xl mb-3 text-slate-300"></i>
+                                        <p class="font-medium text-sm text-slate-500">Aún no se ha generado ningún reporte.</p>
+                                        <p class="text-xs mt-1">Cuando exportes un PDF o Excel, quedará registrado automáticamente aquí.</p>
+                                    </div>
+                                    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div v-for="rep in reportesGenerados" :key="rep.id" class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow transition group flex flex-col justify-between">
+                                            <div>
+                                                <div class="flex items-start justify-between mb-2">
+                                                    <span class="text-[10px] font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded uppercase tracking-wide">{{ rep.tipo }}</span>
+                                                    <span class="text-xs text-slate-400 font-mono">{{ rep.fecha }}</span>
+                                                </div>
+                                                <h4 class="font-bold text-slate-800 text-sm mb-1 line-clamp-2" :title="rep.titulo">{{ rep.titulo }}</h4>
+                                                <p class="text-xs text-slate-500 flex items-center gap-1.5 mt-2">
+                                                    <i class="fa-solid fa-layer-group text-slate-400"></i> Incluye <strong>{{ rep.total }}</strong> expedientes procesados
+                                                </p>
+                                            </div>
+                                            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
+                                                <button @click="openReportDetail(rep)" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                                                    <i class="fa-solid fa-eye"></i> Ver Expedientes
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- COLUMNA DERECHA: DASHBOARD DE MÉTRICAS -->
                     <div class="xl:col-span-4 space-y-6 sticky top-20">
-
                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
@@ -586,16 +619,57 @@
                                 <div class="relative h-44 w-full"><canvas id="docsChart"></canvas></div>
                             </div>
                         </div>
-
                     </div>
 
                 </div>
             </main>
 
+            <!-- MODAL: DETALLE DEL REPORTE -->
+            <div v-if="showReportDetailModal && activeReport" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showReportDetailModal = false">
+                <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 max-h-[85vh] flex flex-col">
+                    <div class="bg-slate-700 text-white p-4 px-6 flex items-center justify-between shrink-0">
+                        <div>
+                            <h3 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-list-check text-slate-200"></i> Detalles del Reporte</h3>
+                            <p class="text-[10px] text-slate-300 font-mono mt-0.5">{{ activeReport.fecha }}</p>
+                        </div>
+                        <button @click="showReportDetailModal = false" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+                    <div class="p-5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm">{{ activeReport.titulo }}</h4>
+                            <p class="text-xs text-slate-500 mt-1">Este reporte contiene <strong>{{ activeReport.total }}</strong> expedientes al momento de su creación.</p>
+                        </div>
+                        <span class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded font-bold text-xs uppercase tracking-wider">{{ activeReport.tipo }}</span>
+                    </div>
+                    <div class="overflow-y-auto p-0 flex-1 custom-scrollbar">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="sticky top-0 bg-slate-100 shadow-sm">
+                                <tr class="text-slate-600 uppercase font-bold tracking-wider text-[10px]">
+                                    <th class="p-3 border-b border-slate-200">Agente y Apellido</th>
+                                    <th class="p-3 border-b border-slate-200">DNI</th>
+                                    <th class="p-3 border-b border-slate-200">Expediente</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr v-for="(rec, index) in activeReport.items" :key="index" class="hover:bg-slate-50 transition">
+                                    <td class="p-3 font-semibold text-slate-800">{{ rec.nombre }}</td>
+                                    <td class="p-3 font-mono text-slate-600">{{ rec.dni || 'S/D' }}</td>
+                                    <td class="p-3 font-mono text-slate-600">{{ rec.fd || 'S/D' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-slate-200 flex justify-end bg-white shrink-0">
+                        <button @click="showReportDetailModal = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold text-xs transition">Cerrar Detalle</button>
+                    </div>
+                </div>
+            </div>
+
             <footer class="bg-white border-t border-slate-200 mt-8 py-4 text-center text-xs text-slate-400">
                 <p>Dirección de Gestión Escolar © 2026 — Departamento de Altas Puras (Director: Aguirre Juan Manuel)</p>
             </footer>
 
+            <!-- OTROS MODALES EXISTENTES -->
             <!-- MODAL GESTION DE COLABORADORES -->
             <div v-if="showColaboradoresModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showColaboradoresModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
@@ -944,10 +1018,11 @@
                 ];
 
                 const records = ref([...seedRecords]);
+                const reportesGenerados = ref([]); // NUEVA VARIABLE PARA HISTORIAL
                 const isCloudConnected = ref(false);
                 const currentShareUrl = ref(window.location.href);
 
-                // VARIABLE PARA MANEJAR LAS PESTAÑAS
+                // VARIABLE PARA MANEJAR LAS PESTAÑAS (3 ESTADOS)
                 const currentView = ref('ACTIVOS'); 
 
                 const toasts = ref([]);
@@ -1142,10 +1217,23 @@
                     } catch (e) {
                         records.value = JSON.parse(JSON.stringify(seedRecords));
                     }
+
+                    try {
+                        const localReports = localStorage.getItem('altas_puras_reportes');
+                        if (localReports) reportesGenerados.value = JSON.parse(localReports);
+                    } catch (e) {}
                 };
 
                 const saveToLocalStorage = (data) => {
                     try { localStorage.setItem('altas_puras_records_v71', JSON.stringify(data)); } catch (e) {}
+                };
+
+                const saveReportes = () => {
+                    try { localStorage.setItem('altas_puras_reportes', JSON.stringify(reportesGenerados.value)); } catch (e) {}
+                    if (window.cloudDB && isCloudConnected.value) {
+                        const { db, doc, setDoc, appId } = window.cloudDB;
+                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'historial_reportes'), { list: reportesGenerados.value }).catch(()=>{});
+                    }
                 };
 
                 const copyShareLink = () => {
@@ -1202,7 +1290,6 @@
                     if (!currentUser) return;
 
                     const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'expedientes');
-
                     onSnapshot(colRef, (snapshot) => {
                         if (snapshot.empty && records.value.length > 0) {
                             records.value.forEach(rec => {
@@ -1215,15 +1302,27 @@
                             records.value = cloudItems;
                             saveToLocalStorage(cloudItems);
                         }
-                    const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
-                    onSnapshot(usersDocRef, (snapshot) => {
-                        if (snapshot.exists()) {
-                            colaboradores.value = snapshot.data().list || [];
-                            localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
-                        } else if (colaboradores.value.length > 0) {
-                            setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
-                        }
-                    });
+                        
+                        const usersDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'config_usuarios');
+                        onSnapshot(usersDocRef, (snapshot) => {
+                            if (snapshot.exists()) {
+                                colaboradores.value = snapshot.data().list || [];
+                                localStorage.setItem('altas_puras_colabs', JSON.stringify(colaboradores.value));
+                            } else if (colaboradores.value.length > 0) {
+                                setDoc(usersDocRef, { list: colaboradores.value }).catch(()=>{});
+                            }
+                        });
+
+                        const reportesDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'historial_reportes');
+                        onSnapshot(reportesDocRef, (snapshot) => {
+                            if (snapshot.exists()) {
+                                reportesGenerados.value = snapshot.data().list || [];
+                                localStorage.setItem('altas_puras_reportes', JSON.stringify(reportesGenerados.value));
+                            } else if (reportesGenerados.value.length > 0) {
+                                setDoc(reportesDocRef, { list: reportesGenerados.value }).catch(()=>{});
+                            }
+                        });
+
                         isCloudConnected.value = true;
                     }, (error) => {
                         isCloudConnected.value = false;
@@ -1424,7 +1523,14 @@
                 const showWhatsAppModal = ref(false);
                 const showShareModal = ref(false);
                 const showSmartUploadModal = ref(false);
+                const showReportDetailModal = ref(false);
+                const activeReport = ref(null);
                 
+                const openReportDetail = (report) => {
+                    activeReport.value = report;
+                    showReportDetailModal.value = true;
+                };
+
                 const isEditing = ref(false);
                 const formDocFaltanteArray = ref([]);
                 const stagedRecords = ref([]);
@@ -1545,14 +1651,11 @@
                     return 'EN_PROCESO';
                 };
 
-                // Contadores para las Pestañas
                 const activeCount = computed(() => records.value.filter(r => getStatusKey(r) !== 'COMPLETADO').length);
                 const archiveCount = computed(() => records.value.filter(r => getStatusKey(r) === 'COMPLETADO').length);
 
                 const filteredRecords = computed(() => {
                     let result = records.value.filter(item => {
-                        
-                        // LÓGICA DE PESTAÑAS (VISTAS)
                         const isCompletado = getStatusKey(item) === 'COMPLETADO';
                         if (currentView.value === 'ACTIVOS' && isCompletado) return false;
                         if (currentView.value === 'ARCHIVO' && !isCompletado) return false;
@@ -1577,7 +1680,6 @@
                             if (month !== filterMes.value) return false;
                         }
 
-                        // Los siguientes filtros solo aplican en la pestaña de ACTIVOS
                         if (currentView.value === 'ACTIVOS') {
                             if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
                             if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
@@ -1635,7 +1737,6 @@
                     }
                 };
 
-                // NUEVAS FUNCIONES DE ARCHIVADO MANUAL
                 const archiveRecord = (item) => {
                     if(confirm(`¿Mover el expediente de ${item.nombre} al Archivo Histórico?`)) {
                         const record = records.value.find(r => r.id === item.id);
@@ -1799,19 +1900,43 @@
                     return { faltantes, sisper, digEnv };
                 });
 
+                const captureReportSnapshot = (title, items, type) => {
+                    const snapshot = items.map(r => ({
+                        nombre: r.nombre,
+                        dni: r.dni,
+                        fd: r.fd
+                    }));
+                    
+                    const nuevoReporte = {
+                        id: 'rep_' + Date.now(),
+                        fecha: new Date().toLocaleString('es-AR'),
+                        titulo: title,
+                        tipo: type,
+                        total: items.length,
+                        items: snapshot
+                    };
+                    
+                    reportesGenerados.value.unshift(nuevoReporte);
+                    saveReportes();
+                };
+
                 const exportPDF = (type) => {
                     let itemsToExport = records.value;
                     let reportTitle = "INFORME GENERAL DE ALTAS PURAS";
+                    let filePrefix = "General";
 
                     if (type === 'FALTANTE') {
                         itemsToExport = records.value.filter(r => r.enviadoMinisterio !== 'SI' && Array.isArray(r.docFaltante) && r.docFaltante.length > 0);
                         reportTitle = "INFORME DE EXPEDIENTES CON DOCUMENTACIÓN PENDIENTE";
+                        filePrefix = "Pendientes";
                     } else if (type === 'ENVIADO_SISPER') {
                         itemsToExport = records.value.filter(r => r.enviadoSisper === 'SI');
                         reportTitle = "INFORME DE TRÁMITES REGISTRADOS EN SISPER";
+                        filePrefix = "Sisper";
                     } else if (type === 'MINISTERIO') {
                         itemsToExport = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI');
                         reportTitle = "INFORME DE ARCHIVO (TRÁMITES FINALIZADOS)";
+                        filePrefix = "Archivo";
                     }
 
                     if (itemsToExport.length === 0) {
@@ -1898,7 +2023,10 @@
                         defaultStyle: { fontSize: 8, color: '#334155' }
                     };
 
-                    pdfMake.createPdf(docDefinition).download(`Informe_AltasPuras_${type}_${new Date().toISOString().split('T')[0]}.pdf`);
+                    // GUARDAR EN HISTORIAL ANTES DE DESCARGAR
+                    captureReportSnapshot(reportTitle, itemsToExport, 'PDF');
+
+                    pdfMake.createPdf(docDefinition).download(`Informe_AltasPuras_${filePrefix}_${new Date().toISOString().split('T')[0]}.pdf`);
                     showToast("¡Reporte oficial PDF generado con éxito!", "success");
                     showExportModal.value = false;
                 };
@@ -1908,6 +2036,10 @@
                     records.value.forEach(r => {
                         csv += `"${r.id}","${r.nombre}","${r.dni}","${r.fd}","${r.legajo}","${r.fechaTurnoPsicofisico || ''}","${r.fechaIngreso || ''}","${getDaysInProcess(r)}","${r.digitalizado}","${r.enviadoSisper || 'NO'}","${r.enviadoMinisterio}","${r.celular}","${r.urlDigital || ''}"\n`;
                     });
+                    
+                    // GUARDAR EN HISTORIAL ANTES DE DESCARGAR
+                    captureReportSnapshot("Exportación Base de Datos Completa CSV", records.value, 'CSV');
+
                     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.setAttribute('download', `Altas_Puras_Export_${new Date().toISOString().split('T')[0]}.csv`);
                     document.body.appendChild(link); link.click(); document.body.removeChild(link);
@@ -1971,11 +2103,12 @@
                     filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
                     
                     currentView, activeCount, archiveCount, undoArchive, 
+                    reportesGenerados, showReportDetailModal, activeReport, openReportDetail, // NUEVAS VARIABLES PARA REPORTES
 
                     currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
                     sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
                     toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
-                    archiveRecord, bulkArchive, // NUEVAS FUNCIONES EXPUESTAS
+                    archiveRecord, bulkArchive,
                     
                     aiInsightText, processHealthScore, getDaysInProcess, getSlaColorClass,
                     showModal, showExportModal, showWhatsAppModal, showShareModal, showSmartUploadModal,
