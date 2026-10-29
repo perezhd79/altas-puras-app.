@@ -172,7 +172,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.2 Pro Split</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.5 Check Archivo</span>
                                     
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -222,19 +222,37 @@
             <main class="flex-1 max-w-[98%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                     
-                    <!-- COLUMNA IZQUIERDA: GESTIÓN DE EXPEDIENTES (Ancho 7 u 8) -->
-                    <div class="xl:col-span-8 space-y-6">
+                    <!-- COLUMNA IZQUIERDA: GESTIÓN DE EXPEDIENTES -->
+                    <div class="xl:col-span-8 space-y-4">
+
+                        <!-- NAVEGACIÓN POR PESTAÑAS (ACTIVOS / ARCHIVO) -->
+                        <div class="flex gap-6 border-b border-slate-200 px-2 mt-2">
+                            <button @click="currentView = 'ACTIVOS'; currentPage = 1; selectedRecordIds = []" 
+                                    class="pb-3 border-b-2 font-bold text-sm transition flex items-center gap-2"
+                                    :class="currentView === 'ACTIVOS' ? 'border-slate-700 text-slate-800' : 'border-transparent text-slate-400 hover:text-slate-600'">
+                                <i class="fa-solid fa-folder-open"></i> Expedientes Activos
+                                <span class="bg-slate-200 text-slate-700 py-0.5 px-2 rounded-full text-[10px]">{{ activeCount }}</span>
+                            </button>
+                            <button @click="currentView = 'ARCHIVO'; currentPage = 1; selectedRecordIds = []" 
+                                    class="pb-3 border-b-2 font-bold text-sm transition flex items-center gap-2"
+                                    :class="currentView === 'ARCHIVO' ? 'border-slate-700 text-slate-800' : 'border-transparent text-slate-400 hover:text-slate-600'">
+                                <i class="fa-solid fa-box-archive"></i> Archivo Histórico
+                                <span class="bg-slate-200 text-slate-700 py-0.5 px-2 rounded-full text-[10px]">{{ archiveCount }}</span>
+                            </button>
+                        </div>
 
                         <!-- 1. FILTROS Y BÚSQUEDA OPERATIVA -->
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3" :class="currentView === 'ARCHIVO' ? 'bg-slate-50/50' : ''">
                             <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
                                 <div class="flex items-center gap-2">
                                     <i class="fa-solid fa-sliders text-slate-600 text-sm"></i>
-                                    <h2 class="font-bold text-sm text-slate-800">Filtros y Búsqueda Operativa</h2>
-                                    <span class="text-xs text-slate-400 font-normal">({{ filteredRecords.length }} de {{ records.length }} expedientes)</span>
+                                    <h2 class="font-bold text-sm text-slate-800">
+                                        Filtros de Búsqueda 
+                                        <span v-if="currentView === 'ARCHIVO'" class="text-amber-600 ml-1">(Buscando en Archivo)</span>
+                                    </h2>
                                 </div>
                                 <div class="flex items-center gap-3 self-end md:self-auto">
-                                    <button @click="resetFilters" class="text-xs text-slate-600 hover:text-slate-800 font-semibold flex items-center gap-1">
+                                    <button @click="resetFilters" class="text-xs text-slate-600 hover:text-slate-800 font-semibold flex items-center gap-1 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
                                         <i class="fa-solid fa-rotate-left"></i> Restablecer Filtros
                                     </button>
                                 </div>
@@ -264,7 +282,7 @@
                                     </select>
                                 </div>
 
-                                <div>
+                                <div v-if="currentView === 'ACTIVOS'">
                                     <select v-model="filterDigitalizado" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
                                         <option value="ALL">Digitalizado: Todos</option>
                                         <option value="SI">Digitalizado: SÍ</option>
@@ -272,7 +290,7 @@
                                     </select>
                                 </div>
 
-                                <div>
+                                <div v-if="currentView === 'ACTIVOS'">
                                     <select v-model="filterSisper" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
                                         <option value="ALL">Sisper: Todos</option>
                                         <option value="SI">Enviado: SÍ</option>
@@ -280,7 +298,7 @@
                                     </select>
                                 </div>
 
-                                <div>
+                                <div v-if="currentView === 'ACTIVOS'">
                                     <select v-model="filterDocFaltante" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
                                         <option value="ALL">Doc: Todas</option>
                                         <option value="COMPLETO">Documentación Completa</option>
@@ -288,7 +306,7 @@
                                     </select>
                                 </div>
 
-                                <div>
+                                <div v-if="currentView === 'ACTIVOS'">
                                     <select v-model="filterSLA" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-400 text-slate-700">
                                         <option value="ALL">SLA / Días: Todos</option>
                                         <option value="VERDE">&lt; 30 días (Al día)</option>
@@ -299,37 +317,42 @@
                             </div>
                         </div>
 
-                        <!-- 2. BARRA DE ACCIONES EN LOTE -->
-                        <div v-if="selectedRecordIds.length > 0 && isAdmin" 
+                        <!-- 2. BARRA DE ACCIONES EN LOTE (Solo Activos) -->
+                        <div v-if="selectedRecordIds.length > 0 && isAdmin && currentView === 'ACTIVOS'" 
                              class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex flex-wrap items-center justify-between gap-3">
                             <div class="flex items-center gap-2 text-xs">
                                 <span class="bg-slate-500 px-2.5 py-1 rounded-full font-bold">{{ selectedRecordIds.length }}</span>
-                                <span>expedientes seleccionados para acción masiva</span>
+                                <span>expedientes seleccionados</span>
                             </div>
                             <div class="flex items-center gap-2 flex-wrap text-xs">
                                 <button @click="bulkSetDigitalizado('SI')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-laptop-code"></i> Marcar Digitalizado SÍ
+                                    <i class="fa-solid fa-laptop-code"></i> Digitalizado SÍ
                                 </button>
-                                <button @click="bulkSetMinisterio('SI')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-paper-plane"></i> Marcar Enviado Ministerio SÍ
+                                <!-- NUEVO BOTÓN DE ARCHIVADO MASIVO -->
+                                <button @click="bulkArchive()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold shadow-md transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-box-archive"></i> Archivar Seleccionados
                                 </button>
                                 <button @click="selectedRecordIds = []" class="px-2 py-1 text-slate-300 hover:text-white transition">
-                                    <i class="fa-solid fa-xmark"></i> Deseleccionar
+                                    <i class="fa-solid fa-xmark"></i> Cancelar
                                 </button>
                             </div>
                         </div>
 
                         <!-- 3. PLANILLA DE SEGUIMIENTO OPERATIVO -->
-                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" :class="currentView === 'ARCHIVO' ? 'border-amber-200' : ''">
+                            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50" :class="currentView === 'ARCHIVO' ? 'bg-amber-50/30' : ''">
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <h3 class="font-bold text-slate-800 text-base">Planilla de Seguimiento Operativo</h3>
+                                        <h3 class="font-bold text-slate-800 text-base">
+                                            {{ currentView === 'ACTIVOS' ? 'Planilla de Seguimiento Operativo' : 'Baúl de Archivo Definitivo' }}
+                                        </h3>
                                         <span class="bg-slate-100 text-slate-700 font-bold text-xs px-2.5 py-0.5 rounded-full border border-slate-200">
-                                            {{ filteredRecords.length }} registros
+                                            {{ filteredRecords.length }} registros filtrados
                                         </span>
                                     </div>
-                                    <p class="text-xs text-slate-500 mt-0.5">Control individual con plantillas directas de WhatsApp y legajo digitalizado.</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">
+                                        {{ currentView === 'ACTIVOS' ? 'Usa las casillas de la izquierda para seleccionar y archivar.' : 'Expedientes que ya han sido finalizados y enviados al Ministerio. Protegidos contra edición.' }}
+                                    </p>
                                 </div>
 
                                 <div class="flex items-center gap-3">
@@ -342,7 +365,7 @@
                                             <option :value="1000">Todos</option>
                                         </select>
                                     </div>
-                                    <button @click="showOnlyCritical = !showOnlyCritical" 
+                                    <button v-if="currentView === 'ACTIVOS'" @click="showOnlyCritical = !showOnlyCritical" 
                                             class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition flex items-center gap-1.5"
                                             :class="showOnlyCritical ? 'bg-slate-700 text-white border-slate-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'">
                                         <i class="fa-solid fa-triangle-exclamation"></i>
@@ -355,7 +378,7 @@
                                 <table class="w-full text-left border-collapse text-xs">
                                    <thead>
                                         <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200 select-none">
-                                            <th class="p-3 text-center w-8" v-if="isAdmin">
+                                            <th class="p-3 text-center w-8" v-if="isAdmin && currentView === 'ACTIVOS'">
                                                 <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
                                             </th>
                                             <th @click="sortBy('status')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
@@ -368,8 +391,7 @@
                                                 Agente / DNI <i :class="getSortIcon('nombre')" class="ml-1 text-[10px]"></i>
                                             </th>
                                             <th class="p-3">FD / Legajo</th>
-                                            <th class="p-3">Doc. Faltante</th>
-                                            <!-- NUEVA COLUMNA TURNO PSICOFÍSICO -->
+                                            <th class="p-3" v-if="currentView === 'ACTIVOS'">Doc. Faltante</th>
                                             <th @click="sortBy('fechaTurnoPsicofisico')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition text-center whitespace-nowrap">
                                                 Turno Psico. <i :class="getSortIcon('fechaTurnoPsicofisico')" class="ml-1 text-[10px]"></i>
                                             </th>
@@ -380,9 +402,9 @@
                                     <tbody class="divide-y divide-slate-100">
                                         <tr v-for="item in paginatedRecords" :key="item.id" 
                                             class="hover:bg-slate-50/80 transition group"
-                                            :class="selectedRecordIds.includes(item.id) ? 'bg-slate-100/60' : ''">
+                                            :class="[selectedRecordIds.includes(item.id) ? 'bg-slate-100/60' : '', currentView === 'ARCHIVO' ? 'opacity-80 hover:opacity-100' : '']">
                                             
-                                            <td class="p-3 text-center" v-if="isAdmin">
+                                            <td class="p-3 text-center" v-if="isAdmin && currentView === 'ACTIVOS'">
                                                 <input type="checkbox" :value="item.id" v-model="selectedRecordIds" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
                                             </td>
 
@@ -397,7 +419,7 @@
                                                 <div class="bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200 text-[10px] font-mono inline-block mb-1">
                                                     {{ formatDate(item.fechaIngreso) }}
                                                 </div>
-                                                <div class="text-[9px] font-bold" :class="getSlaColorClass(getDaysInProcess(item))">
+                                                <div class="text-[9px] font-bold" :class="getSlaColorClass(getDaysInProcess(item))" v-if="currentView === 'ACTIVOS'">
                                                     <i class="fa-regular fa-clock"></i> {{ getDaysInProcess(item) }} días háb.
                                                 </div>
                                             </td>
@@ -417,7 +439,7 @@
                                                 <div class="text-slate-500 text-[10px]">Leg: {{ item.legajo || 'S/D' }}</div>
                                             </td>
 
-                                            <td class="p-3 whitespace-normal max-w-[150px]">
+                                            <td class="p-3 whitespace-normal max-w-[150px]" v-if="currentView === 'ACTIVOS'">
                                                 <template v-if="Array.isArray(item.docFaltante) && item.docFaltante.length > 0">
                                                     <div class="flex flex-wrap gap-1">
                                                         <span v-for="doc in item.docFaltante" :key="doc" class="text-rose-700 bg-rose-50 border border-rose-200 font-medium px-1.5 py-0.5 rounded text-[9px] inline-block truncate max-w-[130px]" :title="doc">
@@ -432,7 +454,6 @@
                                                 </template>
                                             </td>
 
-                                            <!-- CELDA TURNO PSICOFÍSICO -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <div v-if="item.fechaTurnoPsicofisico" class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 text-[10px] font-mono inline-flex items-center gap-1">
                                                     <i class="fa-regular fa-calendar-check"></i>
@@ -443,7 +464,6 @@
                                                 </div>
                                             </td>
 
-                                            <!-- Columna Legajo Digital -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-slate-200 transition shadow-sm">
                                                     <i class="fa-solid fa-link text-xs"></i>
@@ -452,24 +472,40 @@
                                                 <span v-else class="text-slate-300 text-[11px] italic font-mono">---</span>
                                             </td>
 
+                                            <!-- COLUMNA DE ACCIONES -->
                                             <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
                                                 <div class="flex items-center justify-center gap-1">
                                                     <button v-if="item.celular" @click="openWhatsAppModal(item)" title="Enviar notificación por WhatsApp" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm inline-flex items-center justify-center">
                                                         <i class="fa-brands fa-whatsapp text-xs"></i>
                                                     </button>
-                                                    <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200">
-                                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                                    </button>
-                                                    <button @click="confirmDelete(item)" title="Eliminar" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition border border-slate-200">
-                                                        <i class="fa-solid fa-trash text-xs"></i>
-                                                    </button>
+
+                                                    <template v-if="currentView === 'ACTIVOS'">
+                                                        <!-- BOTÓN ARCHIVAR RÁPIDO INDIVIDUAL -->
+                                                        <button @click="archiveRecord(item)" title="Mover al Archivo Histórico" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition border border-amber-200 inline-flex items-center justify-center">
+                                                            <i class="fa-solid fa-box-archive text-xs"></i>
+                                                        </button>
+                                                        <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200 inline-flex items-center justify-center">
+                                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                        </button>
+                                                        <button @click="confirmDelete(item)" title="Eliminar" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition border border-slate-200 inline-flex items-center justify-center">
+                                                            <i class="fa-solid fa-trash text-xs"></i>
+                                                        </button>
+                                                    </template>
+                                                    <template v-else>
+                                                        <button @click="undoArchive(item)" title="Deshacer Archivo (Devolver a Activos)" class="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition border border-emerald-200 inline-flex items-center justify-center">
+                                                            <i class="fa-solid fa-rotate-left text-xs"></i>
+                                                        </button>
+                                                        <span class="px-2 py-1 bg-slate-100 text-slate-500 rounded text-[9px] font-bold inline-flex items-center gap-1 cursor-not-allowed border border-slate-200" title="Expediente archivado (Solo lectura)">
+                                                            <i class="fa-solid fa-lock text-[9px]"></i> Archivado
+                                                        </span>
+                                                    </template>
                                                 </div>
                                             </td>
                                         </tr>
                                         <tr v-if="filteredRecords.length === 0">
-                                            <td colspan="9" class="p-8 text-center text-slate-400">
+                                            <td :colspan="currentView === 'ACTIVOS' ? (isAdmin ? 9 : 8) : (isAdmin ? 8 : 7)" class="p-8 text-center text-slate-400">
                                                 <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
-                                                <p class="font-medium text-slate-500">No se encontraron expedientes con los filtros seleccionados.</p>
+                                                <p class="font-medium text-slate-500">No se encontraron expedientes en esta vista con los filtros actuales.</p>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -499,7 +535,7 @@
                             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                                     <i class="fa-solid fa-chart-pie text-slate-600"></i>
-                                    Indicadores de Gestión (Command Center)
+                                    Métricas Globales (Totales)
                                 </h3>
                                 <span class="bg-slate-100 text-slate-700 font-bold text-[10px] px-2 py-0.5 rounded-full border">En vivo</span>
                             </div>
@@ -513,12 +549,12 @@
                                     <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">% Digitalización</p>
                                     <h3 class="text-xl font-extrabold text-slate-800 mt-1">{{ stats.pctDigitalizado }}%</h3>
                                 </div>
-                                <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Remitidos Min.</p>
-                                    <h3 class="text-xl font-extrabold text-slate-800 mt-1">{{ stats.pctEnviados }}%</h3>
+                                <div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-200/80">
+                                    <p class="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Archivados</p>
+                                    <h3 class="text-xl font-extrabold text-emerald-700 mt-1">{{ archiveCount }}</h3>
                                 </div>
                                 <div class="bg-rose-50/70 p-3.5 rounded-xl border border-rose-200">
-                                    <p class="text-[10px] font-semibold text-rose-600 uppercase tracking-wider">Con Faltante</p>
+                                    <p class="text-[10px] font-semibold text-rose-600 uppercase tracking-wider">Activos Faltantes</p>
                                     <h3 class="text-xl font-extrabold text-rose-600 mt-1">{{ stats.conFaltanteCount }}</h3>
                                 </div>
                             </div>
@@ -526,7 +562,7 @@
                             <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 flex items-center justify-between">
                                 <div>
                                     <p class="text-[10px] font-semibold text-amber-800 uppercase tracking-wider">Demorados SLA (&gt;60d)</p>
-                                    <h3 class="text-lg font-extrabold text-amber-700 mt-0.5">{{ stats.demoradosSLACount }} expedientes</h3>
+                                    <h3 class="text-lg font-extrabold text-amber-700 mt-0.5">{{ stats.demoradosSLACount }} activos</h3>
                                 </div>
                                 <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl"></i>
                             </div>
@@ -546,7 +582,7 @@
                                 <div class="relative h-48 w-full"><canvas id="funnelChart"></canvas></div>
                             </div>
                             <div class="pt-3 border-t border-slate-100">
-                                <h3 class="font-bold text-slate-800 text-xs mb-2">Estado de Documentación</h3>
+                                <h3 class="font-bold text-slate-800 text-xs mb-2">Estado de Documentación (Activos)</h3>
                                 <div class="relative h-44 w-full"><canvas id="docsChart"></canvas></div>
                             </div>
                         </div>
@@ -635,7 +671,7 @@
                             </div>
                             <div @click="exportPDF('FALTANTE')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
                                 <div>
-                                    <h4 class="font-bold text-slate-800 text-xs">2. Expedientes con Documentación Pendiente</h4>
+                                    <h4 class="font-bold text-slate-800 text-xs">2. Expedientes Activos con Doc. Pendiente</h4>
                                     <p class="text-[11px] text-slate-500">Casos que requieren reclamo o presentación de requisitos.</p>
                                 </div>
                                 <span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold text-[10px] rounded-full">{{ pdfStats.faltantes }} reg.</span>
@@ -649,10 +685,10 @@
                             </div>
                             <div @click="exportPDF('MINISTERIO')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
                                 <div>
-                                    <h4 class="font-bold text-slate-800 text-xs">4. Trámites Finalizados y Remitidos al Ministerio</h4>
-                                    <p class="text-[11px] text-slate-500">Expedientes con gestión concluida.</p>
+                                    <h4 class="font-bold text-slate-800 text-xs">4. Archivo: Trámites Finalizados (Min.)</h4>
+                                    <p class="text-[11px] text-slate-500">Expedientes con gestión concluida (Archivo Histórico).</p>
                                 </div>
-                                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-full">{{ pdfStats.digEnv }} reg.</span>
+                                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-[10px] rounded-full">{{ archiveCount }} reg.</span>
                             </div>
                         </div>
                     </div>
@@ -713,7 +749,6 @@
                                 </div>
                             </div>
                             
-                            <!-- SECCIÓN MODIFICADA: Ahora incluye Fecha de Turno Psicofísico -->
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
                                     <label class="block font-semibold text-slate-700 mb-1">N° Legajo</label>
@@ -797,6 +832,7 @@
                                     </select>
                                 </div>
                             </div>
+                            <p class="text-[10px] text-amber-600 text-center mt-2 italic font-medium"><i class="fa-solid fa-circle-info"></i> Al marcar "Env. Ministerio: SÍ", el expediente se moverá automáticamente al Archivo Histórico.</p>
                         </div>
 
                         <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
@@ -910,6 +946,9 @@
                 const records = ref([...seedRecords]);
                 const isCloudConnected = ref(false);
                 const currentShareUrl = ref(window.location.href);
+
+                // VARIABLE PARA MANEJAR LAS PESTAÑAS
+                const currentView = ref('ACTIVOS'); 
 
                 const toasts = ref([]);
                 const showToast = (message, type = 'success') => {
@@ -1506,8 +1545,18 @@
                     return 'EN_PROCESO';
                 };
 
+                // Contadores para las Pestañas
+                const activeCount = computed(() => records.value.filter(r => getStatusKey(r) !== 'COMPLETADO').length);
+                const archiveCount = computed(() => records.value.filter(r => getStatusKey(r) === 'COMPLETADO').length);
+
                 const filteredRecords = computed(() => {
                     let result = records.value.filter(item => {
+                        
+                        // LÓGICA DE PESTAÑAS (VISTAS)
+                        const isCompletado = getStatusKey(item) === 'COMPLETADO';
+                        if (currentView.value === 'ACTIVOS' && isCompletado) return false;
+                        if (currentView.value === 'ARCHIVO' && !isCompletado) return false;
+
                         const query = searchQuery.value.toLowerCase().trim();
                         const matchesSearch = !query || 
                             item.nombre.toLowerCase().includes(query) || 
@@ -1528,23 +1577,26 @@
                             if (month !== filterMes.value) return false;
                         }
 
-                        if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
-                        if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
+                        // Los siguientes filtros solo aplican en la pestaña de ACTIVOS
+                        if (currentView.value === 'ACTIVOS') {
+                            if (filterDigitalizado.value !== 'ALL' && item.digitalizado !== filterDigitalizado.value) return false;
+                            if (filterSisper.value !== 'ALL' && item.enviadoSisper !== filterSisper.value) return false;
 
-                        if (filterDocFaltante.value !== 'ALL') {
-                            const hasMissingDocs = Array.isArray(item.docFaltante) && item.docFaltante.length > 0;
-                            if (filterDocFaltante.value === 'COMPLETO' && hasMissingDocs) return false;
-                            if (filterDocFaltante.value === 'INCOMPLETO' && !hasMissingDocs) return false;
+                            if (filterDocFaltante.value !== 'ALL') {
+                                const hasMissingDocs = Array.isArray(item.docFaltante) && item.docFaltante.length > 0;
+                                if (filterDocFaltante.value === 'COMPLETO' && hasMissingDocs) return false;
+                                if (filterDocFaltante.value === 'INCOMPLETO' && !hasMissingDocs) return false;
+                            }
+
+                            if (filterSLA.value !== 'ALL') {
+                                const days = getDaysInProcess(item);
+                                if (filterSLA.value === 'VERDE' && days >= 30) return false;
+                                if (filterSLA.value === 'AMARILLO' && (days < 30 || days > 60)) return false;
+                                if (filterSLA.value === 'ROJO' && days <= 60) return false;
+                            }
+
+                            if (showOnlyCritical.value && getStatusKey(item) !== 'CRITICO') return false;
                         }
-
-                        if (filterSLA.value !== 'ALL') {
-                            const days = getDaysInProcess(item);
-                            if (filterSLA.value === 'VERDE' && days >= 30) return false;
-                            if (filterSLA.value === 'AMARILLO' && (days < 30 || days > 60)) return false;
-                            if (filterSLA.value === 'ROJO' && days <= 60) return false;
-                        }
-
-                        if (showOnlyCritical.value && getStatusKey(item) !== 'CRITICO') return false;
 
                         return true;
                     });
@@ -1583,17 +1635,53 @@
                     }
                 };
 
+                // NUEVAS FUNCIONES DE ARCHIVADO MANUAL
+                const archiveRecord = (item) => {
+                    if(confirm(`¿Mover el expediente de ${item.nombre} al Archivo Histórico?`)) {
+                        const record = records.value.find(r => r.id === item.id);
+                        if (record) {
+                            record.enviadoMinisterio = 'SI';
+                            saveToLocalStorage(records.value);
+                            showToast("Expediente movido al Archivo Histórico", "success");
+                            nextTick(() => updateCharts());
+                        }
+                    }
+                };
+
+                const bulkArchive = () => {
+                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: 'SI' } : r);
+                    saveToLocalStorage(records.value);
+                    showToast(`${selectedRecordIds.value.length} expedientes movidos al Archivo Histórico`, "success");
+                    selectedRecordIds.value = [];
+                    nextTick(() => updateCharts());
+                };
+
+                const undoArchive = (item) => {
+                    if(confirm(`¿Estás seguro de devolver a "${item.nombre}" a los trámites activos?`)) {
+                        const record = records.value.find(r => r.id === item.id);
+                        if (record) {
+                            record.enviadoMinisterio = 'NO';
+                            saveToLocalStorage(records.value);
+                            showToast("Expediente devuelto a Trámites Activos", "success");
+                            nextTick(() => updateCharts());
+                        }
+                    }
+                };
+
                 const stats = computed(() => {
                     const total = records.value.length;
                     if (total === 0) return { total: 0, pctDigitalizado: 0, digitalizadosCount: 0, pctEnviados: 0, enviadosCount: 0, conFaltanteCount: 0, pctConFaltante: 0, demoradosSLACount: 0 };
                     const digitalizadosCount = records.value.filter(r => r.digitalizado === 'SI').length;
                     const enviadosCount = records.value.filter(r => r.enviadoMinisterio === 'SI').length;
-                    const conFaltanteCount = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
-                    const demoradosSLACount = records.value.filter(r => r.enviadoMinisterio !== 'SI' && getDaysInProcess(r) > 60).length;
+                    
+                    const activos = records.value.filter(r => r.enviadoMinisterio !== 'SI');
+                    const conFaltanteCount = activos.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
+                    const demoradosSLACount = activos.filter(r => getDaysInProcess(r) > 60).length;
+                    
                     return {
                         total, digitalizadosCount, pctDigitalizado: Math.round((digitalizadosCount / total) * 100),
                         enviadosCount, pctEnviados: Math.round((enviadosCount / total) * 100),
-                        conFaltanteCount, pctConFaltante: Math.round((conFaltanteCount / total) * 100), demoradosSLACount
+                        conFaltanteCount, pctConFaltante: total > 0 ? Math.round((conFaltanteCount / total) * 100) : 0, demoradosSLACount
                     };
                 });
 
@@ -1603,7 +1691,7 @@
                 });
 
                 const aiInsightText = computed(() => {
-                    return `Se gestionan <strong>${stats.value.total}</strong> expedientes activos con una salud de proceso del <strong>${processHealthScore.value}%</strong>.`;
+                    return `Se gestionan <strong>${stats.value.total}</strong> expedientes globales con una salud de proceso del <strong>${processHealthScore.value}%</strong>. Hay ${archiveCount.value} trámites en el archivo.`;
                 });
 
                 const getStatusBadgeClass = (item) => {
@@ -1634,6 +1722,7 @@
                 };
 
                 const resetFilters = () => { searchQuery.value = ''; selectedRecordIds.value = []; currentPage.value = 1; };
+                
                 const openNewModal = () => {
                     isEditing.value = false; formDocFaltanteArray.value = [];
                     form.value = { 
@@ -1667,7 +1756,13 @@
                     }
                     saveToLocalStorage(records.value);
                     showModal.value = false;
-                    showToast("Guardado exitosamente", "success");
+                    
+                    if (recordData.enviadoMinisterio === 'SI') {
+                        showToast(`Guardado. El expediente se movió al Archivo Histórico.`, "info");
+                    } else {
+                        showToast("Guardado exitosamente", "success");
+                    }
+                    
                     nextTick(() => updateCharts());
                 };
 
@@ -1689,14 +1784,16 @@
                 const bulkSetMinisterio = (val) => {
                     records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: val } : r);
                     saveToLocalStorage(records.value);
-                    showToast("Actualización masiva completada", "success");
+                    showToast(`${selectedRecordIds.value.length} expedientes movidos al Archivo Histórico`, "success");
                     selectedRecordIds.value = [];
                     nextTick(() => updateCharts());
                 };
 
                 const openExportModal = () => showExportModal.value = true;
+                
                 const pdfStats = computed(() => {
-                    const faltantes = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
+                    const activos = records.value.filter(r => r.enviadoMinisterio !== 'SI');
+                    const faltantes = activos.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length;
                     const sisper = records.value.filter(r => r.enviadoSisper === 'SI').length;
                     const digEnv = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI').length;
                     return { faltantes, sisper, digEnv };
@@ -1707,14 +1804,14 @@
                     let reportTitle = "INFORME GENERAL DE ALTAS PURAS";
 
                     if (type === 'FALTANTE') {
-                        itemsToExport = records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0);
+                        itemsToExport = records.value.filter(r => r.enviadoMinisterio !== 'SI' && Array.isArray(r.docFaltante) && r.docFaltante.length > 0);
                         reportTitle = "INFORME DE EXPEDIENTES CON DOCUMENTACIÓN PENDIENTE";
                     } else if (type === 'ENVIADO_SISPER') {
                         itemsToExport = records.value.filter(r => r.enviadoSisper === 'SI');
                         reportTitle = "INFORME DE TRÁMITES REGISTRADOS EN SISPER";
                     } else if (type === 'MINISTERIO') {
                         itemsToExport = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI');
-                        reportTitle = "INFORME DE TRÁMITES FINALIZADOS Y REMITIDOS AL MINISTERIO";
+                        reportTitle = "INFORME DE ARCHIVO (TRÁMITES FINALIZADOS)";
                     }
 
                     if (itemsToExport.length === 0) {
@@ -1759,6 +1856,13 @@
                         pageOrientation: 'landscape',
                         pageSize: 'A4',
                         pageMargins: [20, 30, 20, 30],
+                        watermark: type === 'MINISTERIO' ? { 
+                            text: 'ARCHIVO DEFINITIVO', 
+                            color: '#94a3b8', 
+                            opacity: 0.2, 
+                            bold: true, 
+                            italics: false 
+                        } : null,
                         content: [
                             { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
                             { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
@@ -1769,7 +1873,12 @@
                                 style: 'tableExample',
                                 table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody },
                                 layout: {
-                                    fillColor: function (rowIndex) { return (rowIndex === 0) ? '#334155' : (rowIndex % 2 === 0) ? '#f8fafc' : null; },
+                                    fillColor: function (rowIndex, node, columnIndex) { 
+                                        if (rowIndex === 0) return '#334155'; 
+                                        const estadoText = node.table.body[rowIndex][8] ? node.table.body[rowIndex][8].text : '';
+                                        if (estadoText === 'Finalizado') return '#ecfdf5'; 
+                                        return (rowIndex % 2 === 0) ? '#f8fafc' : null; 
+                                    },
                                     hLineWidth: function () { return 0.5; },
                                     vLineWidth: function () { return 0; },
                                     hLineColor: function () { return '#cbd5e1'; },
@@ -1822,7 +1931,13 @@
                             type: 'doughnut',
                             data: {
                                 labels: ['Completos', 'Con Faltantes'],
-                                datasets: [{ data: [records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length, records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length], backgroundColor: ['#10b981', '#f43f5e'] }]
+                                datasets: [{ 
+                                    data: [
+                                        records.value.filter(r => r.enviadoMinisterio !== 'SI' && (!Array.isArray(r.docFaltante) || r.docFaltante.length === 0)).length, 
+                                        records.value.filter(r => r.enviadoMinisterio !== 'SI' && (Array.isArray(r.docFaltante) && r.docFaltante.length > 0)).length
+                                    ], 
+                                    backgroundColor: ['#10b981', '#f43f5e'] 
+                                }]
                             },
                             options: { responsive: true, maintainAspectRatio: false }
                         });
@@ -1841,8 +1956,8 @@
                     }
                     if (chartDocs) {
                         chartDocs.data.datasets[0].data = [
-                            records.value.filter(r => !Array.isArray(r.docFaltante) || r.docFaltante.length === 0).length,
-                            records.value.filter(r => Array.isArray(r.docFaltante) && r.docFaltante.length > 0).length
+                            records.value.filter(r => r.enviadoMinisterio !== 'SI' && (!Array.isArray(r.docFaltante) || r.docFaltante.length === 0)).length,
+                            records.value.filter(r => r.enviadoMinisterio !== 'SI' && (Array.isArray(r.docFaltante) && r.docFaltante.length > 0)).length
                         ];
                         chartDocs.update();
                     }
@@ -1854,9 +1969,14 @@
                     records, isCloudConnected, currentShareUrl, toasts, removeToast,
                     availableDocOptions, searchQuery, filterAño, filterMes, filterSisper,
                     filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
+                    
+                    currentView, activeCount, archiveCount, undoArchive, 
+
                     currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
                     sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
                     toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
+                    archiveRecord, bulkArchive, // NUEVAS FUNCIONES EXPUESTAS
+                    
                     aiInsightText, processHealthScore, getDaysInProcess, getSlaColorClass,
                     showModal, showExportModal, showWhatsAppModal, showShareModal, showSmartUploadModal,
                     isEditing, form, formDocFaltanteArray, getStatusBadgeClass, getStatusIcon,
@@ -1866,10 +1986,8 @@
                     openWhatsAppModal, registrarContactoWhatsApp, openExportModal, pdfStats, handleBatchFileSelect, stagedRecords,
                     commitStagedRecords, isAiProcessing, isBatchProcessing, handleSingleFileAIUpload, openSmartUploadModal,
                     
-                    // Lógica Historial de Contacto
                     nuevaNotaFecha, nuevaNotaMensaje, agregarNota, eliminarNota,
                     
-                    // Variables expuestas de Autenticación
                     isLoggedIn, isAdmin, currentUserName, loginName, loginDni, doLogin, doLogout, 
                     requirePasswordChange, newPassword, confirmPassword, saveNewPassword, cancelPasswordChange,
                     showColaboradoresModal, colaboradores, nuevoColaborador, addColaborador, 
