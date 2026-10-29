@@ -172,7 +172,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.3 Pro Split</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v7.2 Pro Split</span>
                                     
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -222,7 +222,7 @@
             <main class="flex-1 max-w-[98%] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
                     
-                    <!-- COLUMNA IZQUIERDA: GESTIÓN DE EXPEDIENTES -->
+                    <!-- COLUMNA IZQUIERDA: GESTIÓN DE EXPEDIENTES (Ancho 7 u 8) -->
                     <div class="xl:col-span-8 space-y-6">
 
                         <!-- 1. FILTROS Y BÚSQUEDA OPERATIVA -->
@@ -234,11 +234,6 @@
                                     <span class="text-xs text-slate-400 font-normal">({{ filteredRecords.length }} de {{ records.length }} expedientes)</span>
                                 </div>
                                 <div class="flex items-center gap-3 self-end md:self-auto">
-                                    <!-- NUEVO TOGGLE DE OCULTAR FINALIZADOS -->
-                                    <label class="flex items-center gap-2 cursor-pointer bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg transition hover:bg-slate-100">
-                                        <input type="checkbox" v-model="ocultarFinalizados" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
-                                        <span class="text-[11px] font-semibold text-slate-700">Ocultar Archivados</span>
-                                    </label>
                                     <button @click="resetFilters" class="text-xs text-slate-600 hover:text-slate-800 font-semibold flex items-center gap-1">
                                         <i class="fa-solid fa-rotate-left"></i> Restablecer Filtros
                                     </button>
@@ -374,6 +369,7 @@
                                             </th>
                                             <th class="p-3">FD / Legajo</th>
                                             <th class="p-3">Doc. Faltante</th>
+                                            <!-- NUEVA COLUMNA TURNO PSICOFÍSICO -->
                                             <th @click="sortBy('fechaTurnoPsicofisico')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition text-center whitespace-nowrap">
                                                 Turno Psico. <i :class="getSortIcon('fechaTurnoPsicofisico')" class="ml-1 text-[10px]"></i>
                                             </th>
@@ -436,6 +432,7 @@
                                                 </template>
                                             </td>
 
+                                            <!-- CELDA TURNO PSICOFÍSICO -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <div v-if="item.fechaTurnoPsicofisico" class="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-200 text-[10px] font-mono inline-flex items-center gap-1">
                                                     <i class="fa-regular fa-calendar-check"></i>
@@ -446,6 +443,7 @@
                                                 </div>
                                             </td>
 
+                                            <!-- Columna Legajo Digital -->
                                             <td class="p-3 text-center whitespace-nowrap">
                                                 <a v-if="item.urlDigital" :href="item.urlDigital" target="_blank" title="Ver Legajo Digitalizado" class="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 text-blue-700 rounded-lg inline-flex items-center gap-1.5 font-semibold border border-slate-200 transition shadow-sm">
                                                     <i class="fa-solid fa-link text-xs"></i>
@@ -454,26 +452,17 @@
                                                 <span v-else class="text-slate-300 text-[11px] italic font-mono">---</span>
                                             </td>
 
-                                            <!-- COLUMNA DE ACCIONES MODIFICADA PARA BLOQUEO -->
                                             <td class="p-3 text-center whitespace-nowrap" v-if="isAdmin">
                                                 <div class="flex items-center justify-center gap-1">
                                                     <button v-if="item.celular" @click="openWhatsAppModal(item)" title="Enviar notificación por WhatsApp" class="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition shadow-sm inline-flex items-center justify-center">
                                                         <i class="fa-brands fa-whatsapp text-xs"></i>
                                                     </button>
-
-                                                    <template v-if="getStatusKey(item) !== 'COMPLETADO'">
-                                                        <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200">
-                                                            <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                                        </button>
-                                                        <button @click="confirmDelete(item)" title="Eliminar" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition border border-slate-200">
-                                                            <i class="fa-solid fa-trash text-xs"></i>
-                                                        </button>
-                                                    </template>
-                                                    <template v-else>
-                                                        <span class="px-2 py-1 bg-slate-100 text-slate-500 rounded text-[9px] font-bold inline-flex items-center gap-1 cursor-not-allowed border border-slate-200" title="Expediente archivado (Solo lectura)">
-                                                            <i class="fa-solid fa-lock text-[9px]"></i> Archivado
-                                                        </span>
-                                                    </template>
+                                                    <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200">
+                                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                    </button>
+                                                    <button @click="confirmDelete(item)" title="Eliminar" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition border border-slate-200">
+                                                        <i class="fa-solid fa-trash text-xs"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -724,6 +713,7 @@
                                 </div>
                             </div>
                             
+                            <!-- SECCIÓN MODIFICADA: Ahora incluye Fecha de Turno Psicofísico -->
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div>
                                     <label class="block font-semibold text-slate-700 mb-1">N° Legajo</label>
@@ -920,9 +910,6 @@
                 const records = ref([...seedRecords]);
                 const isCloudConnected = ref(false);
                 const currentShareUrl = ref(window.location.href);
-
-                // VARIABLE NUEVA PARA OCULTAR FINALIZADOS POR DEFECTO
-                const ocultarFinalizados = ref(true);
 
                 const toasts = ref([]);
                 const showToast = (message, type = 'success') => {
@@ -1531,11 +1518,6 @@
                         
                         if (!matchesSearch) return false;
 
-                        // LÓGICA AGREGADA: Ocultamiento de registros finalizados
-                        if (ocultarFinalizados.value && getStatusKey(item) === 'COMPLETADO') {
-                            return false;
-                        }
-
                         if (filterAño.value !== 'ALL') {
                             const year = item.fechaIngreso ? item.fechaIngreso.split('-')[0] : '';
                             if (year !== filterAño.value) return false;
@@ -1777,14 +1759,6 @@
                         pageOrientation: 'landscape',
                         pageSize: 'A4',
                         pageMargins: [20, 30, 20, 30],
-                        // MARCA DE AGUA PARA ARCHIVADOS
-                        watermark: type === 'MINISTERIO' ? { 
-                            text: 'ARCHIVO DEFINITIVO', 
-                            color: '#94a3b8', 
-                            opacity: 0.2, 
-                            bold: true, 
-                            italics: false 
-                        } : null,
                         content: [
                             { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
                             { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
@@ -1795,14 +1769,7 @@
                                 style: 'tableExample',
                                 table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody },
                                 layout: {
-                                    fillColor: function (rowIndex, node, columnIndex) { 
-                                        if (rowIndex === 0) return '#334155'; 
-                                        // PINTAR DE VERDE LAS FILAS COMPLETADAS
-                                        const estadoText = node.table.body[rowIndex][8] ? node.table.body[rowIndex][8].text : '';
-                                        if (estadoText === 'Finalizado') return '#ecfdf5'; 
-
-                                        return (rowIndex % 2 === 0) ? '#f8fafc' : null; 
-                                    },
+                                    fillColor: function (rowIndex) { return (rowIndex === 0) ? '#334155' : (rowIndex % 2 === 0) ? '#f8fafc' : null; },
                                     hLineWidth: function () { return 0.5; },
                                     vLineWidth: function () { return 0; },
                                     hLineColor: function () { return '#cbd5e1'; },
@@ -1887,7 +1854,6 @@
                     records, isCloudConnected, currentShareUrl, toasts, removeToast,
                     availableDocOptions, searchQuery, filterAño, filterMes, filterSisper,
                     filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
-                    ocultarFinalizados, // Expuesto a la interfaz
                     currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
                     sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
                     toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
