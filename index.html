@@ -166,7 +166,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v8.0 Registros</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v8.1 Wpp Template</span>
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                         Nube Sincronizada
@@ -215,7 +215,6 @@
                     
                     <div class="xl:col-span-8 space-y-4">
 
-                        <!-- NAVEGACIÓN POR PESTAÑAS (3 VISTAS AHORA) -->
                         <div class="flex gap-6 border-b border-slate-200 px-2 mt-2">
                             <button @click="currentView = 'ACTIVOS'; currentPage = 1; selectedRecordIds = []" 
                                     class="pb-3 border-b-2 font-bold text-sm transition flex items-center gap-2"
@@ -237,7 +236,6 @@
                             </button>
                         </div>
 
-                        <!-- VISTAS DE EXPEDIENTES (ACTIVOS y ARCHIVO) -->
                         <div v-if="currentView === 'ACTIVOS' || currentView === 'ARCHIVO'">
                             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3 mb-4" :class="currentView === 'ARCHIVO' ? 'bg-slate-50/50' : ''">
                                 <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -1018,7 +1016,7 @@
                 ];
 
                 const records = ref([...seedRecords]);
-                const reportesGenerados = ref([]); // NUEVA VARIABLE PARA HISTORIAL
+                const reportesGenerados = ref([]); 
                 const isCloudConnected = ref(false);
                 const currentShareUrl = ref(window.location.href);
 
@@ -1610,7 +1608,8 @@
                     const fdText = item.fd ? item.fd : 'S/D';
                     const fechaText = formatDate(item.fechaIngreso);
 
-                    customWhatsAppMessage.value = `Estimado/a ${item.nombre}, nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo (FD: ${fdText} / Fecha de ingreso: ${fechaText}) para Nivel Secundario/ Superior/Educación Física que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
+                    // MODIFICACIÓN DEL MENSAJE AUTOMÁTICO DE WHATSAPP
+                    customWhatsAppMessage.value = `Estimado/a ${item.nombre} , nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo adjunto al (FD: ${fdText} / Fecha de ingreso: ${fechaText}) para Nivel Secundario que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
                     
                     showWhatsAppModal.value = true;
                 };
@@ -2103,7 +2102,7 @@
                     filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
                     
                     currentView, activeCount, archiveCount, undoArchive, 
-                    reportesGenerados, showReportDetailModal, activeReport, openReportDetail, // NUEVAS VARIABLES PARA REPORTES
+                    reportesGenerados, showReportDetailModal, activeReport, openReportDetail, 
 
                     currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
                     sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
