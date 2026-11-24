@@ -166,7 +166,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v8.1 Wpp Template</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v8.5 PDF Alfabético</span>
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                         Nube Sincronizada
@@ -215,6 +215,7 @@
                     
                     <div class="xl:col-span-8 space-y-4">
 
+                        <!-- NAVEGACIÓN POR PESTAÑAS -->
                         <div class="flex gap-6 border-b border-slate-200 px-2 mt-2">
                             <button @click="currentView = 'ACTIVOS'; currentPage = 1; selectedRecordIds = []" 
                                     class="pb-3 border-b-2 font-bold text-sm transition flex items-center gap-2"
@@ -236,6 +237,7 @@
                             </button>
                         </div>
 
+                        <!-- VISTAS DE EXPEDIENTES (ACTIVOS y ARCHIVO) -->
                         <div v-if="currentView === 'ACTIVOS' || currentView === 'ARCHIVO'">
                             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3 mb-4" :class="currentView === 'ARCHIVO' ? 'bg-slate-50/50' : ''">
                                 <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -312,6 +314,7 @@
                                 </div>
                             </div>
 
+                            <!-- BARRA DE ACCIONES EN LOTE PARA EXPEDIENTES ACTIVOS -->
                             <div v-if="selectedRecordIds.length > 0 && isAdmin && currentView === 'ACTIVOS'" 
                                  class="bg-slate-700 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-slate-600 flex flex-wrap items-center justify-between gap-3 mb-4">
                                 <div class="flex items-center gap-2 text-xs">
@@ -322,10 +325,27 @@
                                     <button @click="bulkSetDigitalizado('SI')" class="px-3 py-1.5 bg-slate-600 hover:bg-slate-500 rounded-lg font-semibold transition flex items-center gap-1">
                                         <i class="fa-solid fa-laptop-code"></i> Digitalizado SÍ
                                     </button>
-                                    <button @click="bulkArchive()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold shadow-md transition flex items-center gap-1.5">
-                                        <i class="fa-solid fa-box-archive"></i> Archivar Seleccionados
+                                    <button @click="bulkArchive()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold shadow-md transition flex items-center gap-1.5">
+                                        <i class="fa-solid fa-file-pdf"></i> Archivar y Generar PDF
                                     </button>
                                     <button @click="selectedRecordIds = []" class="px-2 py-1 text-slate-300 hover:text-white transition">
+                                        <i class="fa-solid fa-xmark"></i> Cancelar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- BARRA DE ACCIONES EN LOTE PARA ARCHIVO HISTÓRICO -->
+                            <div v-if="selectedRecordIds.length > 0 && currentView === 'ARCHIVO'" 
+                                 class="bg-emerald-800 text-white p-3.5 px-5 rounded-2xl shadow-xl border border-emerald-700 flex flex-wrap items-center justify-between gap-3 mb-4">
+                                <div class="flex items-center gap-2 text-xs">
+                                    <span class="bg-emerald-600 px-2.5 py-1 rounded-full font-bold">{{ selectedRecordIds.length }}</span>
+                                    <span>expedientes archivados seleccionados</span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap text-xs">
+                                    <button @click="exportSelectedArchivePDF()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold shadow-md transition flex items-center gap-1.5">
+                                        <i class="fa-solid fa-file-pdf"></i> Generar Reporte PDF
+                                    </button>
+                                    <button @click="selectedRecordIds = []" class="px-2 py-1 text-emerald-200 hover:text-white transition">
                                         <i class="fa-solid fa-xmark"></i> Cancelar
                                     </button>
                                 </div>
@@ -343,7 +363,7 @@
                                             </span>
                                         </div>
                                         <p class="text-xs text-slate-500 mt-0.5">
-                                            {{ currentView === 'ACTIVOS' ? 'Usa las casillas de la izquierda para seleccionar y archivar.' : 'Expedientes que ya han sido finalizados y enviados al Ministerio. Protegidos contra edición.' }}
+                                            {{ currentView === 'ACTIVOS' ? 'Al archivar expedientes, se marcarán automáticamente como Enviado Sisper: SÍ, se generará su PDF ordenado alfabéticamente y se registrará el reporte.' : 'Selecciona expedientes archivados mediante las casillas para generar un nuevo reporte PDF ordenado alfabéticamente.' }}
                                         </p>
                                     </div>
 
@@ -370,7 +390,7 @@
                                     <table class="w-full text-left border-collapse text-xs">
                                        <thead>
                                             <tr class="bg-slate-100/80 text-slate-600 uppercase font-bold tracking-wider text-[11px] border-b border-slate-200 select-none">
-                                                <th class="p-3 text-center w-8" v-if="isAdmin && currentView === 'ACTIVOS'">
+                                                <th class="p-3 text-center w-8" v-if="(isAdmin && currentView === 'ACTIVOS') || currentView === 'ARCHIVO'">
                                                     <input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
                                                 </th>
                                                 <th @click="sortBy('status')" class="p-3 cursor-pointer hover:bg-slate-200/60 transition">
@@ -394,9 +414,9 @@
                                         <tbody class="divide-y divide-slate-100">
                                             <tr v-for="item in paginatedRecords" :key="item.id" 
                                                 class="hover:bg-slate-50/80 transition group"
-                                                :class="[selectedRecordIds.includes(item.id) ? 'bg-slate-100/60' : '', currentView === 'ARCHIVO' ? 'opacity-80 hover:opacity-100' : '']">
+                                                :class="[selectedRecordIds.includes(item.id) ? 'bg-slate-100/80' : '', currentView === 'ARCHIVO' ? 'opacity-90 hover:opacity-100' : '']">
                                                 
-                                                <td class="p-3 text-center" v-if="isAdmin && currentView === 'ACTIVOS'">
+                                                <td class="p-3 text-center" v-if="(isAdmin && currentView === 'ACTIVOS') || currentView === 'ARCHIVO'">
                                                     <input type="checkbox" :value="item.id" v-model="selectedRecordIds" class="rounded text-slate-600 focus:ring-slate-500 cursor-pointer">
                                                 </td>
 
@@ -471,7 +491,7 @@
                                                         </button>
 
                                                         <template v-if="currentView === 'ACTIVOS'">
-                                                            <button @click="archiveRecord(item)" title="Mover al Archivo Histórico" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition border border-amber-200 inline-flex items-center justify-center">
+                                                            <button @click="archiveRecord(item)" title="Archivar (Sisper SÍ), Generar PDF y Registrar Reporte" class="p-1.5 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg transition border border-amber-200 inline-flex items-center justify-center">
                                                                 <i class="fa-solid fa-box-archive text-xs"></i>
                                                             </button>
                                                             <button @click="editRecord(item)" title="Editar Trámite" class="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-200 inline-flex items-center justify-center">
@@ -518,7 +538,7 @@
                             </div>
                         </div>
 
-                        <!-- NUEVA VISTA: HISTORIAL DE REPORTES -->
+                        <!-- VISTA: HISTORIAL DE REPORTES -->
                         <div v-else-if="currentView === 'REPORTES'">
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                                 <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
@@ -526,14 +546,14 @@
                                         <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
                                             <i class="fa-solid fa-clock-rotate-left text-slate-500"></i> Registro de Reportes Emitidos
                                         </h3>
-                                        <p class="text-xs text-slate-500 mt-1">Historial inmutable de los expedientes enviados y documentados en cada exportación.</p>
+                                        <p class="text-xs text-slate-500 mt-1">Historial inmutable de los expedientes enviados y documentados en cada exportación o archivado.</p>
                                     </div>
                                 </div>
                                 <div class="p-5">
                                     <div v-if="reportesGenerados.length === 0" class="text-center py-10 text-slate-400">
                                         <i class="fa-solid fa-file-signature text-4xl mb-3 text-slate-300"></i>
                                         <p class="font-medium text-sm text-slate-500">Aún no se ha generado ningún reporte.</p>
-                                        <p class="text-xs mt-1">Cuando exportes un PDF o Excel, quedará registrado automáticamente aquí.</p>
+                                        <p class="text-xs mt-1">Cuando archives expedientes o exportes un PDF/Excel, quedará registrado automáticamente aquí.</p>
                                     </div>
                                     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div v-for="rep in reportesGenerados" :key="rep.id" class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow transition group flex flex-col justify-between">
@@ -657,7 +677,10 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="p-4 border-t border-slate-200 flex justify-end bg-white shrink-0">
+                    <div class="p-4 border-t border-slate-200 flex items-center justify-between gap-3 bg-white shrink-0">
+                        <button @click="reDownloadReportPDF(activeReport)" class="px-5 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg font-bold text-xs shadow-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-rose-300"></i> Descargar PDF Nuevamente
+                        </button>
                         <button @click="showReportDetailModal = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold text-xs transition">Cerrar Detalle</button>
                     </div>
                 </div>
@@ -667,7 +690,6 @@
                 <p>Dirección de Gestión Escolar © 2026 — Departamento de Altas Puras (Director: Aguirre Juan Manuel)</p>
             </footer>
 
-            <!-- OTROS MODALES EXISTENTES -->
             <!-- MODAL GESTION DE COLABORADORES -->
             <div v-if="showColaboradoresModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" @click.self="showColaboradoresModal = false">
                 <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200">
@@ -732,7 +754,7 @@
                         <button @click="showExportModal = false" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
                     <div class="p-6 space-y-4">
-                        <p class="text-xs text-slate-600 font-medium">Seleccione el estado de proceso para generar el informe oficial con membrete jerárquico:</p>
+                        <p class="text-xs text-slate-600 font-medium">Seleccione el estado de proceso para generar el informe oficial con membrete jerárquico (ordenado alfabéticamente):</p>
                         <div class="space-y-3">
                             <div @click="exportPDF('TODOS')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
                                 <div>
@@ -904,7 +926,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <p class="text-[10px] text-amber-600 text-center mt-2 italic font-medium"><i class="fa-solid fa-circle-info"></i> Al marcar "Env. Ministerio: SÍ", el expediente se moverá automáticamente al Archivo Histórico.</p>
+                            <p class="text-[10px] text-amber-600 text-center mt-2 italic font-medium"><i class="fa-solid fa-circle-info"></i> Al marcar "Env. Ministerio: SÍ", se marcará automáticamente Env. Sisper en SÍ y pasará al Archivo Histórico.</p>
                         </div>
 
                         <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
@@ -1020,7 +1042,6 @@
                 const isCloudConnected = ref(false);
                 const currentShareUrl = ref(window.location.href);
 
-                // VARIABLE PARA MANEJAR LAS PESTAÑAS (3 ESTADOS)
                 const currentView = ref('ACTIVOS'); 
 
                 const toasts = ref([]);
@@ -1224,6 +1245,15 @@
 
                 const saveToLocalStorage = (data) => {
                     try { localStorage.setItem('altas_puras_records_v71', JSON.stringify(data)); } catch (e) {}
+                };
+
+                const syncRecordsToCloud = (updatedRecords) => {
+                    if (window.cloudDB && isCloudConnected.value) {
+                        const { db, doc, setDoc, appId } = window.cloudDB;
+                        updatedRecords.forEach(rec => {
+                            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(rec.id)), rec).catch(() => {});
+                        });
+                    }
                 };
 
                 const saveReportes = () => {
@@ -1608,7 +1638,6 @@
                     const fdText = item.fd ? item.fd : 'S/D';
                     const fechaText = formatDate(item.fechaIngreso);
 
-                    // MODIFICACIÓN DEL MENSAJE AUTOMÁTICO DE WHATSAPP
                     customWhatsAppMessage.value = `Estimado/a ${item.nombre} , nos comunicamos de la Dirección de Gestión Escolar - Sector de Designaciones - Altas Puras con relación a su Legajo adjunto al (FD: ${fdText} / Fecha de ingreso: ${fechaText}) para Nivel Secundario que oportunamente elevaron para su designación. Solicitamos remitir a la brevedad la siguiente documentación faltante: ${documentosFaltantes}. Muchas gracias.`;
                     
                     showWhatsAppModal.value = true;
@@ -1736,24 +1765,203 @@
                     }
                 };
 
+                const captureReportSnapshot = (title, items, type) => {
+                    const snapshot = items.map(r => ({
+                        id: r.id || null,
+                        nombre: r.nombre || '---',
+                        dni: r.dni || '---',
+                        fd: r.fd || 'S/D',
+                        legajo: r.legajo || 'S/D',
+                        fechaIngreso: r.fechaIngreso || '',
+                        fechaTurnoPsicofisico: r.fechaTurnoPsicofisico || '',
+                        digitalizado: r.digitalizado || 'NO',
+                        enviadoSisper: r.enviadoSisper || 'NO',
+                        enviadoMinisterio: r.enviadoMinisterio || 'NO',
+                        docFaltante: Array.isArray(r.docFaltante) ? [...r.docFaltante] : []
+                    }));
+                    
+                    const nuevoReporte = {
+                        id: 'rep_' + Date.now(),
+                        fecha: new Date().toLocaleString('es-AR'),
+                        titulo: title,
+                        tipo: type,
+                        total: items.length,
+                        items: snapshot
+                    };
+                    
+                    reportesGenerados.value.unshift(nuevoReporte);
+                    saveReportes();
+                };
+
+                // GENERACIÓN DE PDF CON ORDENAMIENTO ALFABÉTICO AUTOMÁTICO POR APELLIDO Y NOMBRE
+                const generatePDFDocument = (itemsToExport, reportTitle, filePrefix, useArchiveWatermark = false, saveHistory = true) => {
+                    const sortedItems = [...itemsToExport].sort((a, b) =>
+                        (a.nombre || '').trim().localeCompare((b.nombre || '').trim(), 'es', { sensitivity: 'base' })
+                    );
+
+                    const tableBody = [
+                        [
+                            { text: 'Fecha', style: 'tableHeader' },
+                            { text: 'Turno Psico.', style: 'tableHeader' },
+                            { text: 'Apellido y Nombre', style: 'tableHeader' },
+                            { text: 'DNI', style: 'tableHeader' },
+                            { text: 'Expediente', style: 'tableHeader' },
+                            { text: 'Legajo', style: 'tableHeader' },
+                            { text: 'Dig.', style: 'tableHeader' },
+                            { text: 'Sisper', style: 'tableHeader' },
+                            { text: 'Estado', style: 'tableHeader' }
+                        ]
+                    ];
+
+                    sortedItems.forEach(r => {
+                        tableBody.push([
+                            formatDate(r.fechaIngreso),
+                            formatDate(r.fechaTurnoPsicofisico),
+                            r.nombre || '---',
+                            r.dni || '---',
+                            r.fd || 'S/D',
+                            r.legajo || 'S/D',
+                            r.digitalizado || 'NO',
+                            r.enviadoSisper || 'NO',
+                            getStatusLabel(r)
+                        ]);
+                    });
+
+                    const now = new Date();
+                    const fechaEmj = `${now.toLocaleDateString('es-AR')} ${now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`.trim();
+
+                    const docDefinition = {
+                        pageOrientation: 'landscape',
+                        pageSize: 'A4',
+                        pageMargins: [20, 30, 20, 30],
+                        watermark: useArchiveWatermark ? { 
+                            text: 'ARCHIVO DEFINITIVO', 
+                            color: '#94a3b8', 
+                            opacity: 0.2, 
+                            bold: true, 
+                            italics: false 
+                        } : null,
+                        content: [
+                            { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
+                            { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
+                            { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 780, y2: 8, lineWidth: 1.5, lineColor: '#334155' }] },
+                            { text: reportTitle, style: 'reportTitle' },
+                            { text: `Fecha de Emisión: ${fechaEmj} | Total de Registros: ${sortedItems.length} | Ordenado Alfabéticamente`, style: 'metaText' },
+                            {
+                                style: 'tableExample',
+                                table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody },
+                                layout: {
+                                    fillColor: function (rowIndex, node, columnIndex) { 
+                                        if (rowIndex === 0) return '#334155'; 
+                                        const estadoText = node.table.body[rowIndex][8] ? node.table.body[rowIndex][8].text : '';
+                                        if (estadoText === 'Finalizado') return '#ecfdf5'; 
+                                        return (rowIndex % 2 === 0) ? '#f8fafc' : null; 
+                                    },
+                                    hLineWidth: function () { return 0.5; },
+                                    vLineWidth: function () { return 0; },
+                                    hLineColor: function () { return '#cbd5e1'; },
+                                    paddingLeft: function() { return 6; }, paddingRight: function() { return 6; },
+                                    paddingTop: function() { return 5; }, paddingBottom: function() { return 5; }
+                                }
+                            }
+                        ],
+                        styles: {
+                            mainHeader: { fontSize: 16, bold: true, color: '#0f172a' },
+                            subHeader: { fontSize: 10, bold: true, color: '#475569', margin: [0, 2, 0, 15] },
+                            reportTitle: { fontSize: 12, bold: true, color: '#1e293b', margin: [0, 10, 0, 2] },
+                            metaText: { fontSize: 9, color: '#64748b', margin: [0, 0, 0, 12] },
+                            tableExample: { margin: [0, 5, 0, 15] },
+                            tableHeader: { bold: true, fontSize: 9, color: 'white', alignment: 'center' }
+                        },
+                        defaultStyle: { fontSize: 8, color: '#334155' }
+                    };
+
+                    if (saveHistory) {
+                        captureReportSnapshot(reportTitle, sortedItems, 'PDF');
+                    }
+                    pdfMake.createPdf(docDefinition).download(`Informe_AltasPuras_${filePrefix}_${new Date().toISOString().split('T')[0]}.pdf`);
+                };
+
+                // RE-DESCARGAR PDF DESDE EL MODAL DE HISTORIAL DE REPORTES SIN DUPLICAR EL REGISTRO
+                const reDownloadReportPDF = (report) => {
+                    if (!report || !report.items || report.items.length === 0) {
+                        showToast("Este reporte no contiene expedientes para descargar.", "warning");
+                        return;
+                    }
+                    const itemsHydrated = report.items.map(item => {
+                        if (item.fechaIngreso !== undefined || item.legajo !== undefined) {
+                            return item;
+                        }
+                        const liveMatch = records.value.find(r => (item.dni && r.dni === item.dni) || (item.nombre && r.nombre === item.nombre));
+                        return liveMatch ? { ...liveMatch } : {
+                            nombre: item.nombre || '---',
+                            dni: item.dni || '---',
+                            fd: item.fd || 'S/D',
+                            legajo: 'S/D',
+                            fechaIngreso: '',
+                            fechaTurnoPsicofisico: '',
+                            digitalizado: 'SI',
+                            enviadoSisper: 'SI',
+                            enviadoMinisterio: 'SI',
+                            docFaltante: []
+                        };
+                    });
+                    const isArchive = report.titulo.toUpperCase().includes('ARCHIVO') || report.titulo.toUpperCase().includes('FINALIZADOS');
+                    generatePDFDocument(itemsHydrated, report.titulo, 'Reimpresion', isArchive, false);
+                    showToast("PDF descargado nuevamente desde el historial", "success");
+                };
+
+                // ARCHIVADO INDIVIDUAL: Marca Enviado Sisper SÍ, mueve a Archivo Histórico, genera PDF y registra el reporte
                 const archiveRecord = (item) => {
-                    if(confirm(`¿Mover el expediente de ${item.nombre} al Archivo Histórico?`)) {
+                    if(confirm(`¿Archivar a ${item.nombre} (marcará Sisper en SÍ), generar su PDF y registrar el reporte?`)) {
                         const record = records.value.find(r => r.id === item.id);
                         if (record) {
                             record.enviadoMinisterio = 'SI';
+                            record.enviadoSisper = 'SI';
                             saveToLocalStorage(records.value);
-                            showToast("Expediente movido al Archivo Histórico", "success");
+                            syncRecordsToCloud([record]);
+                            
+                            const titulo = `INFORME DE ARCHIVO - EXPEDIENTE ${record.fd || record.nombre}`;
+                            generatePDFDocument([record], titulo, 'Archivo_Individual', true);
+                            
+                            showToast("Expediente archivado (Sisper SÍ), PDF descargado y reporte registrado", "success");
                             nextTick(() => updateCharts());
                         }
                     }
                 };
 
+                // ARCHIVADO EN LOTE DESDE ACTIVOS: Marca Enviado Sisper SÍ, mueve seleccionados a Archivo Histórico, genera PDF y registra el reporte
                 const bulkArchive = () => {
-                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: 'SI' } : r);
+                    const selectedItems = records.value.filter(r => selectedRecordIds.value.includes(r.id));
+                    if (selectedItems.length === 0) return;
+
+                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: 'SI', enviadoSisper: 'SI' } : r);
                     saveToLocalStorage(records.value);
-                    showToast(`${selectedRecordIds.value.length} expedientes movidos al Archivo Histórico`, "success");
+                    
+                    const updatedItems = records.value.filter(r => selectedRecordIds.value.includes(r.id));
+                    syncRecordsToCloud(updatedItems);
+
+                    const titulo = `INFORME DE ARCHIVO - TRÁMITES FINALIZADOS (${updatedItems.length} EXP.)`;
+                    generatePDFDocument(updatedItems, titulo, 'Archivo_Lote', true);
+
+                    showToast(`${updatedItems.length} expedientes archivados (Sisper SÍ), PDF generado y reporte registrado`, "success");
                     selectedRecordIds.value = [];
                     nextTick(() => updateCharts());
+                };
+
+                // GENERAR PDF DESDE CHECKBOXES EN ARCHIVO HISTÓRICO
+                const exportSelectedArchivePDF = () => {
+                    const selectedItems = records.value.filter(r => selectedRecordIds.value.includes(r.id));
+                    if (selectedItems.length === 0) {
+                        showToast("Seleccione al menos un expediente archivado.", "warning");
+                        return;
+                    }
+
+                    const titulo = `REPORTE DE ARCHIVO HISTÓRICO (${selectedItems.length} EXPEDIENTES)`;
+                    generatePDFDocument(selectedItems, titulo, 'Archivo_Seleccion', true);
+                    
+                    showToast(`Reporte PDF generado con ${selectedItems.length} expedientes y registrado en el historial`, "success");
+                    selectedRecordIds.value = [];
                 };
 
                 const undoArchive = (item) => {
@@ -1762,6 +1970,7 @@
                         if (record) {
                             record.enviadoMinisterio = 'NO';
                             saveToLocalStorage(records.value);
+                            syncRecordsToCloud([record]);
                             showToast("Expediente devuelto a Trámites Activos", "success");
                             nextTick(() => updateCharts());
                         }
@@ -1821,7 +2030,7 @@
                     return parts.length < 3 ? dateStr : `${parts[2]}/${parts[1]}/${parts[0]}`;
                 };
 
-                const resetFilters = () => { searchQuery.value = ''; selectedRecordIds.value = []; currentPage.value = 1; };
+                const resetFilters = () => { searchQuery.value = ''; filterAño.value = 'ALL'; filterMes.value = 'ALL'; filterDigitalizado.value = 'ALL'; filterSisper.value = 'ALL'; filterDocFaltante.value = 'ALL'; filterSLA.value = 'ALL'; showOnlyCritical.value = false; selectedRecordIds.value = []; currentPage.value = 1; };
                 
                 const openNewModal = () => {
                     isEditing.value = false; formDocFaltanteArray.value = [];
@@ -1843,9 +2052,11 @@
                 };
 
                 const saveRecord = async () => {
+                    const isArchivingFromModal = form.value.enviadoMinisterio === 'SI';
                     const recordData = {
                         ...form.value,
                         id: String(form.value.id || ('exp_' + Date.now())),
+                        enviadoSisper: isArchivingFromModal ? 'SI' : form.value.enviadoSisper,
                         docFaltante: [...formDocFaltanteArray.value]
                     };
                     if (isEditing.value) {
@@ -1855,10 +2066,11 @@
                         records.value.unshift(recordData);
                     }
                     saveToLocalStorage(records.value);
+                    syncRecordsToCloud([recordData]);
                     showModal.value = false;
                     
-                    if (recordData.enviadoMinisterio === 'SI') {
-                        showToast(`Guardado. El expediente se movió al Archivo Histórico.`, "info");
+                    if (isArchivingFromModal) {
+                        showToast(`Guardado (Sisper SÍ). El expediente se movió al Archivo Histórico.`, "info");
                     } else {
                         showToast("Guardado exitosamente", "success");
                     }
@@ -1869,6 +2081,10 @@
                 const confirmDelete = (item) => {
                     records.value = records.value.filter(r => String(r.id) !== String(item.id));
                     saveToLocalStorage(records.value);
+                    if (window.cloudDB && isCloudConnected.value) {
+                        const { db, doc, deleteDoc, appId } = window.cloudDB;
+                        deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expedientes', String(item.id))).catch(() => {});
+                    }
                     showToast("Expediente eliminado", "info");
                     nextTick(() => updateCharts());
                 };
@@ -1876,15 +2092,9 @@
                 const bulkSetDigitalizado = (val) => {
                     records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, digitalizado: val } : r);
                     saveToLocalStorage(records.value);
+                    const updatedItems = records.value.filter(r => selectedRecordIds.value.includes(r.id));
+                    syncRecordsToCloud(updatedItems);
                     showToast("Actualización masiva completada", "success");
-                    selectedRecordIds.value = [];
-                    nextTick(() => updateCharts());
-                };
-
-                const bulkSetMinisterio = (val) => {
-                    records.value = records.value.map(r => selectedRecordIds.value.includes(r.id) ? { ...r, enviadoMinisterio: val } : r);
-                    saveToLocalStorage(records.value);
-                    showToast(`${selectedRecordIds.value.length} expedientes movidos al Archivo Histórico`, "success");
                     selectedRecordIds.value = [];
                     nextTick(() => updateCharts());
                 };
@@ -1898,26 +2108,6 @@
                     const digEnv = records.value.filter(r => r.digitalizado === 'SI' && r.enviadoMinisterio === 'SI').length;
                     return { faltantes, sisper, digEnv };
                 });
-
-                const captureReportSnapshot = (title, items, type) => {
-                    const snapshot = items.map(r => ({
-                        nombre: r.nombre,
-                        dni: r.dni,
-                        fd: r.fd
-                    }));
-                    
-                    const nuevoReporte = {
-                        id: 'rep_' + Date.now(),
-                        fecha: new Date().toLocaleString('es-AR'),
-                        titulo: title,
-                        tipo: type,
-                        total: items.length,
-                        items: snapshot
-                    };
-                    
-                    reportesGenerados.value.unshift(nuevoReporte);
-                    saveReportes();
-                };
 
                 const exportPDF = (type) => {
                     let itemsToExport = records.value;
@@ -1944,100 +2134,21 @@
                     }
 
                     showToast("Generando reporte PDF profesional...", "info");
-
-                    const tableBody = [
-                        [
-                            { text: 'Fecha', style: 'tableHeader' },
-                            { text: 'Turno Psico.', style: 'tableHeader' },
-                            { text: 'Apellido y Nombre', style: 'tableHeader' },
-                            { text: 'DNI', style: 'tableHeader' },
-                            { text: 'Expediente', style: 'tableHeader' },
-                            { text: 'Legajo', style: 'tableHeader' },
-                            { text: 'Dig.', style: 'tableHeader' },
-                            { text: 'Sisper', style: 'tableHeader' },
-                            { text: 'Estado', style: 'tableHeader' }
-                        ]
-                    ];
-
-                    itemsToExport.forEach(r => {
-                        tableBody.push([
-                            formatDate(r.fechaIngreso),
-                            formatDate(r.fechaTurnoPsicofisico),
-                            r.nombre || '---',
-                            r.dni || '---',
-                            r.fd || 'S/D',
-                            r.legajo || 'S/D',
-                            r.digitalizado || 'NO',
-                            r.enviadoSisper || 'NO',
-                            getStatusLabel(r)
-                        ]);
-                    });
-
-                    const now = new Date();
-                    const fechaEmj = `${now.toLocaleDateString('es-AR')} ${now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}`.trim();
-
-                    const docDefinition = {
-                        pageOrientation: 'landscape',
-                        pageSize: 'A4',
-                        pageMargins: [20, 30, 20, 30],
-                        watermark: type === 'MINISTERIO' ? { 
-                            text: 'ARCHIVO DEFINITIVO', 
-                            color: '#94a3b8', 
-                            opacity: 0.2, 
-                            bold: true, 
-                            italics: false 
-                        } : null,
-                        content: [
-                            { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
-                            { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
-                            { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 780, y2: 8, lineWidth: 1.5, lineColor: '#334155' }] },
-                            { text: reportTitle, style: 'reportTitle' },
-                            { text: `Fecha de Emisión: ${fechaEmj} | Total de Registros: ${itemsToExport.length}`, style: 'metaText' },
-                            {
-                                style: 'tableExample',
-                                table: { headerRows: 1, widths: ['auto', 'auto', '*', 'auto', 'auto', 'auto', 'auto', 'auto', 'auto'], body: tableBody },
-                                layout: {
-                                    fillColor: function (rowIndex, node, columnIndex) { 
-                                        if (rowIndex === 0) return '#334155'; 
-                                        const estadoText = node.table.body[rowIndex][8] ? node.table.body[rowIndex][8].text : '';
-                                        if (estadoText === 'Finalizado') return '#ecfdf5'; 
-                                        return (rowIndex % 2 === 0) ? '#f8fafc' : null; 
-                                    },
-                                    hLineWidth: function () { return 0.5; },
-                                    vLineWidth: function () { return 0; },
-                                    hLineColor: function () { return '#cbd5e1'; },
-                                    paddingLeft: function() { return 6; }, paddingRight: function() { return 6; },
-                                    paddingTop: function() { return 5; }, paddingBottom: function() { return 5; }
-                                }
-                            }
-                        ],
-                        styles: {
-                            mainHeader: { fontSize: 16, bold: true, color: '#0f172a' },
-                            subHeader: { fontSize: 10, bold: true, color: '#475569', margin: [0, 2, 0, 15] },
-                            reportTitle: { fontSize: 12, bold: true, color: '#1e293b', margin: [0, 10, 0, 2] },
-                            metaText: { fontSize: 9, color: '#64748b', margin: [0, 0, 0, 12] },
-                            tableExample: { margin: [0, 5, 0, 15] },
-                            tableHeader: { bold: true, fontSize: 9, color: 'white', alignment: 'center' }
-                        },
-                        defaultStyle: { fontSize: 8, color: '#334155' }
-                    };
-
-                    // GUARDAR EN HISTORIAL ANTES DE DESCARGAR
-                    captureReportSnapshot(reportTitle, itemsToExport, 'PDF');
-
-                    pdfMake.createPdf(docDefinition).download(`Informe_AltasPuras_${filePrefix}_${new Date().toISOString().split('T')[0]}.pdf`);
+                    generatePDFDocument(itemsToExport, reportTitle, filePrefix, type === 'MINISTERIO');
                     showToast("¡Reporte oficial PDF generado con éxito!", "success");
                     showExportModal.value = false;
                 };
 
                 const exportCSV = () => {
                     let csv = 'ID,Nombre,DNI,FD,Legajo,TurnoPsicofisico,FechaIngreso,DiasGestion,Digitalizado,EnviadoSisper,EnviadoMinisterio,Celular,UrlDigital\n';
-                    records.value.forEach(r => {
+                    const sortedCsvRecords = [...records.value].sort((a, b) =>
+                        (a.nombre || '').trim().localeCompare((b.nombre || '').trim(), 'es', { sensitivity: 'base' })
+                    );
+                    sortedCsvRecords.forEach(r => {
                         csv += `"${r.id}","${r.nombre}","${r.dni}","${r.fd}","${r.legajo}","${r.fechaTurnoPsicofisico || ''}","${r.fechaIngreso || ''}","${getDaysInProcess(r)}","${r.digitalizado}","${r.enviadoSisper || 'NO'}","${r.enviadoMinisterio}","${r.celular}","${r.urlDigital || ''}"\n`;
                     });
                     
-                    // GUARDAR EN HISTORIAL ANTES DE DESCARGAR
-                    captureReportSnapshot("Exportación Base de Datos Completa CSV", records.value, 'CSV');
+                    captureReportSnapshot("Exportación Base de Datos Completa CSV", sortedCsvRecords, 'CSV');
 
                     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.setAttribute('download', `Altas_Puras_Export_${new Date().toISOString().split('T')[0]}.csv`);
@@ -2102,12 +2213,12 @@
                     filterDigitalizado, filterDocFaltante, filterSLA, showOnlyCritical,
                     
                     currentView, activeCount, archiveCount, undoArchive, 
-                    reportesGenerados, showReportDetailModal, activeReport, openReportDetail, 
+                    reportesGenerados, showReportDetailModal, activeReport, openReportDetail, reDownloadReportPDF,
 
                     currentPage, itemsPerPage, filteredRecords, paginatedRecords, totalPages,
                     sortColumn, sortAsc, sortBy, getSortIcon, selectedRecordIds, isAllSelected,
-                    toggleSelectAll, bulkSetDigitalizado, bulkSetMinisterio, stats,
-                    archiveRecord, bulkArchive,
+                    toggleSelectAll, bulkSetDigitalizado, stats,
+                    archiveRecord, bulkArchive, exportSelectedArchivePDF,
                     
                     aiInsightText, processHealthScore, getDaysInProcess, getSlaColorClass,
                     showModal, showExportModal, showWhatsAppModal, showShareModal, showSmartUploadModal,
