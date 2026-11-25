@@ -166,7 +166,7 @@
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <h1 class="text-lg font-bold tracking-tight text-white">Dirección de Gestión Escolar ( Altas Puras sc )</h1>
-                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v8.5 PDF Alfabético</span>
+                                    <span class="bg-slate-600 text-slate-300 text-xs px-2.5 py-0.5 rounded-full font-medium border border-slate-500">v8.6 Membrete 2026</span>
                                     <span v-if="isCloudConnected" class="bg-emerald-800/80 text-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-emerald-600 flex items-center gap-1.5" title="Sincronización automática activada">
                                         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                                         Nube Sincronizada
@@ -754,7 +754,7 @@
                         <button @click="showExportModal = false" class="text-slate-300 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
                     </div>
                     <div class="p-6 space-y-4">
-                        <p class="text-xs text-slate-600 font-medium">Seleccione el estado de proceso para generar el informe oficial con membrete jerárquico (ordenado alfabéticamente):</p>
+                        <p class="text-xs text-slate-600 font-medium">Seleccione el estado de proceso para generar el informe oficial con Membrete Oficial 2026 (ordenado alfabéticamente):</p>
                         <div class="space-y-3">
                             <div @click="exportPDF('TODOS')" class="p-4 rounded-xl border border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50 transition cursor-pointer flex items-center justify-between shadow-sm">
                                 <div>
@@ -1793,7 +1793,70 @@
                     saveReportes();
                 };
 
-                // GENERACIÓN DE PDF CON ORDENAMIENTO ALFABÉTICO AUTOMÁTICO POR APELLIDO Y NOMBRE
+                // MEMBRETE OFICIAL 2026 (ANCHO COMPLETO DE PÁGINA/CONTENIDO)
+                const buildOfficialLetterhead = () => {
+                    return [
+                        {
+                            table: {
+                                widths: ['auto', '*', 'auto'],
+                                body: [
+                                    [
+                                        {
+                                            width: 34,
+                                            canvas: [
+                                                { type: 'rect', x: 0, y: 0, w: 28, h: 36, r: 4, color: '#007a87' },
+                                                { type: 'rect', x: 4, y: 4, w: 20, h: 9, color: '#ffffff' },
+                                                { type: 'rect', x: 4, y: 14, w: 20, h: 8, color: '#38bdf8' },
+                                                { type: 'rect', x: 4, y: 23, w: 20, h: 9, color: '#ffffff' }
+                                            ],
+                                            margin: [0, 2, 8, 0]
+                                        },
+                                        {
+                                            stack: [
+                                                { text: 'Ministerio de', fontSize: 11, color: '#334155', bold: false, lineHeight: 1.05 },
+                                                { text: 'Educación', fontSize: 15, color: '#0f172a', bold: true, lineHeight: 1.05 },
+                                                { text: 'CORRIENTES', fontSize: 9, color: '#007a87', bold: true, characterSpacing: 2.2, margin: [0, 2, 0, 0] }
+                                            ],
+                                            alignment: 'left'
+                                        },
+                                        {
+                                            stack: [
+                                                { text: 'Dirección de Gestión Escolar', fontSize: 12, color: '#0f172a', bold: true },
+                                                { text: 'Salta 731  •  gestionescolar@mec.gob.ar', fontSize: 8.5, color: '#475569', margin: [0, 2, 0, 0] },
+                                                { text: 'Corrientes, Corrientes', fontSize: 8.5, color: '#475569', margin: [0, 1, 0, 0] }
+                                            ],
+                                            alignment: 'right'
+                                        }
+                                    ]
+                                ]
+                            },
+                            layout: 'noBorders',
+                            margin: [0, 0, 0, 6]
+                        },
+                        {
+                            table: {
+                                widths: ['*'],
+                                body: [
+                                    [
+                                        {
+                                            text: 'DEPARTAMENTO DE ALTAS PURAS — DIRECTOR: AGUIRRE JUAN MANUEL',
+                                            fontSize: 8,
+                                            bold: true,
+                                            color: '#ffffff',
+                                            fillColor: '#007a87',
+                                            alignment: 'center',
+                                            margin: [4, 3, 4, 3]
+                                        }
+                                    ]
+                                ]
+                            },
+                            layout: 'noBorders',
+                            margin: [0, 0, 0, 10]
+                        }
+                    ];
+                };
+
+                // GENERACIÓN DE PDF CON MEMBRETE OFICIAL ANCHO COMPLETO Y ORDENAMIENTO ALFABÉTICO
                 const generatePDFDocument = (itemsToExport, reportTitle, filePrefix, useArchiveWatermark = false, saveHistory = true) => {
                     const sortedItems = [...itemsToExport].sort((a, b) =>
                         (a.nombre || '').trim().localeCompare((b.nombre || '').trim(), 'es', { sensitivity: 'base' })
@@ -1833,7 +1896,7 @@
                     const docDefinition = {
                         pageOrientation: 'landscape',
                         pageSize: 'A4',
-                        pageMargins: [20, 30, 20, 30],
+                        pageMargins: [20, 25, 20, 25],
                         watermark: useArchiveWatermark ? { 
                             text: 'ARCHIVO DEFINITIVO', 
                             color: '#94a3b8', 
@@ -1842,9 +1905,7 @@
                             italics: false 
                         } : null,
                         content: [
-                            { text: 'DIRECCIÓN DE GESTIÓN ESCOLAR', style: 'mainHeader', alignment: 'center' },
-                            { text: 'Departamento de Altas Puras — Director: Aguirre Juan Manuel', style: 'subHeader', alignment: 'center' },
-                            { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 780, y2: 8, lineWidth: 1.5, lineColor: '#334155' }] },
+                            ...buildOfficialLetterhead(),
                             { text: reportTitle, style: 'reportTitle' },
                             { text: `Fecha de Emisión: ${fechaEmj} | Total de Registros: ${sortedItems.length} | Ordenado Alfabéticamente`, style: 'metaText' },
                             {
@@ -1866,11 +1927,9 @@
                             }
                         ],
                         styles: {
-                            mainHeader: { fontSize: 16, bold: true, color: '#0f172a' },
-                            subHeader: { fontSize: 10, bold: true, color: '#475569', margin: [0, 2, 0, 15] },
-                            reportTitle: { fontSize: 12, bold: true, color: '#1e293b', margin: [0, 10, 0, 2] },
-                            metaText: { fontSize: 9, color: '#64748b', margin: [0, 0, 0, 12] },
-                            tableExample: { margin: [0, 5, 0, 15] },
+                            reportTitle: { fontSize: 12, bold: true, color: '#1e293b', margin: [0, 4, 0, 2] },
+                            metaText: { fontSize: 9, color: '#64748b', margin: [0, 0, 0, 10] },
+                            tableExample: { margin: [0, 4, 0, 15] },
                             tableHeader: { bold: true, fontSize: 9, color: 'white', alignment: 'center' }
                         },
                         defaultStyle: { fontSize: 8, color: '#334155' }
